@@ -77,3 +77,30 @@ Each program's admissions record has a `usage_status`:
 - `manual_confirmation_required`: rules must be confirmed manually with COLMAN before any automated eligibility decision. A `usage_status_reason_en` is required.
 
 `management_information_systems` is `manual_confirmation_required`: its published conditional-admission wording is internally ambiguous. This status is for admission-check features only and never affects fit or scoring (DEC-008).
+
+## DEC-018 — Fit, near-tie, and reality-check thresholds
+Status: **proposed — pending review** (THI-7, PR for THI-7). Not accepted. These are calibration seeds validated only against **synthetic** pair-question signals, and they **must be revalidated in THI-8** once the real CSDS / CSMIS / DSMIS signal definitions exist.
+
+All values apply to `normalized_fit` (raw fit / attainable ideal):
+- `strong_fit` ≥ 0.80; `good_fit` ≥ 0.65; `consider_carefully` ≥ 0.50; `no_strong_fit` < 0.50.
+- Near tie: top-two gap < 0.05. Computed always, but it never overrides `no_strong_fit`.
+- Reality check: fires for a top-two program when at least one related dimension has attainable variation and is materially low, meaning `C[d] < min + (max − min) / 3` **and** `C[d] < 0` (net-negative evidence). The net-negative condition is proposed in THI-7: without it, not choosing a dimension's options triggered warnings.
+
+Calibration rationale, the sanity-case table, the answer-space distribution, and open findings are in `docs/SCORING.md`. Personas A–D and the mixed, weak, low-math, and near-tie cases validate these values; they were not used to fit them.
+
+## DEC-019 — Scoring formula and normalization
+Status: accepted — approved before THI-7 implementation.
+
+- Candidate vector: `C[d] = Σ question_weight × chosen_option_signal[d]`, using the documented weight classes.
+- `raw_fit(P) = Σ_d C[d] × P[d]`, with equal dimension weights.
+- `ideal(P) = Σ per question max(option contribution to P)`, over the exact questions, options, weights, and signals the candidate saw.
+- `normalized_fit(P) = clamp(raw_fit / ideal, 0, 1)`. An ideal ≤ 0 means no usable fit signal.
+- `normalized_fit` drives ranking, classification, and near-tie logic; `raw_fit` is diagnostics only. Neither is ever shown as a percentage (DEC-004).
+- `no_strong_fit` ⇒ `bestFitProgram = null`. The ranking and top two are retained internally (DEC-010).
+- Evidence keeps every answered question, including answers against #1. The trade-off is structured, with signed per-dimension contributions `C[d] × P[d] / ideal(P)`. The engine writes no candidate-facing prose.
+- Reality checks never modify fit (DEC-009).
+
+## DEC-020 — Math tolerance (Q3) signal mapping
+Status: accepted — decided before THI-7 implementation.
+
+The 1–5 math-tolerance answer maps to `math_affinity = answer − 3` (1 → −2, 2 → −1, 3 → 0, 4 → +1, 5 → +2), weighted as `self_rating` (1.5). It is a fit signal, not a gate. Low math tolerance may lower fit or trigger a reality check, but it never automatically eliminates CS or DS. Implemented as `mathToleranceSignal()` in `src/engine`.
