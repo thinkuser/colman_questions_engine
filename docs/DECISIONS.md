@@ -38,3 +38,13 @@ Program facts are curated from official `colman.ac.il` and `academy.org.il` sour
 
 ## DEC-013 — Pilot first
 Validate the engine on Computer Science, Data Science, and Management Information Systems before expanding to all programs.
+
+## DEC-014 — Application stack and module boundaries (proposed in THI-5)
+Status: proposed — pending review in the THI-5 PR.
+
+- Web app: Next.js (App Router), React, TypeScript (strict), Tailwind CSS, pnpm.
+- Tests: Vitest for pure modules.
+- Hebrew-first: the document is `lang="he" dir="rtl"` by default.
+- Business logic lives in framework-free modules (`src/engine`, `src/flow`, `src/data`, `src/analytics`). The UI only renders and dispatches. ESLint import rules enforce this.
+
+Rationale: the engine must be deterministic and unit-testable in isolation (DEC-002, DEC-003). Next.js leaves room for static export (embedding) and for server routes later (lead/CRM handoff) without changing the engine.

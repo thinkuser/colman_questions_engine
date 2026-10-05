@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-heebo), ui-sans-serif, system-ui, sans-serif;
+  /* Placeholder brand color — replace with the official COLMAN palette when provided. */
+  --color-brand: #1d4ed8;
+}
+
+html {
+  font-family: var(--font-sans);
+}

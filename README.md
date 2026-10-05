@@ -47,3 +47,49 @@ Structured program content will be curated from official COLMAN properties:
 - `https://www.academy.org.il/`
 
 Runtime recommendations should not depend on live scraping of these pages.
+
+## Development
+
+### Prerequisites
+- Node.js 20.9+ (developed on Node 24)
+- pnpm 10 (`corepack enable` picks up the version pinned in `package.json`)
+
+### Setup and run
+```bash
+pnpm install
+pnpm dev          # http://localhost:3000
+```
+
+### Scripts
+| Command | Purpose |
+|---|---|
+| `pnpm dev` | Local dev server |
+| `pnpm build` / `pnpm start` | Production build / serve the build |
+| `pnpm test` | Unit tests (Vitest, Node environment) |
+| `pnpm typecheck` | TypeScript, strict mode |
+| `pnpm lint` | ESLint, including module-boundary rules |
+| `pnpm check` | lint + typecheck + test (run before opening a PR) |
+
+### Stack
+Next.js (App Router) · React · TypeScript (strict) · Tailwind CSS v4 · Vitest · pnpm. See `DEC-014` in `docs/DECISIONS.md`.
+
+The document defaults to Hebrew/RTL (`<html lang="he" dir="rtl">`). Use logical spacing utilities (`ps-*`, `pe-*`, `ms-*`, `me-*`, `text-start`) instead of `left`/`right` so layouts stay correct in RTL.
+
+## Repository structure
+```
+src/
+  app/          Next.js routes only — thin wrappers: / (select) → /questions → /result
+  ui/           React components, Hebrew copy (copy.he.ts), React bindings for flow state
+  flow/         Pure comparison-flow reducer and step-access rules (select → questions → result)
+  engine/       Pure deterministic fit engine: dimensions, contracts; scoring lands in THI-7/THI-8
+  data/         Structured program content (pilot catalog placeholder; full model in THI-6)
+  analytics/    Event vocabulary from docs/ANALYTICS.md + GTM dataLayer transport
+tests/          Unit tests mirroring src/ (engine, flow, data, analytics)
+docs/           Product source of truth
+```
+
+### Layering rules
+- `engine`, `flow`, `data`, and `analytics` are **pure TypeScript**. They must not import React, Next.js, or `ui`/`app`. ESLint enforces this.
+- `engine` additionally must not import `flow` or `analytics`: it is the deterministic core and must be testable in isolation.
+- UI components dispatch actions and read selectors; they do not contain fit, routing, or question-selection logic.
+- User-facing Hebrew strings live in `src/ui/copy.he.ts`; IDs and code stay in English.
