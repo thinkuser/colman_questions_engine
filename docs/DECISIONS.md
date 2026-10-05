@@ -79,12 +79,16 @@ Each program's admissions record has a `usage_status`:
 `management_information_systems` is `manual_confirmation_required`: its published conditional-admission wording is internally ambiguous. This status is for admission-check features only and never affects fit or scoring (DEC-008).
 
 ## DEC-018 — Fit, near-tie, and reality-check thresholds
-Status: **proposed — pending review** (THI-7, PR for THI-7). Not accepted. These are calibration seeds validated only against **synthetic** pair-question signals, and they **must be revalidated in THI-8** once the real CSDS / CSMIS / DSMIS signal definitions exist.
+Status: **proposed — pending review** (THI-7). Not accepted. These were calibration seeds validated against synthetic pair-question signals in THI-7. **THI-8 revalidated them against the real question bank (DEC-021) and kept the fit and near-tie thresholds unchanged**; see `docs/SCORING.md` → "THI-8 revalidation". The reality-check rule gained an explicit-negative trigger in THI-8 (below).
 
 All values apply to `normalized_fit` (raw fit / attainable ideal):
 - `strong_fit` ≥ 0.80; `good_fit` ≥ 0.65; `consider_carefully` ≥ 0.50; `no_strong_fit` < 0.50.
 - Near tie: top-two gap < 0.05. Computed always, but it never overrides `no_strong_fit`.
-- Reality check: fires for a top-two program when at least one related dimension has attainable variation and is materially low, meaning `C[d] < min + (max − min) / 3` **and** `C[d] < 0` (net-negative evidence). The net-negative condition is proposed in THI-7: without it, not choosing a dimension's options triggered warnings.
+- Reality check: fires for a top-two program when at least one related dimension has attainable variation and is **materially low**. Either trigger counts:
+  - `net_negative_bottom_third`: `C[d] < min + (max − min) / 3` **and** `C[d] < 0`. The net-negative condition was proposed in THI-7: without it, simply not choosing a dimension's options triggered warnings.
+  - `explicit_negative_answer`: the candidate **explicitly chose an option with a negative signal** on that dimension (e.g. Q3 = 1–2 on `math_affinity`), even if other answers bring the aggregate `C[d]` back to zero or above. Added in THI-8 after a low-math DS candidate (Q3 = 1) got no math warning because DS answers' small math signals cancelled it.
+
+  Positive or neutral answers alone never trigger. Checks are warnings only and never change fit, ranking, or classification.
 
 Calibration rationale, the sanity-case table, the answer-space distribution, and open findings are in `docs/SCORING.md`. Personas A–D and the mixed, weak, low-math, and near-tie cases validate these values; they were not used to fit them.
 
@@ -104,3 +108,53 @@ Status: accepted — approved before THI-7 implementation.
 Status: accepted — decided before THI-7 implementation.
 
 The 1–5 math-tolerance answer maps to `math_affinity = answer − 3` (1 → −2, 2 → −1, 3 → 0, 4 → +1, 5 → +2), weighted as `self_rating` (1.5). It is a fit signal, not a gate. Low math tolerance may lower fit or trigger a reality check, but it never automatically eliminates CS or DS. Implemented as `mathToleranceSignal()` in `src/engine`.
+
+## DEC-021 — V1 question bank and adaptive flow
+Status: accepted — approved in the THI-8 plan review.
+
+**Question bank:** `src/data/content/question_bank.json`. Explicit signals, validated at load, and tested against the table in `docs/QUESTION_ENGINE.md`.
+- Opening questions Q1–Q3 as documented (Q3 per DEC-020).
+- Three **curated pair branches** (CS/DS, CS/MIS, DS/MIS), each with three pair questions using the approved types and signals. These are V1 overrides, not a requirement that every program pair be authored (DEC-023).
+- Every pair question has one neutral option, "neither of these really appeals to me", with no signal. This is the explicit neutral information that makes a genuine `no_strong_fit` possible without adding a question.
+- One tie-breaker per branch, from the additional question bank:
+  - CS/DS: logical certainty vs patterns under uncertainty;
+  - CS/MIS: write code vs define what it should do;
+  - DS/MIS: better model vs better business decision.
+
+**Routing:**
+1. Ask Q1–Q3.
+2. Score, then lock the pair branch from the current top two. With two programs selected, the pair is fixed.
+3. Ask pair-1 and pair-2.
+4. **Stop at 5** if both favour the same program, neither is "neither", and the result is not a near tie.
+5. Otherwise ask pair-3 (question 6). **Stop** if the result is `no_strong_fit` or not a near tie.
+6. Otherwise ask **one** tie-breaker (question 7) for the **current** top two, even if that pair changed during the branch. Then **stop regardless**: a genuinely close result is a valid outcome.
+
+Every path ends in 5–7 questions. A branch never asks about a program that isn't selected, and no tie-breaker is asked for `no_strong_fit`. Implemented as `nextAdaptiveStep()` in `src/engine` and `nextComparisonStep()` in `src/flow`.
+
+## DEC-022 — Classify only from expressed preferences
+Status: accepted — decided in the THI-8 plan review.
+
+A candidate is classified only from preferences they actually express; the engine never infers hidden aversions it never asked about.
+- Persona D reaches `no_strong_fit` by explicitly rejecting the offered directions ("neither").
+- A candidate who repeatedly chooses MIS-style answers but is uncomfortable with coding, math or data (Persona D′) may be a legitimate MIS fit, with reality checks.
+
+No additional common programming/data-interest question is added in V1. `consider_carefully` is also a valid outcome; weak or mixed candidates are not forced into `no_strong_fit`.
+
+## DEC-023 — Question-selection architecture: curated overrides now, scalable selector later
+Status: accepted as the intended direction (THI-8 review). The generic selector is **not implemented** in V1.
+
+**Current V1:**
+- Curated pair branches cover CS/DS, CS/MIS and DS/MIS.
+- Pair questions are config/data (`question_bank.json`), not hard-coded program conditionals.
+- The bank schema allows **zero or more** curated branches. Only the three pilot pairs are required, and that is a separate V1 check (`V1_PILOT_PAIRS`), not derived from every combination of `PROGRAM_IDS`. Adding a program therefore does **not** require authoring N × (N − 1) / 2 pair branches.
+- An option's `favours` field is **V1 routing metadata** for the stop rule. Scoring never depends on it; the durable scoring signal is the dimension vector.
+
+**Future scalable selector** (when programs are added):
+- Program profiles remain dimension vectors, and question options remain dimension signals.
+- When no curated override exists, the selector identifies the dimensions that most differentiate the current leading programs and picks the highest-discrimination question from a generic question bank.
+- Curated pair branches stay as **optional overrides** for especially important or common comparisons.
+
+```
+current candidate state → current leading programs → most discriminating dimensions → best available question
+                                                  ↘ curated pair override (optional)
+```

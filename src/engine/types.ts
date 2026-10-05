@@ -126,8 +126,12 @@ export interface TriggeredDimension {
   value: number;
   min: number;
   max: number;
-  /** `min + (max − min) / 3`; the dimension triggers when `value` is below it and below 0. */
+  /** `min + (max − min) / 3`; the net-negative trigger fires when `value` is below it and below 0. */
   threshold: number;
+  /** Why the dimension counts as materially low (DEC-018, proposed). */
+  reasons: Array<"net_negative_bottom_third" | "explicit_negative_answer">;
+  /** Questions whose chosen option carried an explicit negative signal on this dimension. */
+  explicitNegativeQuestionIds: string[];
 }
 
 export interface TriggeredRealityCheck {
