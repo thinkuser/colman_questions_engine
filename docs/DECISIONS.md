@@ -39,8 +39,8 @@ Program facts are curated from official `colman.ac.il` and `academy.org.il` sour
 ## DEC-013 — Pilot first
 Validate the engine on Computer Science, Data Science, and Management Information Systems before expanding to all programs.
 
-## DEC-014 — Application stack and module boundaries (proposed in THI-5)
-Status: proposed — pending review in the THI-5 PR.
+## DEC-014 — Application stack and module boundaries
+Status: accepted — approved in the THI-5 review (PR #3).
 
 - Web app: Next.js (App Router), React, TypeScript (strict), Tailwind CSS, pnpm.
 - Tests: Vitest for pure modules.

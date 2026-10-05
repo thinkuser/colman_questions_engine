@@ -12,9 +12,9 @@ next-env.d.ts
 coverage/
 .playwright-mcp/
 
-# env files (never commit credentials)
-.env
-.env*.local
+# env files (never commit credentials); only the committed template is allowed
+.env*
+!.env.example
 
 # logs
 npm-debug.log*
