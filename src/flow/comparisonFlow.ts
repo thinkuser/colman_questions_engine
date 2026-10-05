@@ -1,13 +1,14 @@
 import type { FitResult, ProgramId, RecordedAnswer } from "@/engine";
+import { nextComparisonStep } from "./adaptiveStep";
+import { isValidSelectionSize, MAX_SELECTED_PROGRAMS } from "./selection";
 
 /**
- * Comparison flow state: select → questions → result.
+ * Comparison flow state: select, questions, result.
  * Pure reducer + selectors so routing rules are unit-testable and stay out of UI components.
- * Question selection (THI-8) and scoring (THI-7) plug in here later; this skeleton only tracks progress.
+ * Which question comes next, and when the flow is complete, is decided only by the adaptive engine
+ * (`nextComparisonStep`); this reducer validates recorded answers against it and never routes on its own.
+ * Durable state is just the selection and the answers; the next question and the result are always recomputed.
  */
-
-export const MIN_SELECTED_PROGRAMS = 2;
-export const MAX_SELECTED_PROGRAMS = 3;
 
 export type FlowStep = "select" | "questions" | "result";
 
@@ -24,6 +25,8 @@ export type ComparisonAction =
   | { type: "toggle_program"; programId: ProgramId }
   | { type: "start_questions" }
   | { type: "record_answer"; answer: RecordedAnswer }
+  /** Remove the last answer and return to that question (or to program selection from the first question). */
+  | { type: "go_back" }
   | { type: "complete"; result: FitResult | null }
   | { type: "restart" };
 
@@ -34,9 +37,8 @@ export const initialComparisonState: ComparisonState = {
   result: null,
 };
 
-export function canStartQuestions(state: ComparisonState): boolean {
-  const count = state.selectedProgramIds.length;
-  return count >= MIN_SELECTED_PROGRAMS && count <= MAX_SELECTED_PROGRAMS;
+export function canStartQuestions(state: Pick<ComparisonState, "selectedProgramIds">): boolean {
+  return isValidSelectionSize(state.selectedProgramIds.length);
 }
 
 /** The step the candidate belongs on for the current state. Guards redirect here. */
@@ -63,6 +65,42 @@ export function canAccessStep(state: ComparisonState, step: FlowStep): boolean {
   }
 }
 
+/** Accept an answer only if it answers the question the engine is currently asking, with one of its options. */
+function recordAnswer(state: ComparisonState, answer: RecordedAnswer): ComparisonState {
+  if (state.status !== "answering") {
+    return state;
+  }
+  const step = nextComparisonStep(state);
+  if (
+    step?.status !== "ask" ||
+    step.question.id !== answer.questionId ||
+    !step.question.options.some((option) => option.id === answer.answerId)
+  ) {
+    return state;
+  }
+  const answers = [...state.answers, { questionId: answer.questionId, answerId: answer.answerId }];
+  const next = nextComparisonStep({ selectedProgramIds: state.selectedProgramIds, answers });
+  if (next?.status === "complete") {
+    return { ...state, answers, status: "completed", result: next.result };
+  }
+  return { ...state, answers };
+}
+
+function goBack(state: ComparisonState): ComparisonState {
+  switch (state.status) {
+    case "selecting":
+      return state;
+    case "answering":
+      if (state.answers.length === 0) {
+        return { ...initialComparisonState, selectedProgramIds: state.selectedProgramIds };
+      }
+      return { ...state, answers: state.answers.slice(0, -1) };
+    case "completed":
+      // Everything derived from the removed answer (result, any later question) is recomputed by the engine.
+      return { ...state, status: "answering", answers: state.answers.slice(0, -1), result: null };
+  }
+}
+
 export function comparisonReducer(state: ComparisonState, action: ComparisonAction): ComparisonState {
   switch (action.type) {
     case "toggle_program": {
@@ -83,11 +121,9 @@ export function comparisonReducer(state: ComparisonState, action: ComparisonActi
       }
       return { ...state, status: "answering", answers: [], result: null };
     case "record_answer":
-      if (state.status !== "answering") {
-        return state;
-      }
-      // Append-only: historical answers are never silently rewritten.
-      return { ...state, answers: [...state.answers, action.answer] };
+      return recordAnswer(state, action.answer);
+    case "go_back":
+      return goBack(state);
     case "complete":
       if (state.status !== "answering") {
         return state;

@@ -1,6 +1,6 @@
 /**
- * Hebrew UI copy, centralized so wording can be reviewed without touching components.
- * Skeleton copy only — final product copy arrives with THI-9 / THI-10.
+ * Hebrew UI copy (interface chrome), centralized so wording can be reviewed without touching components.
+ * Question and answer copy is NOT here: it is structured data in src/data/content/question_copy_he.json.
  */
 export const copy = {
   appTitle: "StudyMatch — השוואת תוכניות לימוד",
@@ -15,19 +15,24 @@ export const copy = {
     heading: "אילו תוכניות לימוד אתם שוקלים?",
     instructions: "בחרו 2–3 תוכניות להשוואה.",
     selectedCount: (count: number, max: number) => `נבחרו ${count} מתוך ${max}`,
+    selectedLabel: "נבחרה",
     start: "התחילו בהשוואה",
   },
   questions: {
-    heading: "כמה שאלות קצרות",
-    placeholder: "מנוע השאלות האדפטיבי עדיין לא חובר. כאן יוצגו 5–7 שאלות שמבחינות בין התוכניות שבחרתם.",
     comparing: "משווים בין:",
-    toResult: "המשך לתוצאה",
-    back: "חזרה לבחירת תוכניות",
+    progress: (questionNumber: number) => `שאלה ${questionNumber}`,
+    typicalLength: (min: number, max: number) => `בדרך כלל ${min}–${max} שאלות`,
+    optionsLabel: "אפשרויות תשובה",
+    back: "חזרה",
+    restart: "התחלה מחדש",
   },
   result: {
-    heading: "התוצאה",
-    placeholder: "חישוב ההתאמה עדיין לא מומש. כאן תוצג ההמלצה, הסיבות לה וההחלטה המרכזית שלכם.",
+    heading: "סיימנו — התוצאה שלך מוכנה",
+    placeholder: "מסך ההמלצה המלא יתווסף בשלב הבא. בינתיים, כך נראה סיכום התשובות שלכם.",
     compared: "התוכניות שהשוויתם:",
+    summaryHeading: "סיכום זמני של התשובות (לפיתוח)",
+    answeredCount: (count: number) => `נענו ${count} שאלות`,
+    back: "חזרה לשאלה האחרונה",
     restart: "השוואה חדשה",
   },
 } as const;
