@@ -73,6 +73,10 @@ describe("result page structure by kind", () => {
     expect(html).toContain("ההתלבטות שלכם באמת קרובה");
     expect(text(html)).toContain(RESULT_COPY.pairAxis(CS, DS)!.axisHe);
     expect(html).not.toContain(RESULT_COPY.states.recommended.eyebrow_he);
+    // Soft framing: no strong ranking language.
+    expect(html).toContain("נטייה קלה לכיוון הזה");
+    expect(html).toContain("קרובה מאוד");
+    expect(html).not.toMatch(/במקום הראשון|במקום השני/);
     // The second program is as prominent as the first: both appear in emphasised hero cards.
     expect((html.match(/border-2 border-brand bg-brand\/5/g) ?? []).length).toBeGreaterThanOrEqual(2);
     // The real contrary answer is represented.
@@ -91,6 +95,7 @@ describe("result page structure by kind", () => {
     }
     expect(body).toContain(MIS_NAME);
     expect(body).toContain(MIS_QUALIFIER);
+    expect(body).not.toContain("לא כישלון");
     // Escape routes: compare again / explore other programs, plus the always-present way back.
     expect(body).toContain("לבדיקת תוכניות אחרות");
     expect(body).toContain("חזרה לשאלה האחרונה");

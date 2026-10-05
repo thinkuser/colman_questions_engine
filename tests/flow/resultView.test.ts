@@ -14,7 +14,7 @@ import {
 } from "@/flow";
 import { RESULT_COPY, getProgramSummary } from "@/data";
 import type { FitResult, RecordedAnswer } from "@/engine";
-import { ALL_PILOT, CS, DS, MIS, runFlow } from "../engine/fixtures";
+import { ALL_PILOT, CS, DS, MIS, enumerateRuns, runFlow } from "../engine/fixtures";
 import { SANITY_CASES } from "../engine/sanityCases";
 
 const viewFor = (id: string, options?: Parameters<typeof buildResultView>[3]) => {
@@ -261,5 +261,40 @@ describe("refresh and back", () => {
     expect(state.result).toBeNull();
     const step = nextComparisonStep(state);
     expect(step?.status).toBe("ask");
+  });
+});
+
+describe("evidence presentation matches the engine's direction", () => {
+  const runs = [ALL_PILOT, [CS, DS], [CS, MIS], [DS, MIS]].flatMap((programs) =>
+    enumerateRuns(programs).map((run) => ({ run, programs })),
+  );
+
+  it("never exposes an engine-neutral item as support, and only supports_top items as support", () => {
+    let neutralTopUps = 0;
+    for (const { run, programs } of runs) {
+      const view = buildResultView(run.result, run.answers, programs);
+      if (view.kind === "no_strong_fit") continue;
+      for (const card of view.evidence) {
+        const source = run.result.evidence.find((e) => e.questionId === card.questionId)!;
+        if (source.direction === "neutral") {
+          neutralTopUps += 1;
+          expect(card.kind).toBe("answer");
+        }
+        if (card.kind === "supports") expect(source.direction).toBe("supports_top");
+        if (card.kind === "mixed") expect(source.direction).toBe("supports_second");
+      }
+    }
+    // Non-vacuous: real paths do include neutral top-up items.
+    expect(neutralTopUps).toBeGreaterThan(0);
+  });
+
+  it("keeps a neutral top-up item in the explanation but renders it neutrally", () => {
+    const hit = runs.find(({ run, programs }) => {
+      const view = buildResultView(run.result, run.answers, programs);
+      return view.kind !== "no_strong_fit" && view.evidence.some((e) => e.kind === "answer");
+    })!;
+    const view = buildResultView(hit.run.result, hit.run.answers, hit.programs);
+    expect(view.evidence.length).toBeGreaterThanOrEqual(3);
+    expect(view.evidence.filter((e) => e.kind === "supports").length).toBeLessThan(view.evidence.length);
   });
 });

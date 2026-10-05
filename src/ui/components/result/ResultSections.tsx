@@ -81,7 +81,13 @@ export function EvidenceSection({ view }: { view: ResultView }) {
           <li
             key={`${item.questionId}/${item.answerId}`}
             data-evidence-kind={item.kind}
-            className={`border-s-4 ps-3 ${item.kind === "mixed" ? "border-amber-400" : "border-brand"}`}
+            className={`border-s-4 ps-3 ${
+              item.kind === "mixed"
+                ? "border-amber-400"
+                : item.kind === "supports"
+                  ? "border-brand"
+                  : "border-slate-300"
+            }`}
           >
             {item.kind === "mixed" && <span className="font-semibold">{copy.result.evidenceMixedLabel}: </span>}
             {item.text}

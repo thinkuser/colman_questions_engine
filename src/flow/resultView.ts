@@ -18,7 +18,10 @@ import type { Dimension, EvidenceItem, FitResult, ProgramId, RecordedAnswer } fr
 export type ResultKind = "recommended" | "near_tie" | "no_strong_fit";
 
 export interface EvidenceCard {
-  /** `supports` backs the top program, `mixed` pulls the other way, `answer` is used when there is no winner. */
+  /**
+   * `supports` backs the top program (engine direction `supports_top`), `mixed` pulls the other way, `answer` is a
+   * neutral item: used when there is no winner, and for engine-neutral answers that only top up the explanation.
+   */
   kind: "supports" | "mixed" | "answer";
   text: string;
   questionId: string;
@@ -131,10 +134,11 @@ export function selectEvidence(result: FitResult, kind: ResultKind): EvidenceCar
   const room = contrary ? MAX_EVIDENCE - 1 : MAX_EVIDENCE;
   const supportCount = Math.min(supports.length, Math.min(room, contrary ? 3 : 4));
   const picked = supports.slice(0, supportCount).map((item) => card(item, "supports"));
-  // Thin support: top up with neutral answers (e.g. a math-tolerance answer) so the section is never nearly empty.
+  // Thin support: top up with engine-neutral answers (e.g. a math-tolerance answer) so the section is never nearly
+  // empty. They did not favour the top program, so they are presented neutrally, never as support.
   for (const item of neutral) {
     if (picked.length >= 3) break;
-    picked.push(card(item, "supports"));
+    picked.push(card(item, "answer"));
   }
   if (contrary) picked.push(card(contrary, "mixed"));
   return picked;
