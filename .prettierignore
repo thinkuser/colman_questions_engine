@@ -1,0 +1,7 @@
+.next/
+out/
+node_modules/
+pnpm-lock.yaml
+coverage/
+# Markdown is hand-formatted product documentation; do not reflow it.
+*.md
