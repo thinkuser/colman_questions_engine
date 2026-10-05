@@ -158,3 +158,14 @@ Status: accepted as the intended direction (THI-8 review). The generic selector 
 current candidate state → current leading programs → most discriminating dimensions → best available question
                                                   ↘ curated pair override (optional)
 ```
+
+## DEC-024 — Question UI: progress, back, restart, persistence
+Status: accepted — specified in the THI-9 instructions.
+
+- **Progress** shows the current question number ("שאלה 4") and the usual range ("בדרך כלל 5–7 שאלות"), never a fixed denominator, because the final length (5–7) is only known as answers come in.
+- **Routing stays in the engine.** The UI renders what `nextComparisonStep()` returns. The flow reducer accepts an answer only if it answers the question currently asked with one of its options, and completes the flow when the engine says it is complete.
+- **Back** removes the last answer and shows that question again (from the first question it returns to program selection with the selection kept; from the completion screen it reopens the last question). Everything later is recomputed by the engine; an invalidated branch is never preserved.
+- **Restart** clears the selection, answers, result and stored state, and returns to program selection.
+- **Persistence** (localStorage, key `colman-studymatch:comparison`) stores only `{ version, selectedProgramIds, answers }`. Scores, ranking, branch, next question and result are never stored; they are recomputed on restore by replaying the answers through the same reducer. Malformed, unknown or inconsistent data (including extra keys) is discarded and the candidate starts over.
+- A refresh on the first question with no answers returns to program selection with the programs still selected (no answers means nothing durable beyond the selection).
+- **Candidate-facing question copy** is structured data (`question_copy_he.json`), joined to and validated against the bank. The "neither" option uses one shared neutral label on every pair question.

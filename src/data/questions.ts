@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { DIMENSIONS, QUESTION_ROLES, QUESTION_TYPES, type BankQuestion, type QuestionBank } from "@/engine";
 import raw from "./content/question_bank.json";
+import copyRaw from "./content/question_copy_he.json";
 import { PROGRAM_IDS } from "./programs";
 
 /**
@@ -156,7 +157,7 @@ export function assertPairCoverage(bank: QuestionBank, pairs: ReadonlyArray<read
 export const QUESTION_BANK: QuestionBank = buildQuestionBank(raw);
 assertPairCoverage(QUESTION_BANK, V1_PILOT_PAIRS);
 
-/** Internal English reference copy (prompts/labels) for each question. Hebrew copy is added in THI-9. */
+/** Internal English reference copy (prompts/labels) for each question. Candidate-facing Hebrew copy: `QUESTION_COPY_HE`. */
 export const QUESTION_TEXT_EN: ReadonlyMap<string, { prompt: string; options: Record<string, string> }> = new Map(
   QuestionBankFileSchema.parse(raw).questions.map((question) => [
     question.id,
@@ -166,3 +167,65 @@ export const QUESTION_TEXT_EN: ReadonlyMap<string, { prompt: string; options: Re
     },
   ]),
 );
+
+/** Shape of `content/question_copy_he.json` (THI-9). */
+export const QuestionCopyFileSchema = z.object({
+  version: z.string(),
+  status_note: z.string(),
+  neutral_option: z.string().trim().min(1),
+  questions: z.record(
+    z.string(),
+    z.object({
+      prompt: z.string().trim().min(1),
+      options: z.record(z.string(), z.string().trim().min(1)),
+    }),
+  ),
+});
+
+export interface QuestionCopyHe {
+  prompt: string;
+  /** In bank option order (the neutral option is last, as in the bank). */
+  options: ReadonlyArray<{ id: string; label: string }>;
+}
+
+/**
+ * Join candidate-facing Hebrew copy to the bank and validate it is complete and exact: every question has a
+ * prompt, every option has a label (neutral options of pair questions use `neutral_option`), and nothing in the
+ * copy refers to a question or option the bank does not have. Exported for tests.
+ */
+export function buildQuestionCopy(bankInput: unknown, copyInput: unknown): ReadonlyMap<string, QuestionCopyHe> {
+  const bank = QuestionBankFileSchema.parse(bankInput);
+  const copyFile = QuestionCopyFileSchema.parse(copyInput);
+  const bankIds = new Set(bank.questions.map((question) => question.id));
+  for (const questionId of Object.keys(copyFile.questions)) {
+    if (!bankIds.has(questionId)) fail(`Hebrew copy for unknown question "${questionId}"`);
+  }
+
+  const result = new Map<string, QuestionCopyHe>();
+  for (const question of bank.questions) {
+    const entry = copyFile.questions[question.id] ?? fail(`missing Hebrew copy for question "${question.id}"`);
+    const isNeutral = (option: (typeof question.options)[number]) =>
+      question.role === "pair" && option.favours === null;
+    const expected = new Set(question.options.filter((option) => !isNeutral(option)).map((option) => option.id));
+    for (const optionId of Object.keys(entry.options)) {
+      if (!expected.has(optionId)) fail(`Hebrew copy for unknown or neutral option "${question.id}/${optionId}"`);
+    }
+    result.set(question.id, {
+      prompt: entry.prompt,
+      options: question.options.map((option) => ({
+        id: option.id,
+        label: isNeutral(option)
+          ? copyFile.neutral_option
+          : (entry.options[option.id] ?? fail(`missing Hebrew copy for option "${question.id}/${option.id}"`)),
+      })),
+    });
+  }
+  return result;
+}
+
+/** Candidate-facing Hebrew question copy, keyed by question id. Presentation data only; never read by the engine. */
+export const QUESTION_COPY_HE: ReadonlyMap<string, QuestionCopyHe> = buildQuestionCopy(raw, copyRaw);
+
+export function getQuestionCopyHe(questionId: string): QuestionCopyHe {
+  return QUESTION_COPY_HE.get(questionId) ?? fail(`no Hebrew copy for question "${questionId}"`);
+}

@@ -162,3 +162,6 @@ Implemented in THI-7. The formula (DEC-019) and the proposed thresholds (DEC-018
 
 ## Evidence
 Store answer-level evidence so result copy can say why the match occurred. Result explanations must point back to concrete choices, not generic text.
+
+## Candidate-facing Hebrew copy (THI-9)
+Hebrew prompts and option labels live in `src/data/content/question_copy_he.json`, keyed by question and option id of the bank. They are presentation only: the engine never reads them, and signals/routing are unchanged. The loader (`buildQuestionCopy`) fails the build if any bank question or option lacks copy or the copy references something the bank does not have. All pair questions share one neutral label ("אף אחת מהאפשרויות לא ממש מושכת אותי"). See DEC-024 for the UI flow rules.

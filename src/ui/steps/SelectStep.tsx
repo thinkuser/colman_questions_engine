@@ -10,9 +10,13 @@ import { STEP_PATHS } from "@/ui/routes";
 import { useComparison } from "@/ui/state/ComparisonProvider";
 
 export function SelectStep() {
-  const { state, dispatch } = useComparison();
+  const { state, dispatch, hydrated } = useComparison();
   const router = useRouter();
   const selectedCount = state.selectedProgramIds.length;
+
+  if (!hydrated) {
+    return null;
+  }
 
   function handleStart() {
     dispatch({ type: "start_questions" });
@@ -35,18 +39,22 @@ export function SelectStep() {
           return (
             <label
               key={program.id}
-              className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 ${
-                checked ? "border-brand bg-brand/5" : "border-slate-200"
+              data-program-id={program.id}
+              className={`flex min-h-16 cursor-pointer items-center gap-4 rounded-xl border-2 p-4 transition-colors ${
+                checked ? "border-brand bg-brand/5" : "border-slate-200 bg-white"
               } ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
             >
               <input
                 type="checkbox"
-                className="size-5 accent-brand"
+                className="size-6 shrink-0 accent-brand"
                 checked={checked}
                 disabled={disabled}
                 onChange={() => dispatch({ type: "toggle_program", programId: program.id })}
               />
-              <ProgramName program={program} className="text-lg" />
+              <ProgramName program={program} className="min-w-0 flex-1 text-lg font-semibold" />
+              {checked && (
+                <span className="shrink-0 text-sm font-semibold text-brand">{copy.select.selectedLabel}</span>
+              )}
             </label>
           );
         })}
@@ -58,7 +66,7 @@ export function SelectStep() {
         </span>
         <button
           type="button"
-          className="rounded-lg bg-brand px-6 py-3 font-semibold text-white disabled:opacity-40"
+          className="min-h-12 rounded-xl bg-brand px-6 py-3 font-semibold text-white disabled:opacity-40"
           disabled={!canStartQuestions(state)}
           onClick={handleStart}
         >
