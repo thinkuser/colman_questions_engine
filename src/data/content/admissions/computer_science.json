@@ -1,5 +1,7 @@
 {
   "program_id": "computer_science",
+  "usage_status": "usable_as_published",
+  "usage_status_reason_en": null,
   "rules": [
     {
       "group_he": "קבלה אוטומטית",

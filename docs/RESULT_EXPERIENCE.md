@@ -9,6 +9,7 @@ The result page should feel like a useful advisor conversation, not a quiz score
 Show the best-fit program immediately, plus a short explanation.
 Example: `The direction that best fits what you told us: Data Science.`
 Do not show a fake percentage score.
+Use the candidate-facing program names from DEC-015. Wherever MIS is named, show its `דו-חוגי עם מנהל עסקים` qualifier.
 
 Also show ranked qualitative labels:
 - Strongest fit
@@ -38,6 +39,8 @@ Examples:
 - CS vs MIS: technology itself ↔ technology in a business/organizational context.
 - DS vs MIS: data/modeling as the profession ↔ data as a tool for organizational decisions.
 
+When the main decision is CS vs DS, the result may add decision reassurance from the official `shared_first_year` program note. Both programs share first-year exposure, and students can choose between them afterwards. This is explanatory content only: it never changes fit scores, ranking, or fit classification (DEC-016).
+
 ### 5. What you'll learn
 Translate curriculum into 3–5 understandable learning worlds, not a raw course dump.
 For Data Science example:
@@ -57,6 +60,10 @@ Show a small, credible career map based on official program information. Avoid i
 ### 8. Reality Check
 Surface important trade-offs honestly.
 Example for Data Science: AI/ML are important, but the degree also requires substantial mathematics, statistics, and programming.
+
+Example for Management Information Systems: this is not a business degree with a little tech. Alongside management, the curriculum includes programming, databases, mathematics, and statistics.
+
+Reality checks are warnings shown to the candidate. They are never scoring penalties (DEC-009).
 
 ### 9. Secondary program
 Do not hide #2. Explain why it may still fit and the deciding distinction.

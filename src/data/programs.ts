@@ -40,12 +40,15 @@ export interface ProgramSummary {
   id: ProgramId;
   nameHe: string;
   nameEn: string;
+  /** Must be shown with the name wherever candidates see it (DEC-015). */
+  qualifierHe: string | null;
 }
 
 export const PILOT_PROGRAMS: readonly ProgramSummary[] = listProgramFacts().map((facts) => ({
   id: facts.program_id,
   nameHe: facts.program_name_he,
   nameEn: facts.program_name_en,
+  qualifierHe: facts.program_qualifier_he,
 }));
 
 export function getProgramSummary(id: ProgramId): ProgramSummary | undefined {

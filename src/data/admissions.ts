@@ -29,3 +29,12 @@ const ADMISSIONS: ReadonlyMap<ProgramId, ProgramAdmissions> = new Map(
 export function getAdmissions(id: ProgramId): ProgramAdmissions | undefined {
   return ADMISSIONS.get(id);
 }
+
+/**
+ * Gate for admission-check features (DEC-017): automated eligibility decisions are allowed only for
+ * rules usable as published. Callers remain responsible for honouring `last_reviewed` freshness.
+ * Never consult this from fit/scoring (DEC-008).
+ */
+export function isAutomatedEligibilityAllowed(admissions: ProgramAdmissions): boolean {
+  return admissions.usage_status === "usable_as_published";
+}

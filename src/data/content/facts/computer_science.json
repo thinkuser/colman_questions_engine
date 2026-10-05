@@ -2,6 +2,7 @@
   "program_id": "computer_science",
   "program_name_he": "מדעי המחשב",
   "program_name_aliases_he": [],
+  "program_qualifier_he": null,
   "program_name_en": "Computer Science",
   "official_title": { "text_he": "תואר ראשון במדעי המחשב BSc", "source_ids": ["colman_cs_program_page"] },
   "degree": "BSc",

@@ -50,10 +50,15 @@ export const ProgramNoteSchema = OfficialFactSchema.extend({
 
 export const ProgramFactsSchema = z.object({
   program_id: programId,
-  /** Short Hebrew display name; must appear verbatim on the program page. */
+  /** Candidate-facing canonical short name (DEC-015); must appear verbatim on the program page. */
   program_name_he: nonEmpty,
-  /** Other official spellings seen on official sources (sources are not always consistent). */
+  /** Other official spellings/wordings seen on official sources, e.g. page-title wording (DEC-015). */
   program_name_aliases_he: z.array(nonEmpty),
+  /**
+   * Candidate-facing qualifier that must be shown with the name wherever candidates see it (DEC-015),
+   * e.g. MIS "דו-חוגי עם מנהל עסקים". Product-decided display copy, backed by a sourced program note.
+   */
+  program_qualifier_he: nonEmpty.nullable(),
   /** Internal English label (product docs), not an official translation. */
   program_name_en: nonEmpty,
   official_title: OfficialFactSchema,
@@ -108,13 +113,32 @@ export const ProgramFitProfileSchema = z.object({
   doc_refs: z.array(nonEmpty).min(1),
 });
 
-export const ProgramAdmissionsSchema = z.object({
-  program_id: programId,
-  rules: z.array(GroupedFactSchema).min(1),
-  /** Sources that state the same rules (possibly with typographic differences). */
-  corroborating_source_ids: z.array(sourceId),
-  last_reviewed: isoDate,
-});
+/**
+ * Whether admission rules may drive automated eligibility decisions (DEC-017).
+ * - `usable_as_published`: usable as currently published, subject to `last_reviewed`.
+ * - `manual_confirmation_required`: confirm manually with COLMAN before any automated eligibility decision.
+ */
+export const ADMISSIONS_USAGE_STATUSES = ["usable_as_published", "manual_confirmation_required"] as const;
+
+export const ProgramAdmissionsSchema = z
+  .object({
+    program_id: programId,
+    usage_status: z.enum(ADMISSIONS_USAGE_STATUSES),
+    /** Why manual confirmation is required; must be null when usable as published. */
+    usage_status_reason_en: nonEmpty.nullable(),
+    rules: z.array(GroupedFactSchema).min(1),
+    /** Sources that state the same rules (possibly with typographic differences). */
+    corroborating_source_ids: z.array(sourceId),
+    last_reviewed: isoDate,
+  })
+  .refine(
+    (admissions) =>
+      (admissions.usage_status === "manual_confirmation_required") === (admissions.usage_status_reason_en !== null),
+    {
+      message: "usage_status_reason_en is required exactly when usage_status is manual_confirmation_required",
+      path: ["usage_status_reason_en"],
+    },
+  );
 
 export type Source = z.infer<typeof SourceSchema>;
 export type OfficialFact = z.infer<typeof OfficialFactSchema>;

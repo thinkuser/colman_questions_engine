@@ -1,5 +1,7 @@
 {
   "program_id": "management_information_systems",
+  "usage_status": "manual_confirmation_required",
+  "usage_status_reason_en": "The published conditional-admission wording is internally ambiguous (a bagrut-and-psychometric track with no psychometric threshold, overlapping the 85–94.4 bagrut range). Confirm with COLMAN before any automated eligibility decision.",
   "rules": [
     {
       "group_he": "קבלה אוטומטית",

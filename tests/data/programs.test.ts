@@ -1,7 +1,15 @@
 import { readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { getProgramFacts, getProgramSummary, getSource, listProgramFacts, PILOT_PROGRAMS, PROGRAM_IDS } from "@/data";
+import {
+  getFitProfile,
+  getProgramFacts,
+  getProgramSummary,
+  getSource,
+  listProgramFacts,
+  PILOT_PROGRAMS,
+  PROGRAM_IDS,
+} from "@/data";
 import { collectFacts, evidenceOf, normalize, readSnapshot } from "./evidence";
 
 const contentDir = fileURLToPath(new URL("../../src/data/content/", import.meta.url));
@@ -29,8 +37,40 @@ describe("pilot program catalog", () => {
       id: "data_science",
       nameHe: getProgramFacts("data_science")!.program_name_he,
       nameEn: "Data Science",
+      qualifierHe: null,
     });
     expect(getProgramSummary("unknown")).toBeUndefined();
+  });
+});
+
+describe("candidate-facing names (DEC-015)", () => {
+  it.each([
+    ["computer_science", "מדעי המחשב", null],
+    ["data_science", "מדע הנתונים", null],
+    ["management_information_systems", "ניהול מערכות מידע", "דו-חוגי עם מנהל עסקים"],
+  ])("%s is shown as %s with qualifier %s", (id, name, qualifier) => {
+    expect(getProgramSummary(id)).toMatchObject({ nameHe: name, qualifierHe: qualifier });
+  });
+
+  it("preserves the official Data Science page-title wording as an alias", () => {
+    expect(getProgramFacts("data_science")!.program_name_aliases_he).toContain("מדעי הנתונים");
+  });
+
+  it("backs the MIS qualifier with the sourced double-major note", () => {
+    const topics = getProgramFacts("management_information_systems")!.program_notes.map((note) => note.topic);
+    expect(topics).toContain("double_major_with_business_administration");
+  });
+});
+
+describe("CS/DS shared first year (DEC-016)", () => {
+  it.each(["computer_science", "data_science"])("%s keeps the sourced shared_first_year note", (id) => {
+    expect(getProgramFacts(id)!.program_notes.some((note) => note.topic === "shared_first_year")).toBe(true);
+  });
+
+  it("is explanatory only: it lives in facts, never in fit profiles", () => {
+    for (const id of PROGRAM_IDS) {
+      expect(JSON.stringify(getFitProfile(id))).not.toContain("shared_first_year");
+    }
   });
 });
 

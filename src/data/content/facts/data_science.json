@@ -1,7 +1,8 @@
 {
   "program_id": "data_science",
-  "program_name_he": "מדעי הנתונים",
-  "program_name_aliases_he": ["מדע הנתונים"],
+  "program_name_he": "מדע הנתונים",
+  "program_name_aliases_he": ["מדעי הנתונים"],
+  "program_qualifier_he": null,
   "program_name_en": "Data Science",
   "official_title": { "text_he": "תואר ראשון במדעי הנתונים BSc", "source_ids": ["colman_ds_program_page"] },
   "degree": "BSc",

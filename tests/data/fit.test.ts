@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { getFitProfile, getProgramVectors, getSource, PROGRAM_IDS } from "@/data";
+import { getFitProfile, getProgramFacts, getProgramVectors, getSource, PROGRAM_IDS } from "@/data";
 import { DIMENSIONS } from "@/engine";
 
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -54,6 +54,17 @@ describe("fit profiles", () => {
     const summaries = getFitProfile("data_science")!.reality_checks.map((check) => check.summary_en);
     expect(summaries).toContain(
       "AI/ML are important, but the degree also requires substantial mathematics, statistics, and programming.",
+    );
+  });
+
+  it("includes the MIS reality check, backed by programming, database, math, and statistics courses", () => {
+    const check = getFitProfile("management_information_systems")!.reality_checks.find(
+      (candidate) => candidate.id === "mis_technical_and_quantitative_load",
+    );
+    expect(check?.related_dimensions).toEqual(["coding_depth", "math_affinity", "statistical_thinking"]);
+    const courses = getProgramFacts("management_information_systems")!.key_courses.map((course) => course.text_he);
+    expect(courses).toEqual(
+      expect.arrayContaining(["יסודות התכנות", "מסדי נתונים", "מתמטיקה 1 + תירגול", "סטטיסטיקה א"]),
     );
   });
 

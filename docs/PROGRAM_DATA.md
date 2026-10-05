@@ -25,7 +25,7 @@ Loaders validate every file with Zod at load time (`src/data/schema.ts`), so inv
 | `dimensions`, `positioning_shorthand` (`positioning_shorthand_en`), `less_suitable_for`, `reality_checks` | fit |
 | `admission_requirements` (`rules`) | admissions |
 
-Additional facts fields: `official_title`, `degree`, `faculty`, `program_name_aliases_he`, `program_notes` (decision-relevant structural facts such as a double major or a shared first year).
+Additional facts fields: `official_title`, `degree`, `faculty`, `program_name_aliases_he`, `program_qualifier_he` (DEC-015), and `program_notes` (decision-relevant structural facts such as a double major or a shared first year). Additional admissions fields: `usage_status` and `usage_status_reason_en` (DEC-017).
 
 ## Evidence rule
 
@@ -50,12 +50,33 @@ Fields with no official source stay **empty** rather than invented (currently `e
 4. Edit or add `facts/`, `fit/`, and `admissions/` JSON. Register a new program in `PROGRAM_IDS` and each loader.
 5. Update `retrieved_at` / `last_reviewed`, then run `pnpm check`. The verbatim tests show exactly which facts no longer match.
 
-## Open data questions (pending product/COLMAN confirmation)
-Recorded during THI-6 curation; not resolved by guessing.
+## Display names and qualifiers (DEC-015)
+- `program_name_he` is the candidate-facing canonical short name. It must appear verbatim on the program page.
+- `program_name_aliases_he` preserves other official wordings, e.g. the Data Science page title `מדעי הנתונים`.
+- `program_qualifier_he` is product-decided display copy. When non-null, it must be shown with the name wherever candidates see it. MIS: `דו-חוגי עם מנהל עסקים`, backed by the sourced `double_major_with_business_administration` note. UI components render names through `ProgramName`, which always shows the qualifier.
 
-1. **MIS is officially a double major.** The program page title is `תואר בניהול מערכות מידע ומנהל עסקים BA - דו חוגי`, while navigation and `academy.org.il` say `ניהול מערכות מידע`. The display name uses `ניהול מערכות מידע`. Should the candidate-facing name mention the Business Administration double major, and does the vector (`business_context: 5`) already reflect it?
-2. **Data Science spelling is inconsistent across official sources.** The page title is `מדעי הנתונים`; the body and `academy.org.il` also use `מדע הנתונים` (as does the `PROGRAM_MODEL.md` example). Display uses the page title; the other spelling is recorded as an alias.
-3. **CS and DS share a first year** and students may choose between them afterwards (stated on both pages). This is material to the CS-vs-DS main decision; how the result experience should use it is not yet specified.
-4. **MIS has no documented reality check**, although its sample curriculum includes Mathematics 1–2, Statistics, and Discrete Math. Add one only if product agrees.
-5. **MIS conditional-acceptance text looks internally inconsistent** (a "bagrut and psychometric" track with no psychometric threshold, overlapping the 85–94.4 bagrut range). It is stored verbatim; verify with COLMAN before any admission-check feature uses it.
-6. **Official pages do not distinguish entry-level from future roles**, so those fields are empty.
+## Explanatory program notes (DEC-016)
+`program_notes` are facts-layer content for explanation and reassurance. The engine never reads them. In particular, the CS/DS `shared_first_year` note may support the CS-vs-DS result, but it must never affect fit scores, ranking, or classification.
+
+## Admissions usage status (DEC-017)
+Every admissions record has a `usage_status`:
+
+| `usage_status` | Meaning | `usage_status_reason_en` |
+|---|---|---|
+| `usable_as_published` | May drive automated eligibility, subject to `last_reviewed` freshness | must be `null` |
+| `manual_confirmation_required` | Confirm with COLMAN before any automated eligibility decision | required |
+
+Admission-check consumers must gate on `isAutomatedEligibilityAllowed()` from `@/data/admissions`. Neither the status nor the helper is reachable from fit or scoring code.
+
+Current state: CS and DS are `usable_as_published`. MIS is `manual_confirmation_required`, because its published conditional-admission wording is internally ambiguous: a "bagrut and psychometric" track with no psychometric threshold, overlapping the 85–94.4 bagrut range.
+
+## Resolved during THI-6 review
+- MIS double major → candidate-facing qualifier (DEC-015).
+- Data Science spelling → `מדע הנתונים` canonical, `מדעי הנתונים` alias (DEC-015).
+- CS/DS shared first year → explanatory only (DEC-016).
+- MIS reality check added: `mis_technical_and_quantitative_load`. It is a warning, never a scoring penalty (DEC-009).
+- MIS admissions ambiguity → `manual_confirmation_required` (DEC-017).
+
+## Still open
+- **Official pages do not distinguish entry-level from future roles.** Those fields stay empty; no distinction is invented.
+- `less_suitable_for` has no defined source and stays empty.

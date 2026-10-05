@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { PILOT_PROGRAMS } from "@/data";
 import { canStartQuestions, MAX_SELECTED_PROGRAMS } from "@/flow";
+import { ProgramName } from "@/ui/components/ProgramName";
 import { StepIndicator } from "@/ui/components/StepIndicator";
 import { copy } from "@/ui/copy.he";
 import { STEP_PATHS } from "@/ui/routes";
@@ -45,7 +46,7 @@ export function SelectStep() {
                 disabled={disabled}
                 onChange={() => dispatch({ type: "toggle_program", programId: program.id })}
               />
-              <span className="text-lg">{program.nameHe}</span>
+              <ProgramName program={program} className="text-lg" />
             </label>
           );
         })}
