@@ -1,0 +1,30 @@
+{
+  "program_id": "management_information_systems",
+  "basis": "editorial_heuristic",
+  "dimensions": {
+    "software_building": 4,
+    "data_modeling": 4,
+    "business_context": 5,
+    "math_affinity": 3,
+    "coding_depth": 4,
+    "statistical_thinking": 3,
+    "systems_process": 5,
+    "bridge_role": 5,
+    "abstract_problem_solving": 3
+  },
+  "positioning_shorthand_en": "Use technology/data to solve business and organizational problems.",
+  "less_suitable_for": [],
+  "reality_checks": [
+    {
+      "id": "mis_technical_and_quantitative_load",
+      "summary_en": "This is not a business degree with a little tech: alongside management, the curriculum includes programming, databases, mathematics, and statistics.",
+      "related_dimensions": ["coding_depth", "math_affinity", "statistical_thinking"],
+      "evidence_source_ids": ["colman_mis_program_page"],
+      "doc_refs": [
+        "docs/RESULT_EXPERIENCE.md#8-reality-check",
+        "docs/DECISIONS.md#dec-009--interests--perceived-ability"
+      ]
+    }
+  ],
+  "doc_refs": ["docs/PROGRAM_MODEL.md#pilot-vectors", "docs/PROGRAM_MODEL.md#positioning-shorthand"]
+}

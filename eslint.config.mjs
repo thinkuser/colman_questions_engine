@@ -12,6 +12,15 @@ const pureModuleRestrictions = {
   ],
 };
 
+// Admission eligibility must never influence fit (DEC-008): only `src/data/admissions.ts` may load
+// admissions content, and pure modules may not import that loader.
+const admissionsRestriction = {
+  group: ["@/data/admissions", "./admissions", "**/content/admissions/**"],
+  message: "Admissions data is isolated from fit/scoring (DEC-008). Only admission-check features may import it.",
+};
+
+// Note: in flat config a later block replaces (not merges) rule options for matching files,
+// so each block lists its complete pattern set.
 const eslintConfig = [
   ...nextCoreWebVitals,
   ...nextTypescript,
@@ -21,11 +30,19 @@ const eslintConfig = [
   {
     files: ["src/engine/**", "src/flow/**", "src/data/**", "src/analytics/**"],
     rules: {
+      "no-restricted-imports": ["error", { patterns: [...pureModuleRestrictions.patterns, admissionsRestriction] }],
+    },
+  },
+  {
+    // The admissions loader is the single module allowed to read admissions content.
+    files: ["src/data/admissions.ts"],
+    rules: {
       "no-restricted-imports": ["error", pureModuleRestrictions],
     },
   },
   {
-    // The engine is the deterministic core: it may not depend on the flow or analytics layers either.
+    // The engine is the deterministic core: it receives program vectors as arguments and may not
+    // depend on the data, flow, or analytics layers.
     files: ["src/engine/**"],
     rules: {
       "no-restricted-imports": [
@@ -33,9 +50,10 @@ const eslintConfig = [
         {
           patterns: [
             ...pureModuleRestrictions.patterns,
+            admissionsRestriction,
             {
-              group: ["@/flow", "@/flow/*", "@/analytics", "@/analytics/*"],
-              message: "The engine must stay independent of flow and analytics.",
+              group: ["@/flow", "@/flow/*", "@/analytics", "@/analytics/*", "@/data", "@/data/*"],
+              message: "The engine must stay independent of data, flow, and analytics.",
             },
           ],
         },

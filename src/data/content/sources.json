@@ -1,0 +1,28 @@
+{
+  "sources": [
+    {
+      "id": "colman_cs_program_page",
+      "url": "https://www.colman.ac.il/academics/ba/computer-science/",
+      "title_he": "תואר ראשון במדעי המחשב BSc",
+      "retrieved_at": "2026-10-05"
+    },
+    {
+      "id": "colman_ds_program_page",
+      "url": "https://www.colman.ac.il/academics/ba/data-science/",
+      "title_he": "תואר ראשון במדעי הנתונים BSc",
+      "retrieved_at": "2026-10-05"
+    },
+    {
+      "id": "colman_mis_program_page",
+      "url": "https://www.colman.ac.il/academics/ba/management-information-systems/",
+      "title_he": "תואר בניהול מערכות מידע ומנהל עסקים BA - דו חוגי",
+      "retrieved_at": "2026-10-05"
+    },
+    {
+      "id": "academy_admission_page",
+      "url": "https://www.academy.org.il/admission/",
+      "title_he": "תנאי קבלה",
+      "retrieved_at": "2026-10-05"
+    }
+  ]
+}

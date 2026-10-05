@@ -1,0 +1,31 @@
+{
+  "program_id": "data_science",
+  "basis": "editorial_heuristic",
+  "dimensions": {
+    "software_building": 3,
+    "data_modeling": 5,
+    "business_context": 2,
+    "math_affinity": 5,
+    "coding_depth": 4,
+    "statistical_thinking": 5,
+    "systems_process": 2,
+    "bridge_role": 2,
+    "abstract_problem_solving": 4
+  },
+  "positioning_shorthand_en": "Learn and predict from data.",
+  "less_suitable_for": [],
+  "reality_checks": [
+    {
+      "id": "ds_math_statistics_programming",
+      "summary_en": "AI/ML are important, but the degree also requires substantial mathematics, statistics, and programming.",
+      "related_dimensions": ["math_affinity", "statistical_thinking", "coding_depth"],
+      "evidence_source_ids": ["colman_ds_program_page"],
+      "doc_refs": [
+        "docs/RESULT_EXPERIENCE.md#8-reality-check",
+        "docs/QUESTION_ENGINE.md#q3--math-tolerance",
+        "docs/DECISIONS.md#dec-009--interests--perceived-ability"
+      ]
+    }
+  ],
+  "doc_refs": ["docs/PROGRAM_MODEL.md#pilot-vectors", "docs/PROGRAM_MODEL.md#positioning-shorthand"]
+}

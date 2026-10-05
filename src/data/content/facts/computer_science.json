@@ -1,0 +1,188 @@
+{
+  "program_id": "computer_science",
+  "program_name_he": "מדעי המחשב",
+  "program_name_aliases_he": [],
+  "program_qualifier_he": null,
+  "program_name_en": "Computer Science",
+  "official_title": { "text_he": "תואר ראשון במדעי המחשב BSc", "source_ids": ["colman_cs_program_page"] },
+  "degree": "BSc",
+  "faculty": { "text_he": "הפקולטה למדעי המחשב", "source_ids": ["colman_cs_program_page"] },
+  "official_urls": ["https://www.colman.ac.il/academics/ba/computer-science/"],
+  "short_description": {
+    "text_he": "המהפכה הטכנולוגית המונעת בידי בינה מלאכותית משנה את חוקי המשחק, ואיתה השתנו גם הדרישות מבוגרי מדעי המחשב. תוכנית הלימודים עברה התאמה משמעותית לעידן ה-Native AI, שבו הבינה המלאכותית מוטמעת כחלק בלתי נפרד מהפיתוח ומהעשייה.",
+    "source_ids": ["colman_cs_program_page"]
+  },
+  "what_you_learn": [
+    {
+      "text_he": "כבר בשנה הראשונה הסטודנטים לומדים קורסי ליבה בדגש על מתמטיקה, אלגוריתמיקה ותכנות בסיסי במדעי המחשב ובמדע הנתונים.",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "text_he": "במהלך התואר נלמדים קורסים מרכזיים בעולמות ה- AI ביניהם: Machine Learning, Deep Learning, ראייה ממוחשבת מבוססת למידה עמוקה, תורת המשחקים, קבלת החלטות ועוד.",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "text_he": "הלימודים כוללים התנסות מעשית לאורך התואר כולו והתמודדות עם פתרון בעיות אמיתיות.",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "text_he": "בשנה האחרונה ללימודים מבצעים הסטודנטים פרויקט הגמר בליווי סגל בכיר ומנטורים מהתעשייה.",
+      "source_ids": ["colman_cs_program_page"]
+    }
+  ],
+  "key_courses": [
+    {
+      "group_he": "קורסים חדשים ועדכניים",
+      "text_he": "ניהול מוצר וארכיטקטורת AI",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    { "group_he": "קורסים חדשים ועדכניים", "text_he": "תכנות מונחה AI", "source_ids": ["colman_cs_program_page"] },
+    {
+      "group_he": "קורסים חדשים ועדכניים",
+      "text_he": "מבוא למחשוב קוונטי למפתחי תוכנה",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "group_he": "קורסים חדשים ועדכניים",
+      "text_he": "פיתוח מערכות Backend מבוססות AI ו- LLM",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "group_he": "קורסים חדשים ועדכניים",
+      "text_he": "גילוי חריגות במערכות מבוססות AI",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "group_he": "קורסים חדשים ועדכניים",
+      "text_he": "מבוא לבינה מלאכותית וסוכנים ממוחשבים",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "group_he": "קורסים חדשים ועדכניים",
+      "text_he": "בינה מלאכותית בעולם הפיזי",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    { "group_he": "קורסים חדשים ועדכניים", "text_he": "יסודות מדע הנתונים", "source_ids": ["colman_cs_program_page"] },
+    {
+      "group_he": "קורסים חדשים ועדכניים",
+      "text_he": "למידה חישובית (Machine Learning)",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    { "group_he": "קורסים חדשים ועדכניים", "text_he": "רשתות נוירונים", "source_ids": ["colman_cs_program_page"] },
+    {
+      "group_he": "קורסים חדשים ועדכניים",
+      "text_he": "למידה עמוקה (Deep Learning)",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    { "group_he": "קורסים חדשים ועדכניים", "text_he": "סייבר בעולם AI", "source_ids": ["colman_cs_program_page"] },
+    {
+      "group_he": "קורסים חדשים ועדכניים",
+      "text_he": "מתמטיקה ורגרסיה מודרנית",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    { "group_he": "קורסים חדשים ועדכניים", "text_he": "Data Engineering", "source_ids": ["colman_cs_program_page"] },
+    {
+      "group_he": "קורסי בחירה והתנסות מקצועית בדגש על AI",
+      "text_he": "קורס ב- Data Science | מדע הנתונים",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "group_he": "קורסי בחירה והתנסות מקצועית בדגש על AI",
+      "text_he": "קורס ב- Cyber Security | אבטחת מידע",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "group_he": "קורסי בחירה והתנסות מקצועית בדגש על AI",
+      "text_he": "קורס ב- Deep Learning | למידה עמוקה",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "group_he": "קורסי בחירה והתנסות מקצועית בדגש על AI",
+      "text_he": "קורס ב-Full Stack Development",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "group_he": "קורסי בחירה והתנסות מקצועית בדגש על AI",
+      "text_he": "קורס בטכנולוגיות פיננסיות | Fintech",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "group_he": "קורסי בחירה והתנסות מקצועית בדגש על AI",
+      "text_he": "הנדסת נתונים | Data Engineering",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    { "group_he": "פרויקט גמר", "text_he": "פרויקט גמר (שנה ג')", "source_ids": ["colman_cs_program_page"] }
+  ],
+  "career_paths": [
+    {
+      "text_he": "מפתחי תוכנה",
+      "quote_he": "פותחת בפני בוגרי ובוגרות התואר מגוון רחב של אפשרויות והזדמנויות להשתלב ההייטק במשרות מבוקשות כמו מפתחי תוכנה, Data Analyst / Data Scientist, אנשי DevOps, בתפקידים שונים בתחום הבינה המלאכותית, הסייבר ועוד.",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "text_he": "Data Analyst / Data Scientist",
+      "quote_he": "פותחת בפני בוגרי ובוגרות התואר מגוון רחב של אפשרויות והזדמנויות להשתלב ההייטק במשרות מבוקשות כמו מפתחי תוכנה, Data Analyst / Data Scientist, אנשי DevOps, בתפקידים שונים בתחום הבינה המלאכותית, הסייבר ועוד.",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "text_he": "אנשי DevOps",
+      "quote_he": "פותחת בפני בוגרי ובוגרות התואר מגוון רחב של אפשרויות והזדמנויות להשתלב ההייטק במשרות מבוקשות כמו מפתחי תוכנה, Data Analyst / Data Scientist, אנשי DevOps, בתפקידים שונים בתחום הבינה המלאכותית, הסייבר ועוד.",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "text_he": "תפקידים בתחום הבינה המלאכותית",
+      "quote_he": "פותחת בפני בוגרי ובוגרות התואר מגוון רחב של אפשרויות והזדמנויות להשתלב ההייטק במשרות מבוקשות כמו מפתחי תוכנה, Data Analyst / Data Scientist, אנשי DevOps, בתפקידים שונים בתחום הבינה המלאכותית, הסייבר ועוד.",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "text_he": "תפקידים בתחום הסייבר",
+      "quote_he": "פותחת בפני בוגרי ובוגרות התואר מגוון רחב של אפשרויות והזדמנויות להשתלב ההייטק במשרות מבוקשות כמו מפתחי תוכנה, Data Analyst / Data Scientist, אנשי DevOps, בתפקידים שונים בתחום הבינה המלאכותית, הסייבר ועוד.",
+      "source_ids": ["colman_cs_program_page"]
+    }
+  ],
+  "entry_level_roles": [],
+  "future_roles": [],
+  "ideal_for": [
+    {
+      "text_he": "אם אתם אוהבים לפתור בעיות, בעלי סקרנות טבעית וחשיבה אנליטית, מתעניינים בעולמות התוכן של AI, דאטה ותכנות, אוהבים להבין כיצד דברים עובדים ובאופן כללי בעלי חשיבה לוגית – תואר במדעי המחשב הוא מסלול בשבילכם.",
+      "source_ids": ["colman_cs_program_page"]
+    }
+  ],
+  "why_colman": [
+    {
+      "text_he": "הסטודנטים מפתחים תיק עבודות מקצועי (Portfolio) הכולל פרויקטים טכנולוגיים ויישומיים.",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "text_he": "מסלול Internship - התמחות בחברות המובילות בתעשייה בשיתוף הפקולטה והמרכז לפיתוח קריירה.",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "text_he": "מערך חונכים - סטודנטים משנה ג' חונכים סטודנטים משנה א' ועוזרים להם בקליטה והסתגלות למערכת האקדמית",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "text_he": "האקתון - Hack Colman - מפתחים מיזמים בשיתוף עם התעשייה",
+      "source_ids": ["colman_cs_program_page"]
+    }
+  ],
+  "program_notes": [
+    {
+      "topic": "shared_first_year",
+      "text_he": "החשיפה לשני התחומים מעניקה היכרות מעשית עם עולמות ה-AI והדאטה, ובסופה ניתן לבחור באופן מושכל בין המשך לתואר במדעי המחשב או במדע הנתונים, בהתאם לכיוון המקצועי.",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "topic": "curriculum_subject_to_change",
+      "text_he": "*ועדת ההוראה רשאית להחליט על שינויים בתוכנית הלימודים ובדרישות הקדם לקורסים.",
+      "source_ids": ["colman_cs_program_page"]
+    },
+    {
+      "topic": "electives_minimum_enrollment",
+      "text_he": "*פתיחת ההתנסויות מותנית במינימום נרשמים.",
+      "source_ids": ["colman_cs_program_page"]
+    }
+  ],
+  "source_ids": ["colman_cs_program_page"],
+  "last_reviewed": "2026-10-05"
+}

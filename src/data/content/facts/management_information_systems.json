@@ -1,0 +1,310 @@
+{
+  "program_id": "management_information_systems",
+  "program_name_he": "ניהול מערכות מידע",
+  "program_name_aliases_he": ["ניהול מערכות מידע ומנהל עסקים"],
+  "program_qualifier_he": "דו-חוגי עם מנהל עסקים",
+  "program_name_en": "Management Information Systems",
+  "official_title": {
+    "text_he": "תואר בניהול מערכות מידע ומנהל עסקים BA - דו חוגי",
+    "source_ids": ["colman_mis_program_page"]
+  },
+  "degree": "BA",
+  "faculty": { "text_he": "הפקולטה למנהל עסקים", "source_ids": ["colman_mis_program_page"] },
+  "official_urls": ["https://www.colman.ac.il/academics/ba/management-information-systems/"],
+  "short_description": {
+    "text_he": "תלמדו לפתח אפליקציות WEB, לנתח נתונים בעזרת כלי בינה מלאכותית, לזהות איומי סייבר, לתכנת בפייתון ולהתמצא בעולם המחשבים והטכנולוגיה. ובמקביל – תיחשפו לתחומי הניהול, עם קורסים בחשבונאות, שיווק, מימון ושוק ההון – ותהפכו לבוגרים שמבינים גם קוד וגם ביזנס.",
+    "source_ids": ["colman_mis_program_page"]
+  },
+  "what_you_learn": [
+    { "text_he": "פיתוח תוכנה (פייתון Python / ג'אווה Java)", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "פיתוח אפליקציות WEB", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "עיצוב וניתוח מערכות מידע", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "זיהוי ואיתור איומים מפני מתקפת סייבר", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "תכנות בשפת פייתון לניתוח וויזואליזציה של מידע", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "פיתוח בסביבת BIG DATA", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "שליפה וניתוח נתונים ממקורות בתוך הארגון ומחוצה לו", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "ויזואליה של מידע ונתונים באמצעות כלי BI", "source_ids": ["colman_mis_program_page"] },
+    {
+      "text_he": "אחזור ותחקור נתונים המאוחסנים במסדי נתונים באמצעות SQL וכלי BI",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "text_he": "הפקת תובנות מכמויות גדולות של נתונים באמצעות מודלים של AI ויישום שיטות של Machine Learning",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "text_he": "לצד ידע נרחב בתחום הטכנולוגי התוכנית במנהל העסקים כוללת מגוון רחב של נושאים, ביניהם: שיווק, חשבונאות, מימון, התנהגות צרכנים ועוד.",
+      "source_ids": ["colman_mis_program_page"]
+    }
+  ],
+  "key_courses": [
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר א'",
+      "text_he": "מתמטיקה 1 + תירגול",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר א'",
+      "text_he": "סטטיסטיקה א",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר א'",
+      "text_he": "יסודות התכנות",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר א'",
+      "text_he": "יסודות השיווק א",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר א'",
+      "text_he": "כלכלה למנהלים מיקרו",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר א'",
+      "text_he": "עקרונות מערכות מידע ניהוליות",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר א'",
+      "text_he": "יישומי מחשב ואוריינות AI",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר ב'",
+      "text_he": "מתמטיקה 2 + תירגול",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר ב'",
+      "text_he": "סטטיסטיקה ב",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר ב'",
+      "text_he": "מבני נתונים + תרגול",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר ב'",
+      "text_he": "יסודות השיווק ב",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר ב'",
+      "text_he": "כלכלה למנהלים מאקרו",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר ב'",
+      "text_he": "הגורם האנושי בארגון",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר ב'",
+      "text_he": "מסדי נתונים",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה א' · סמסטר ב'",
+      "text_he": "אוריינות בינה מלאכותית (קורס כלל מסלולי)",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ב' · סמסטר א'",
+      "text_he": "מתמטיקה בדידה + תירגול",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ב' · סמסטר א'",
+      "text_he": "ניתוח מערכות מידע",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ב' · סמסטר א'",
+      "text_he": "יסודות המימון",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ב' · סמסטר א'",
+      "text_he": "מבוא ליזמות וחדשנות",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ב' · סמסטר א'",
+      "text_he": "דיני עסקים לניהול חברות טכנולוגיה",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ב' · סמסטר א'",
+      "text_he": "תכנות מונחה עצמים + תירגול",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ב' · סמסטר ב'",
+      "text_he": "אנגלית למתקדמים ב'",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ב' · סמסטר ב'",
+      "text_he": "עיצוב מערכות מידע ונתונים",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ב' · סמסטר ב'",
+      "text_he": "פיתוח מערכות WEB + תירגול",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ב' · סמסטר ב'",
+      "text_he": "אבטחת מידע והגנת סייבר",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ב' · סמסטר ב'",
+      "text_he": "חשבונאות פיננסית",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ב' · סמסטר ב'",
+      "text_he": "סוגיות בכלכלת ישראל",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ב' · סמסטר ב'",
+      "text_he": "סדנת JAVA",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר א'",
+      "text_he": "ניהול פרויקטים",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר א'",
+      "text_he": "פרקטיקום במערכות מידע א'",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר א'",
+      "text_he": "סמינריון במערכות מידע",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר א'",
+      "text_he": "השפעה שכנוע ועמידה מול קהל",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר א'",
+      "text_he": "כריית נתונים ומערכות לומדות",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר א'",
+      "text_he": "מושגי יסוד בניהול בינלאומי",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר א'",
+      "text_he": "השקעות ומסחר בניירות ערך",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר א'",
+      "text_he": "SQL מתקדם",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר ב'",
+      "text_he": "Conducting Business in the Global Arena",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר ב'",
+      "text_he": "פרקטיקום במערכות מידע ב'",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר ב'",
+      "text_he": "סדנה במערכות לניהול הארגון",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר ב'",
+      "text_he": "רשתות נוירונים ושיטות למידה",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר ב'",
+      "text_he": "הכנת תכנית עסקית",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר ב'",
+      "text_he": "התנהגות צרכנים",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר ב'",
+      "text_he": "דיני קניין רוחני",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "תוכנית לימודים לדוגמה · שנה ג' · סמסטר ב'",
+      "text_he": "בינה עסקית",
+      "source_ids": ["colman_mis_program_page"]
+    }
+  ],
+  "career_paths": [
+    { "text_he": "מפתח אפליקציות WEB", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "מאפיין ומנתח מערכות בגישות AGILE ו- SCRUM", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "מנהל מוצר (PRODUCT MANAGER)", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "מאפיין ומפתח בינה עסקית (BI)", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "מפתח תוכנה", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "אנליסט נתונים", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "מנהל בסיסי נתונים", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "ארכיטקט תוכנה", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "מנתח BIG DATA", "source_ids": ["colman_mis_program_page"] },
+    { "text_he": "אנליסט עסקי", "source_ids": ["colman_mis_program_page"] }
+  ],
+  "entry_level_roles": [],
+  "future_roles": [],
+  "ideal_for": [],
+  "why_colman": [
+    {
+      "text_he": "גולת הכותרת של התוכנית הוא קורס הפרקטיקום - קורס שנתי בשנה ג', שבו הסטודנטים והסטודנטיות חוברים לארגונים שונים ופותרים בעיות מ\"העולם האמיתי\".",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "text_he": "כחלק מהלימודים, כלי בינה מלאכותית (AI) משולבים כמעט בכל קורס, כך שתחשפו באופן מעשי לעבודה עם טכנולוגיות מתקדמות וליישומן בעולם העסקי והניהולי.",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "text_he": "התוכנית כוללת שיתופי פעולה שונים עם התעשייה המאפשרים לסטודנטיות ולסטודנטים לצבור ניסיון מעשי, להיחשף להרצאות אורח של בכירים בתעשייה ולהשתלב בסיורים בחברות שונות.",
+      "source_ids": ["colman_mis_program_page"]
+    }
+  ],
+  "program_notes": [
+    {
+      "topic": "double_major_with_business_administration",
+      "text_he": "תואר דו-חוגי בניהול מערכות מידע ומנהל עסקים",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "topic": "sample_curriculum",
+      "text_he": "תוכנית לימודים לדוגמה",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "topic": "curriculum_subject_to_change",
+      "text_he": "*ועדת ההוראה רשאית להחליט על שינויים בתוכנית הלימודים ובדרישות הקדם לקורסים.",
+      "source_ids": ["colman_mis_program_page"]
+    }
+  ],
+  "source_ids": ["colman_mis_program_page"],
+  "last_reviewed": "2026-10-05"
+}

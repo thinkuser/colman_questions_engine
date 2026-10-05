@@ -48,3 +48,32 @@ Status: accepted — approved in the THI-5 review (PR #3).
 - Business logic lives in framework-free modules (`src/engine`, `src/flow`, `src/data`, `src/analytics`). The UI only renders and dispatches. ESLint import rules enforce this.
 
 Rationale: the engine must be deterministic and unit-testable in isolation (DEC-002, DEC-003). Next.js leaves room for static export (embedding) and for server routes later (lead/CRM handoff) without changing the engine.
+
+## DEC-015 — Candidate-facing program names
+Status: accepted — decided in the THI-6 review (PR #4).
+
+| Program | Candidate-facing short name | Also preserved |
+|---|---|---|
+| `computer_science` | `מדעי המחשב` | — |
+| `data_science` | `מדע הנתונים` | `מדעי הנתונים` (official page-title wording), stored as an alias |
+| `management_information_systems` | `ניהול מערכות מידע` | Qualifier `דו-חוגי עם מנהל עסקים` |
+
+The MIS qualifier must be clearly surfaced wherever candidates see the program name (subtitle or qualifier), never hidden. The official program is a double major with Business Administration.
+
+Data: `program_name_he`, `program_name_aliases_he`, `program_qualifier_he` in `src/data/content/facts/` (see `docs/PROGRAM_DATA.md`).
+
+## DEC-016 — CS/DS shared first year is explanatory, not scoring
+Status: accepted — decided in the THI-6 review (PR #4).
+
+Official COLMAN content states that Computer Science and Data Science share first-year exposure and that students can choose between them afterwards. When the main decision is CS vs DS, the result experience may use this as decision reassurance or explanatory content. It must **not** change fit scores, ranking, or fit classification.
+
+Data: the sourced `program_notes` entry with topic `shared_first_year`, in the facts layer. The engine does not read the facts layer.
+
+## DEC-017 — Admissions carry a machine-readable usage status
+Status: accepted — decided in the THI-6 review (PR #4).
+
+Each program's admissions record has a `usage_status`:
+- `usable_as_published`: rules may be used as currently published, subject to `last_reviewed`.
+- `manual_confirmation_required`: rules must be confirmed manually with COLMAN before any automated eligibility decision. A `usage_status_reason_en` is required.
+
+`management_information_systems` is `manual_confirmation_required`: its published conditional-admission wording is internally ambiguous. This status is for admission-check features only and never affects fit or scoring (DEC-008).

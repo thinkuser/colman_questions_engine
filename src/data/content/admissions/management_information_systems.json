@@ -1,0 +1,44 @@
+{
+  "program_id": "management_information_systems",
+  "usage_status": "manual_confirmation_required",
+  "usage_status_reason_en": "The published conditional-admission wording is internally ambiguous (a bagrut-and-psychometric track with no psychometric threshold, overlapping the 85–94.4 bagrut range). Confirm with COLMAN before any automated eligibility decision.",
+  "rules": [
+    {
+      "group_he": "קבלה אוטומטית",
+      "text_he": "מסלול בגרות: ממוצע בגרות משוקלל מציון 95 ומעלה וציון 70 ומעלה ב-5 יח''ל מתמטיקה או ציון 80 ומעלה ב-4 יח''ל מתמטיקה.",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "קבלה אוטומטית",
+      "text_he": "מסלול בגרות ופסיכומטרי: עמידה בציון המשוקלל הנדרש במוסד וכן ציון 70 ומעלה ב-5 יח''ל במתמטיקה או ציון 80 ומעלה ב-4 יח''ל במתמטיקה.",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "קבלה אוטומטית",
+      "text_he": "או: עמידה בציון המשוקלל הנדרש במוסד וכן ציון 65 ומעלה ב-5 יח''ל במתמטיקה או ציון 70 ומעלה ב-4 יח''ל במתמטיקה וציון 128 ומעלה בחלק הכמותי במבחן הפסיכומטרי.",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "קבלה על תנאי",
+      "text_he": "מסלול בגרות ופיסוכמטרי: ממוצע בגרות משוקלל מציון 90 ומעלה וציון 70 ומעלה ב-5 יח\"ל מתמטיקה או ציון 80 ומעלה ב-4 יח\"ל מתמטיקה.",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "קבלה על תנאי",
+      "text_he": "מסלול בגרות: בציון 85-94.4 וציון 70 ומעלה ב-5 יח''ל מתמטיקה או ציון 80 ומעלה ב-4 יח''ל מתמטיקה.",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "קבלה לאחר מכינה",
+      "text_he": "מועמדים שאינם עומדים בתנאי הקבלה יכולים להתקבל למכינת שחקים שסיומה בהצלחה יאפשר קבלה ללימודי התואר.",
+      "source_ids": ["colman_mis_program_page"]
+    },
+    {
+      "group_he": "מתווה קבלה מיוחד למועמדים ששירתו כלוחמים בשירות סדיר או קבע",
+      "text_he": "מועמד אשר שירת בצבא כלוחם, מחזיק בתעודת שחרור בכבוד מסוג \"זהב\", ומבקש להתקבל ללימודים במהלך חמש שנים שלאחר תום שנת השחרור משירות סדיר או קבע.",
+      "source_ids": ["colman_mis_program_page"]
+    }
+  ],
+  "corroborating_source_ids": ["academy_admission_page"],
+  "last_reviewed": "2026-10-05"
+}

@@ -10,6 +10,9 @@ export type ProgramId = string;
 
 export type CandidateVector = Record<Dimension, number>;
 
+/** A program's editorial 1–5 emphasis per dimension (docs/PROGRAM_MODEL.md). Supplied to the engine by the data layer. */
+export type ProgramVector = Record<Dimension, number>;
+
 /** Qualitative fit classes. Never expose numeric match percentages to users (DEC-004). */
 export const FIT_CLASSIFICATIONS = ["strong_fit", "good_fit", "consider_carefully", "no_strong_fit"] as const;
 export type FitClassification = (typeof FIT_CLASSIFICATIONS)[number];
