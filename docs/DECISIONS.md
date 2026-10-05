@@ -79,7 +79,7 @@ Each program's admissions record has a `usage_status`:
 `management_information_systems` is `manual_confirmation_required`: its published conditional-admission wording is internally ambiguous. This status is for admission-check features only and never affects fit or scoring (DEC-008).
 
 ## DEC-018 — Fit, near-tie, and reality-check thresholds
-Status: **proposed — pending review** (THI-7, PR for THI-7). Not accepted. These are calibration seeds validated only against **synthetic** pair-question signals, and they **must be revalidated in THI-8** once the real CSDS / CSMIS / DSMIS signal definitions exist.
+Status: **proposed — pending review** (THI-7). Not accepted. These were calibration seeds validated against synthetic pair-question signals in THI-7. **THI-8 revalidated them against the real question bank (DEC-021) and kept them unchanged**; see `docs/SCORING.md` → "THI-8 revalidation". One open item: the reality-check gap for explicit low-math answers (finding 1 there) has a proposed fix awaiting review.
 
 All values apply to `normalized_fit` (raw fit / attainable ideal):
 - `strong_fit` ≥ 0.80; `good_fit` ≥ 0.65; `consider_carefully` ≥ 0.50; `no_strong_fit` < 0.50.
@@ -104,3 +104,34 @@ Status: accepted — approved before THI-7 implementation.
 Status: accepted — decided before THI-7 implementation.
 
 The 1–5 math-tolerance answer maps to `math_affinity = answer − 3` (1 → −2, 2 → −1, 3 → 0, 4 → +1, 5 → +2), weighted as `self_rating` (1.5). It is a fit signal, not a gate. Low math tolerance may lower fit or trigger a reality check, but it never automatically eliminates CS or DS. Implemented as `mathToleranceSignal()` in `src/engine`.
+
+## DEC-021 — V1 question bank and adaptive flow
+Status: accepted — approved in the THI-8 plan review.
+
+**Question bank:** `src/data/content/question_bank.json`. Explicit signals, validated at load, and tested against the table in `docs/QUESTION_ENGINE.md`.
+- Opening questions Q1–Q3 as documented (Q3 per DEC-020).
+- Three pair branches (CS/DS, CS/MIS, DS/MIS), each with three pair questions using the approved types and signals.
+- Every pair question has one neutral option, "neither of these really appeals to me", with no signal. This is the explicit neutral information that makes a genuine `no_strong_fit` possible without adding a question.
+- One tie-breaker per branch, from the additional question bank:
+  - CS/DS: logical certainty vs patterns under uncertainty;
+  - CS/MIS: write code vs define what it should do;
+  - DS/MIS: better model vs better business decision.
+
+**Routing:**
+1. Ask Q1–Q3.
+2. Score, then lock the pair branch from the current top two. With two programs selected, the pair is fixed.
+3. Ask pair-1 and pair-2.
+4. **Stop at 5** if both favour the same program, neither is "neither", and the result is not a near tie.
+5. Otherwise ask pair-3 (question 6). **Stop** if the result is `no_strong_fit` or not a near tie.
+6. Otherwise ask **one** tie-breaker (question 7) for the **current** top two, even if that pair changed during the branch. Then **stop regardless**: a genuinely close result is a valid outcome.
+
+Every path ends in 5–7 questions. A branch never asks about a program that isn't selected, and no tie-breaker is asked for `no_strong_fit`. Implemented as `nextAdaptiveStep()` in `src/engine` and `nextComparisonStep()` in `src/flow`.
+
+## DEC-022 — Classify only from expressed preferences
+Status: accepted — decided in the THI-8 plan review.
+
+A candidate is classified only from preferences they actually express; the engine never infers hidden aversions it never asked about.
+- Persona D reaches `no_strong_fit` by explicitly rejecting the offered directions ("neither").
+- A candidate who repeatedly chooses MIS-style answers but is uncomfortable with coding, math or data (Persona D′) may be a legitimate MIS fit, with reality checks.
+
+No additional common programming/data-interest question is added in V1. `consider_carefully` is also a valid outcome; weak or mixed candidates are not forced into `no_strong_fit`.

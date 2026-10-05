@@ -5,7 +5,7 @@ The deterministic fit engine, implemented in `src/engine` (THI-7). It decides fi
 Status:
 - Formula: **accepted** (DEC-019).
 - Q3 math mapping: **accepted** (DEC-020).
-- All thresholds: **proposed, pending review** (DEC-018). They must be **revalidated in THI-8** once the real pair-question signals exist.
+- All thresholds: **proposed, pending review** (DEC-018). **Revalidated in THI-8** against the real question bank (DEC-021) and kept unchanged; see "THI-8 revalidation" below.
 
 ## Formula (DEC-019)
 
@@ -72,55 +72,66 @@ Thresholds are **seeds**, chosen for interpretability rather than fitted to pers
 - **no strong fit < 0.50:** less than half of the program's attainable fit.
 - **near tie < 0.05:** the top two are within 5% of their own ideals.
 
-They were then **validated, not tuned**, in two ways:
-1. The sanity cases below (`tests/engine/personas.test.ts`).
-2. An exhaustive enumeration of every answer combination for each pair flow:
+They are **validated, not tuned**, in two ways:
+1. The sanity cases below (`tests/engine/personas.test.ts`), run through the real adaptive flow.
+2. An exhaustive enumeration of every answer path through the adaptive flow, for each selection:
 
 ```
 CALIBRATION_REPORT=1 pnpm vitest run tests/engine/calibration.report.test.ts
 ```
 
-No threshold was changed after seeing the results. The sanity-case answers reflect each persona's described traits and were fixed before the run.
+No threshold has been changed after seeing results. The sanity-case answer policies reflect each persona's described traits and were fixed before the run.
 
-**Fixtures:**
-- Q1, Q2 and Q3 use the documented signals and the DEC-020 mapping.
-- The pair questions (`SYN_CSDS_*`, `SYN_CSMIS_*`, `SYN_DSMIS_*`), their `neither` options, and `SYN_LEAST_ATTRACTIVE` are **synthetic, assumed signals**.
+**History:** THI-7 validated the seeds against synthetic pair signals. Its main finding was that positive-only questions can never produce `no_strong_fit`, which led to the neutral options in DEC-021. THI-8 replaced the synthetic fixtures with the real question bank.
+
+## THI-8 revalidation (real question bank, DEC-021)
+
+**Outcome: DEC-018 stays unchanged.** No threshold shows an obvious failure with the real bank:
+- coherent personas get strong fits in 5 questions;
+- explicit rejection ("neither" on all three pair questions) reaches a genuine `no_strong_fit` in 6;
+- mixed profiles stay inside the 7-question budget;
+- a close result is returned as close.
+
+The **reality-check rule** has one issue, flagged below with a proposed fix.
 
 ### Sanity-case table
-Real program vectors and reality checks; synthetic pair signals. Values are internal `normalized_fit`, never shown to candidates.
+Real vectors, reality checks, question bank, and adaptive flow. Values are internal `normalized_fit`, never shown to candidates.
 
-| Case | Ranking (normalized fit) | Class | Best | Near tie | Reality checks |
-|---|---|---|---|---|---|
-| Persona A (CS) | CS 1.000 > MIS 0.757 > DS 0.753 | strong_fit | CS | no | — |
-| Persona B (DS) | DS 0.970 > MIS 0.674 > CS 0.633 | strong_fit | DS | no | — |
-| Persona C (MIS) | MIS 0.968 > DS 0.465 > CS 0.387 | strong_fit | MIS | no | — |
-| Persona D (no fit) | MIS 0.459 > DS 0.097 > CS 0.000 | **no_strong_fit** | null | no | DS math/stats/programming; MIS technical load |
-| Low math, CS interests | CS 0.875 > MIS 0.681 > DS 0.624 | strong_fit | CS | no | CS math load; MIS technical load |
-| Low math, DS interests | DS 0.879 > MIS 0.622 > CS 0.538 | strong_fit | DS | no | DS math/stats/programming; MIS technical load |
-| Mixed CS/DS (2 selected) | DS 0.849 > CS 0.819 | strong_fit | DS | **yes** | — |
-| Mixed three-way | MIS 0.785 > DS 0.731 > CS 0.703 | good_fit | MIS | no (gap 0.054) | — |
-| Weak profile | MIS 0.416 > CS 0.297 > DS 0.258 | no_strong_fit | null | no | — |
-| Mirrored CS/DS (2 selected) | DS 0.867 > CS 0.793 | strong_fit | DS | no (gap 0.074) | — |
-
-### Exhaustive answer-space distribution (classification of the top program)
-| Flow (all 3 programs selected) | Combinations | strong | good | consider | no strong | near tie | top-fit p10 / p50 / p90 |
+| Case | Qs | Branch path | Ranking (normalized fit) | Class | Best | Stop | Reality checks |
 |---|---|---|---|---|---|---|---|
-| CS vs DS questions | 1215 | 28.1% | 40.8% | 25.2% | 5.8% | 24.6% | 0.542 / 0.713 / 0.869 |
-| … without `neither` options | 360 | 77.8% | 22.2% | 0.0% | **0.0%** | 31.7% | 0.772 / 0.839 / 0.935 |
-| CS vs MIS questions | 405 | 26.9% | 40.2% | 26.2% | 6.7% | 24.4% | 0.536 / 0.713 / 0.870 |
-| … without `neither` options | 180 | 58.3% | 41.7% | 0.0% | **0.0%** | 22.2% | 0.718 / 0.809 / 0.913 |
-| DS vs MIS questions | 405 | 24.0% | 39.8% | 27.7% | 8.6% | 31.9% | 0.519 / 0.704 / 0.865 |
-| … without `neither` options | 180 | 51.1% | 47.2% | 1.7% | **0.0%** | 25.6% | 0.704 / 0.801 / 0.911 |
+| Persona A (CS) | 5 | CSDS-1 cs, CSDS-2 cs | CS 1.000 > DS 0.756 > MIS 0.732 | strong_fit | CS | pair answers agree | — |
+| Persona B (DS) | 5 | CSDS-1 ds, CSDS-2 ds | DS 0.963 > MIS 0.662 > CS 0.586 | strong_fit | DS | pair answers agree | — |
+| Persona C (MIS) | 5 | DSMIS-1 mis, DSMIS-2 mis | MIS 0.962 > DS 0.444 > CS 0.407 | strong_fit | MIS | pair answers agree | — |
+| Persona D ("neither" ×3) | 6 | DSMIS-1/2/3 neither | MIS 0.477 > DS 0.168 > CS 0.154 | **no_strong_fit** | null | no_strong_fit | DS math/stats/programming; MIS technical load |
+| D′ (MIS-style answers, math 1) | 5 | DSMIS-1 mis, DSMIS-2 mis | MIS 0.923 > DS 0.370 > CS 0.322 | strong_fit | MIS | pair answers agree | DS math/stats/programming; MIS technical load |
+| Low math + CS interests | 5 | CSDS-1 cs, CSDS-2 cs | CS 0.857 > MIS 0.648 > DS 0.607 | strong_fit | CS | pair answers agree | CS math load; MIS technical load |
+| Low math + DS interests | 5 | DSMIS-1 ds, DSMIS-2 ds | DS 0.852 > CS 0.585 > MIS 0.538 | strong_fit | DS | pair answers agree | **— (see issue below)** |
+| Mixed CS/DS (2 selected) | 7 | CSDS-1 cs, -2 ds, -3 cs, TB ds | DS 0.867 > CS 0.794 | strong_fit | DS | tie-breaker asked | — |
+| Mixed three-way | 6 | CSMIS-1 mis, -2 cs, -3 mis | MIS 0.807 > CS 0.651 > DS 0.643 | strong_fit | MIS | clear after pair-3 | — |
+| Weak profile | 6 | CSMIS-1/2/3 neither | MIS 0.446 > DS 0.322 > CS 0.313 | no_strong_fit | null | no_strong_fit | — |
+| Persona B, CS+DS only | 5 | CSDS-1 ds, CSDS-2 ds | DS 0.963 > CS 0.586 | strong_fit | DS | pair answers agree | — |
+| Persona C, CS+MIS only | 5 | CSMIS-1 mis, CSMIS-2 mis | MIS 0.959 > CS 0.374 | strong_fit | MIS | pair answers agree | — |
 
-### Findings for review (not fixed by tuning)
-1. **Positive-only questions can never produce `no_strong_fit`.** Without neutral or negative options, no answer combination falls below 0.50; the best program always gets at least partial credit. This confirms the THI-8 requirement below.
-2. **Persona D clears the line only narrowly** (0.459 vs the 0.50 threshold). This depends heavily on how much neutral or negative information the real questions carry.
-3. **Mixed profiles can still land in `good_fit`.** "Mixed three-way" gives all three programs 0.70–0.79. MIS has a broad vector (4s on software, data and coding), so scattered answers earn partial credit everywhere. The small gap is the more useful signal here; consider a margin-aware classification in THI-8 if this proves common.
-4. **MIS is often second for clear CS or DS candidates** (Persona A: MIS 0.757 just ahead of DS 0.753). This comes from the documented vectors, not the formula.
-5. **Near ties are frequent across the full answer space** (22–32%). THI-8's tie-breaker budget must fit the 5–7 question target; this may justify revisiting `NEAR_TIE_MAX_GAP`.
+### Exhaustive answer-path distribution
+Every possible answer path through the adaptive flow. This includes incoherent random paths, so it shows behaviour rather than expected candidate outcomes.
 
-## Requirements handed to THI-8
-- **The real question bank must carry enough neutral or negative information** (e.g. "neither", "least attractive", "none of these") to identify genuine `no_strong_fit` candidates. Otherwise the engine will push everyone towards one of the pilot programs (finding 1).
-- **Revalidate all DEC-018 thresholds** against the real CSDS / CSMIS / DSMIS signals by re-running the calibration report and updating this document.
-- **Q3 must use `mathToleranceSignal`** (DEC-020) with type `self_rating`.
-- Pass **every option** of each asked question to the engine; the attainable ideal depends on them.
+| Selection | Paths | strong | good | consider | no strong | 5 Qs | 6 Qs | 7 Qs | Tie-breaker | Final near tie | Final pair ≠ branch |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| CS+DS+MIS | 1282 | 17.9% | 43.2% | 31.5% | 7.3% | 5.9% | 59.9% | 34.2% | 34.2% | 23.9% | 24.3% |
+| CS+DS | 1316 | 12.6% | 35.7% | 35.9% | 15.7% | 5.5% | 56.9% | 37.5% | 37.5% | 32.3% | 0% |
+| CS+MIS | 1223 | 11.0% | 41.0% | 36.5% | 11.4% | 6.2% | 67.6% | 26.2% | 26.2% | 18.6% | 0% |
+| DS+MIS | 1252 | 11.3% | 40.7% | 37.1% | 10.9% | 6.2% | 63.3% | 30.5% | 30.5% | 22.0% | 0% |
+
+Reading it:
+- Every path ends in 5–7 questions, and at most one tie-breaker is ever asked.
+- Only about 6% of *all* paths stop at 5, because stopping at 5 needs two agreeing, non-neutral pair answers. Coherent candidates, however, typically stop at 5 (see the sanity table).
+- About a quarter of paths still end as near ties after the single tie-breaker. By design, those results are returned as close rather than asking more questions.
+
+### Findings for review
+1. **Reality-check gap (the rule needs a decision).** The V1 rule requires the *net* signal `C[d] < 0`. For low-math DS (Q3 = 1), the DS answers' small math signals cancel the explicit "prefer as little math as possible": −3 from Q3, +1.5 from Q1-B and +1.5 from DSMIS-2-ds give a net 0. So **no DS math reality check fires**. Across all answer paths, **16–34% of candidates who rated math 1–2 get no reality check at all**, depending on the selection. The rule is **kept as instructed** for THI-8.
+   - **Proposed fix:** a related dimension also counts as materially low if the candidate **explicitly chose an option with a negative signal on it**, e.g. Q3 = 1–2. The rule stays generic and is still a warning only.
+   - **Before/after:** low-math-DS sanity case "—" → "CS math load; DS math/stats/programming"; Q3 ≤ 2 paths with no check, 16–34% → 0%; paths with any check, ~30% → ~39%. No other sanity case changes.
+2. **D′ is a strong MIS fit** (0.923, with reality checks). This is accepted (DEC-022): classification uses only the preferences a candidate actually expresses.
+3. **Mixed profiles can still land in `good_fit` or `strong_fit`** when one program wins most heavily weighted answers. "Mixed three-way" ends at MIS 0.807 after pair-3. This seems acceptable for a decision-support product, and the evidence and trade-off output shows the mix.
+4. **MIS is still often second for clear CS or DS candidates** (Persona A: DS 0.756, MIS 0.732), because of the documented vectors.
+5. **The final pair differs from the locked branch in ~24% of all three-program paths.** The tie-breaker follows the current top two (DEC-021), and the result reports the true `mainDecision`.

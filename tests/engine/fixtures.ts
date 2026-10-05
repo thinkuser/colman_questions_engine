@@ -1,148 +1,112 @@
-import { getProgramInputs, getRealityCheckInputs } from "@/data";
+import { getProgramInputs, getRealityCheckInputs, QUESTION_BANK } from "@/data";
 import {
-  mathToleranceSignal,
+  getBankQuestion,
+  nextAdaptiveStep,
+  type AdaptiveStep,
   type AnsweredQuestion,
+  type BankQuestion,
   type FitInput,
   type ProgramId,
-  type QuestionDefinition,
+  type RecordedAnswer,
 } from "@/engine";
 
 /**
- * Test fixtures for the THI-7 scoring engine.
- *
- * DOCUMENTED: Q1 and Q2 signals are copied from docs/QUESTION_ENGINE.md. The Q3 mapping
- * `math_affinity = answer − 3` with the self_rating weight is DEC-020.
- *
- * SYNTHETIC: every pair question (CSDS / CSMIS / DSMIS), every "neither" option, and the "least attractive"
- * question are ASSUMED signals for engine validation only. They are not the final question bank, which
- * THI-8 defines. Thresholds validated against them are provisional (DEC-018).
+ * Test helpers over the REAL V1 question bank (src/data/content/question_bank.json, DEC-021).
+ * The THI-7 synthetic pair fixtures were replaced in THI-8.
  */
 
-// ── Documented opening questions ────────────────────────────────────────────────────────────────
+export const CS = "computer_science";
+export const DS = "data_science";
+export const MIS = "management_information_systems";
+export const ALL_PILOT: ProgramId[] = [CS, DS, MIS];
 
-export const Q1_PROJECT_CHOICE: QuestionDefinition = {
-  id: "Q1",
-  type: "scenario",
-  options: [
-    { id: "A", signals: { software_building: 2, coding_depth: 1, abstract_problem_solving: 1 } },
-    { id: "B", signals: { data_modeling: 2, statistical_thinking: 1, math_affinity: 0.5 } },
-    { id: "C", signals: { business_context: 1.5, systems_process: 1.5, bridge_role: 2 } },
-  ],
-};
-
-export const Q2_DESIRED_OUTCOME: QuestionDefinition = {
-  id: "Q2",
-  type: "tradeoff",
-  options: [
-    { id: "A", signals: { software_building: 2, coding_depth: 1 } },
-    { id: "B", signals: { data_modeling: 2, statistical_thinking: 1 } },
-    { id: "C", signals: { business_context: 1.5, systems_process: 1.5, bridge_role: 1 } },
-  ],
-};
-
-/** DEC-020: math_affinity signal = answer − 3 (1 → −2 … 5 → +2), self_rating weight 1.5. */
-export const Q3_MATH_TOLERANCE: QuestionDefinition = {
-  id: "Q3",
-  type: "self_rating",
-  options: [1, 2, 3, 4, 5].map((value) => ({
-    id: String(value),
-    signals: { math_affinity: mathToleranceSignal(value) },
-  })),
-};
-
-// ── SYNTHETIC pair questions (assumed signals; replaced by THI-8) ───────────────────────────────
-
-const NEITHER = { id: "neither", signals: {} };
-
-export const SYN_CSDS_1: QuestionDefinition = {
-  id: "SYN_CSDS_1",
-  type: "tradeoff",
-  options: [
-    { id: "cs", signals: { abstract_problem_solving: 2, coding_depth: 1 } },
-    { id: "ds", signals: { data_modeling: 2, statistical_thinking: 1 } },
-    NEITHER,
-  ],
-};
-
-export const SYN_CSDS_2: QuestionDefinition = {
-  id: "SYN_CSDS_2",
-  type: "scenario",
-  options: [
-    { id: "cs", signals: { software_building: 2, coding_depth: 1 } },
-    { id: "ds", signals: { data_modeling: 2, statistical_thinking: 1 } },
-    NEITHER,
-  ],
-};
-
-export const SYN_CSDS_3: QuestionDefinition = {
-  id: "SYN_CSDS_3",
-  type: "preference",
-  options: [
-    { id: "cs", signals: { abstract_problem_solving: 1, coding_depth: 1, software_building: 1 } },
-    { id: "ds", signals: { statistical_thinking: 1.5, data_modeling: 1.5 } },
-    NEITHER,
-  ],
-};
-
-export const SYN_CSMIS_1: QuestionDefinition = {
-  id: "SYN_CSMIS_1",
-  type: "tradeoff",
-  options: [
-    { id: "cs", signals: { software_building: 2, abstract_problem_solving: 1 } },
-    { id: "mis", signals: { bridge_role: 2, business_context: 1 } },
-    NEITHER,
-  ],
-};
-
-export const SYN_CSMIS_2: QuestionDefinition = {
-  id: "SYN_CSMIS_2",
-  type: "scenario",
-  options: [
-    { id: "cs", signals: { software_building: 2, coding_depth: 1 } },
-    { id: "mis", signals: { systems_process: 2, bridge_role: 1 } },
-    NEITHER,
-  ],
-};
-
-export const SYN_DSMIS_1: QuestionDefinition = {
-  id: "SYN_DSMIS_1",
-  type: "tradeoff",
-  options: [
-    { id: "ds", signals: { data_modeling: 2, statistical_thinking: 1 } },
-    { id: "mis", signals: { business_context: 2, systems_process: 1 } },
-    NEITHER,
-  ],
-};
-
-export const SYN_DSMIS_2: QuestionDefinition = {
-  id: "SYN_DSMIS_2",
-  type: "scenario",
-  options: [
-    { id: "ds", signals: { data_modeling: 2, math_affinity: 1 } },
-    { id: "mis", signals: { bridge_role: 2, business_context: 1 } },
-    NEITHER,
-  ],
-};
-
-/** SYNTHETIC negative-signal question ("which is least attractive?"), needed to express genuine no-fit. */
-export const SYN_LEAST_ATTRACTIVE: QuestionDefinition = {
-  id: "SYN_LEAST_ATTRACTIVE",
-  type: "preference",
-  options: [
-    { id: "coding", signals: { coding_depth: -2, software_building: -1 } },
-    { id: "math", signals: { math_affinity: -2 } },
-    { id: "data", signals: { data_modeling: -2, statistical_thinking: -1 } },
-    { id: "business", signals: { business_context: -2, systems_process: -1 } },
-  ],
-};
-
-// ── Helpers ─────────────────────────────────────────────────────────────────────────────────────
-
-export const answer = (question: QuestionDefinition, answerId: string): AnsweredQuestion => ({ question, answerId });
-
-export const ALL_PILOT: ProgramId[] = ["computer_science", "data_science", "management_information_systems"];
+export const q = (id: string): BankQuestion => getBankQuestion(QUESTION_BANK, id);
+export const answer = (questionId: string, answerId: string): AnsweredQuestion => ({
+  question: q(questionId),
+  answerId,
+});
 
 /** Fit input using the real documented program vectors and reality checks from the data layer. */
 export function fitInput(answers: AnsweredQuestion[], programs: ProgramId[] = ALL_PILOT): FitInput {
   return { programs: getProgramInputs(programs), answers, realityChecks: getRealityCheckInputs(programs) };
+}
+
+export function adaptiveStep(programs: ProgramId[], answers: RecordedAnswer[]): AdaptiveStep {
+  return nextAdaptiveStep({
+    programs: getProgramInputs(programs),
+    realityChecks: getRealityCheckInputs(programs),
+    bank: QUESTION_BANK,
+    answers,
+  });
+}
+
+/** Picks an option id for the question being asked. */
+export type AnswerPolicy = (question: BankQuestion) => string;
+
+export type CompletedRun = Extract<AdaptiveStep, { status: "complete" }> & {
+  asked: string[];
+  answers: RecordedAnswer[];
+};
+
+/** Play the adaptive flow to completion with an answer policy. */
+export function runFlow(programs: ProgramId[], policy: AnswerPolicy): CompletedRun {
+  const answers: RecordedAnswer[] = [];
+  for (let guard = 0; guard < 20; guard++) {
+    const step = adaptiveStep(programs, answers);
+    if (step.status === "complete") {
+      return { ...step, asked: answers.map((a) => a.questionId), answers };
+    }
+    answers.push({ questionId: step.question.id, answerId: policy(step.question) });
+  }
+  throw new Error("Adaptive flow did not terminate");
+}
+
+/**
+ * Persona-style policy: fixed opening answers (Q1, Q2, Q3), then for every later question the first option id
+ * from `preference` that the question offers ("cs" | "ds" | "mis" | "neither").
+ */
+export function preferencePolicy(opening: [string, string, string], preference: string[]): AnswerPolicy {
+  return (question) => {
+    const openingIndex = ["Q1", "Q2", "Q3"].indexOf(question.id);
+    if (openingIndex >= 0) return opening[openingIndex]!;
+    const ids = question.options.map((option) => option.id);
+    const choice = preference.find((candidate) => ids.includes(candidate));
+    if (!choice) throw new Error(`Policy has no answer for ${question.id}`);
+    return choice;
+  };
+}
+
+/** Policy that cycles through `sequence` for non-opening questions (skipping options the question lacks). */
+export function alternatingPolicy(opening: [string, string, string], sequence: string[]): AnswerPolicy {
+  let position = 0;
+  return (question) => {
+    const openingIndex = ["Q1", "Q2", "Q3"].indexOf(question.id);
+    if (openingIndex >= 0) return opening[openingIndex]!;
+    const ids = question.options.map((option) => option.id);
+    for (let offset = 0; offset < sequence.length; offset++) {
+      const candidate = sequence[(position + offset) % sequence.length]!;
+      if (ids.includes(candidate)) {
+        position += offset + 1;
+        return candidate;
+      }
+    }
+    throw new Error(`Policy has no answer for ${question.id}`);
+  };
+}
+
+/** Every complete answer path through the adaptive flow (depth-first over all options at each asked question). */
+export function enumerateRuns(programs: ProgramId[]): CompletedRun[] {
+  const runs: CompletedRun[] = [];
+  const walk = (answers: RecordedAnswer[]) => {
+    const step = adaptiveStep(programs, answers);
+    if (step.status === "complete") {
+      runs.push({ ...step, asked: answers.map((a) => a.questionId), answers });
+      return;
+    }
+    for (const option of step.question.options) {
+      walk([...answers, { questionId: step.question.id, answerId: option.id }]);
+    }
+  };
+  walk([]);
+  return runs;
 }
