@@ -30,6 +30,7 @@ The LLM may explain a result, but the deterministic engine decides the match.
 6. `docs/RESULT_EXPERIENCE.md` — result-page behavior and copy structure.
 7. `docs/ANALYTICS.md` — GA4/BigQuery measurement plan.
 8. `docs/PERSONAS_AND_TESTS.md` — sanity personas and acceptance criteria.
+9. `docs/PROGRAM_DATA.md` — program data layers, evidence rules, curation workflow.
 
 ## Workflow
 GitHub is the source of truth.
@@ -69,6 +70,7 @@ pnpm dev          # http://localhost:3000
 | `pnpm typecheck` | TypeScript, strict mode |
 | `pnpm lint` | ESLint, including module-boundary rules |
 | `pnpm check` | lint + typecheck + test (run before opening a PR) |
+| `pnpm snapshot:sources` | Refresh official-source snapshots used to verify program facts (offline curation) |
 
 ### Stack
 Next.js (App Router) · React · TypeScript (strict) · Tailwind CSS v4 · Vitest · pnpm. See `DEC-014` in `docs/DECISIONS.md`.
@@ -82,14 +84,17 @@ src/
   ui/           React components, Hebrew copy (copy.he.ts), React bindings for flow state
   flow/         Pure comparison-flow reducer and step-access rules (select → questions → result)
   engine/       Pure deterministic fit engine: dimensions, contracts; scoring lands in THI-7/THI-8
-  data/         Structured program content (pilot catalog placeholder; full model in THI-6)
+  data/         Structured program content: official facts, editorial fit profiles, admissions (docs/PROGRAM_DATA.md)
   analytics/    Event vocabulary from docs/ANALYTICS.md + GTM dataLayer transport
+scripts/        Offline curation tooling (source snapshots)
 tests/          Unit tests mirroring src/ (engine, flow, data, analytics)
 docs/           Product source of truth
 ```
 
 ### Layering rules
 - `engine`, `flow`, `data`, and `analytics` are **pure TypeScript**. They must not import React, Next.js, or `ui`/`app`. ESLint enforces this.
-- `engine` additionally must not import `flow` or `analytics`: it is the deterministic core and must be testable in isolation.
+- `engine` additionally must not import `data`, `flow`, or `analytics`: it is the deterministic core, receives program vectors as arguments, and must be testable in isolation.
+- Admissions data (`@/data/admissions`) is isolated from fit/scoring (DEC-008); pure modules may not import it.
+- Program facts live only in `src/data/content`; UI reads them through `@/data` and never hardcodes them.
 - UI components dispatch actions and read selectors; they do not contain fit, routing, or question-selection logic.
 - User-facing Hebrew strings live in `src/ui/copy.he.ts`; IDs and code stay in English.

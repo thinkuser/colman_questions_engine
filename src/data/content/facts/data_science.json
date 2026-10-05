@@ -1,0 +1,134 @@
+{
+  "program_id": "data_science",
+  "program_name_he": "מדעי הנתונים",
+  "program_name_aliases_he": ["מדע הנתונים"],
+  "program_name_en": "Data Science",
+  "official_title": { "text_he": "תואר ראשון במדעי הנתונים BSc", "source_ids": ["colman_ds_program_page"] },
+  "degree": "BSc",
+  "faculty": { "text_he": "הפקולטה למדעי המחשב", "source_ids": ["colman_ds_program_page"] },
+  "official_urls": ["https://www.colman.ac.il/academics/ba/data-science/"],
+  "short_description": {
+    "text_he": "תוכנית ה-B.Sc במדעי הנתונים של המכללה למינהל מציעה בסיס אקדמי רחב, עם דגש על מתמטיקה, סטטיסטיקה ותכנות, לצד כלים מעשיים לניתוח מידע, פיתוח מודלים, חיזוי והסקת תובנות ממאגרי נתונים גדולים.",
+    "source_ids": ["colman_ds_program_page"]
+  },
+  "what_you_learn": [
+    {
+      "text_he": "התוכנית מספקת רקע משמעותי וחזק בתחומי המתמטיקה והסטטיסטיקה",
+      "source_ids": ["colman_ds_program_page"]
+    },
+    {
+      "text_he": "במסגרת התוכנית מתעמקים הסטודנטים והסטודנטיות באלגוריתמים מתקדמים, Machine Learning, Deep Learning ובינה מלאכותית יישומית",
+      "source_ids": ["colman_ds_program_page"]
+    },
+    {
+      "text_he": "תלמדו כיצד כלים מתקדמים של בינה מלאכותית (AI) משתלבים בתהליכי ניתוח נתונים, חיזוי וזיהוי דפוסים במאגרי מידע גדולים.",
+      "source_ids": ["colman_ds_program_page"]
+    },
+    {
+      "text_he": "בין התחומים שבהם ניתן ליישם את שיטות מדע הנתונים: בלשנות חישובית, הדמיה רפואית, אפידמיולוגיה וניתוח תבניות התנהגות במערכות ממוחשבות.",
+      "source_ids": ["colman_ds_program_page"]
+    }
+  ],
+  "key_courses": [
+    { "group_he": "קורסי בסיס", "text_he": "אנליזה מתמטית", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בסיס", "text_he": "אלגברה ליניארית I", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בסיס", "text_he": "אלגברה ליניארית II", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בסיס", "text_he": "חשבון אינפיניטסימלי I", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בסיס", "text_he": "חשבון אינפיניטסימלי II", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בסיס", "text_he": "מבוא להסתברות", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בסיס", "text_he": "מבוא לסטטיסטיקה", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בסיס", "text_he": "מתמטיקה בדידה I", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בסיס", "text_he": "מתמטיקה בדידה II", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בסיס", "text_he": "מבוא לאופטימיזציה", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בסיס", "text_he": "ניתוח נתונים", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בחירה", "text_he": "אפיון חווית משתמש", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בחירה", "text_he": "אקסלרטור ביזמות טכנולוגית", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בחירה", "text_he": "מבוא ל-DevOps", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בחירה", "text_he": "מחשוב ושירותי ענן מנוהלים", "source_ids": ["colman_ds_program_page"] },
+    { "group_he": "קורסי בחירה", "text_he": "ניהול נתוני ענק ( Big Data)", "source_ids": ["colman_ds_program_page"] },
+    {
+      "group_he": "קורסי בחירה",
+      "text_he": "עיצוב ופיתוח אובייקטים אינטראקטיביים",
+      "source_ids": ["colman_ds_program_page"]
+    },
+    { "group_he": "קורסי בחירה", "text_he": "פיתוח משחקי מחשב", "source_ids": ["colman_ds_program_page"] },
+    {
+      "group_he": "קורסי בחירה",
+      "text_he": "פיתוח אפליקציות מובייל CROSS-PLATFORM",
+      "source_ids": ["colman_ds_program_page"]
+    },
+    { "group_he": "קורסי בחירה", "text_he": "תכנות פונקציונלי", "source_ids": ["colman_ds_program_page"] }
+  ],
+  "career_paths": [
+    {
+      "text_he": "Data Scientists",
+      "quote_he": "הם משתלבים בתפקידי Data Scientists, AI Analysts, Data Engineers ובתפקידים שונים בתחומי ה-AI וה-BI.",
+      "source_ids": ["colman_ds_program_page"]
+    },
+    {
+      "text_he": "AI Analysts",
+      "quote_he": "הם משתלבים בתפקידי Data Scientists, AI Analysts, Data Engineers ובתפקידים שונים בתחומי ה-AI וה-BI.",
+      "source_ids": ["colman_ds_program_page"]
+    },
+    {
+      "text_he": "Data Engineers",
+      "quote_he": "הם משתלבים בתפקידי Data Scientists, AI Analysts, Data Engineers ובתפקידים שונים בתחומי ה-AI וה-BI.",
+      "source_ids": ["colman_ds_program_page"]
+    },
+    {
+      "text_he": "תפקידים בתחומי ה-AI וה-BI",
+      "quote_he": "הם משתלבים בתפקידי Data Scientists, AI Analysts, Data Engineers ובתפקידים שונים בתחומי ה-AI וה-BI.",
+      "source_ids": ["colman_ds_program_page"]
+    }
+  ],
+  "entry_level_roles": [],
+  "future_roles": [],
+  "ideal_for": [
+    {
+      "text_he": "אוהבים מספרים? יודעים לספר סיפור בעזרתם? מגדירים את עצמכם כאנשים סקרנים? מתעניינים בעולמות של דאטה, AI, פתרון בעיות? אוהבים לנתח מידע ולהבין את ההיגיון מאחורי תהליכים? בואו ללמוד מדעי הנתונים!",
+      "source_ids": ["colman_ds_program_page"]
+    },
+    {
+      "text_he": "התוכנית מתאימה במיוחד למי שמתלבטים בין מדעי המחשב לסטטיסטיקה ומחפשים שילוב בין התחומים, וכן למי שמעוניינים להיכנס לעולם ההייטק דרך דאטה.",
+      "source_ids": ["colman_ds_program_page"]
+    }
+  ],
+  "why_colman": [
+    {
+      "text_he": "תוכנית מתעדכנת באופן שוטף בהתאם למגמות בשוק התעסוקה ובאקדמיה, ונבנתה בהשראת המודלים של האוניברסיטיאות Berkeley ו-Stanford, מהמובילות בעולם בתחום ה- Data Science.",
+      "source_ids": ["colman_ds_program_page"]
+    },
+    {
+      "text_he": "סטודנטים לשנה א' מקבלים תמיכה וליווי בקורסי מתמטיקה ותכנות, ואף זוכים לליווי וחניכה מסטודנטים שנה ג' העוזרים להם בקליטה והסתגלות למערכת האקדמית.",
+      "source_ids": ["colman_ds_program_page"]
+    },
+    {
+      "text_he": "מסלול Internship - התמחות בחברות המובילות בתעשייה בשיתוף הפקולטה והמרכז לפיתוח קריירה.",
+      "source_ids": ["colman_ds_program_page"]
+    }
+  ],
+  "program_notes": [
+    {
+      "topic": "shared_first_year",
+      "text_he": "כבר מהשנה הראשונה הסטודנטים והסטודנטיות נחשפים לקורסים מתחומי מדעי המחשב ומדעי הנתונים, דבר שמאפשר להם לבחור בסיומה את המסלול המתאים להם ביותר.",
+      "source_ids": ["colman_ds_program_page"]
+    },
+    {
+      "topic": "official_cs_vs_ds_distinction",
+      "text_he": "מדעי המחשב הוא תחום המתמקד בבנייה ובפיתוח תוכנות ואפליקציות לשם פתרון בעיות יום-יומיות.",
+      "source_ids": ["colman_ds_program_page"]
+    },
+    {
+      "topic": "official_cs_vs_ds_distinction",
+      "text_he": "מדע הנתונים עוסק בתחקור מאגרים עתירי נתונים לשם הפקת תובנות וקבלת החלטות אסטרטגיות כגון: ניתוח התנהגות לקוחות, חיזוי התנהגות מניות, חיזוי מחירי מוצרים ותובנות מנתונים מרשתות חברתיות",
+      "source_ids": ["colman_ds_program_page"]
+    },
+    {
+      "topic": "curriculum_subject_to_change",
+      "text_he": "*ועדת ההוראה רשאית להחליט על שינויים בתוכנית הלימודים ובדרישות הקדם לקורסים.",
+      "source_ids": ["colman_ds_program_page"]
+    }
+  ],
+  "source_ids": ["colman_ds_program_page"],
+  "last_reviewed": "2026-10-05"
+}

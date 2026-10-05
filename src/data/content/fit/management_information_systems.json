@@ -1,0 +1,19 @@
+{
+  "program_id": "management_information_systems",
+  "basis": "editorial_heuristic",
+  "dimensions": {
+    "software_building": 4,
+    "data_modeling": 4,
+    "business_context": 5,
+    "math_affinity": 3,
+    "coding_depth": 4,
+    "statistical_thinking": 3,
+    "systems_process": 5,
+    "bridge_role": 5,
+    "abstract_problem_solving": 3
+  },
+  "positioning_shorthand_en": "Use technology/data to solve business and organizational problems.",
+  "less_suitable_for": [],
+  "reality_checks": [],
+  "doc_refs": ["docs/PROGRAM_MODEL.md#pilot-vectors", "docs/PROGRAM_MODEL.md#positioning-shorthand"]
+}

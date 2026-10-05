@@ -1,0 +1,30 @@
+{
+  "program_id": "computer_science",
+  "basis": "editorial_heuristic",
+  "dimensions": {
+    "software_building": 5,
+    "data_modeling": 3,
+    "business_context": 1,
+    "math_affinity": 5,
+    "coding_depth": 5,
+    "statistical_thinking": 3,
+    "systems_process": 2,
+    "bridge_role": 2,
+    "abstract_problem_solving": 5
+  },
+  "positioning_shorthand_en": "Build the technology.",
+  "less_suitable_for": [],
+  "reality_checks": [
+    {
+      "id": "cs_math_load",
+      "summary_en": "Core courses emphasize mathematics, algorithms, and programming from the first year. Low math tolerance should raise a reality check, not disqualify the program.",
+      "related_dimensions": ["math_affinity"],
+      "evidence_source_ids": ["colman_cs_program_page"],
+      "doc_refs": [
+        "docs/QUESTION_ENGINE.md#q3--math-tolerance",
+        "docs/DECISIONS.md#dec-009--interests--perceived-ability"
+      ]
+    }
+  ],
+  "doc_refs": ["docs/PROGRAM_MODEL.md#pilot-vectors", "docs/PROGRAM_MODEL.md#positioning-shorthand"]
+}
