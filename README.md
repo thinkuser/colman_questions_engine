@@ -31,6 +31,7 @@ The LLM may explain a result, but the deterministic engine decides the match.
 7. `docs/ANALYTICS.md` — GA4/BigQuery measurement plan.
 8. `docs/PERSONAS_AND_TESTS.md` — sanity personas and acceptance criteria.
 9. `docs/PROGRAM_DATA.md` — program data layers, evidence rules, curation workflow.
+10. `docs/SCORING.md` — fit formula, proposed thresholds, calibration evidence.
 
 ## Workflow
 GitHub is the source of truth.
@@ -83,7 +84,7 @@ src/
   app/          Next.js routes only — thin wrappers: / (select) → /questions → /result
   ui/           React components, Hebrew copy (copy.he.ts), React bindings for flow state
   flow/         Pure comparison-flow reducer and step-access rules (select → questions → result)
-  engine/       Pure deterministic fit engine: dimensions, contracts; scoring lands in THI-7/THI-8
+  engine/       Pure deterministic fit engine: candidate vector, normalized fit, ranking, evidence, reality checks (docs/SCORING.md)
   data/         Structured program content: official facts, editorial fit profiles, admissions (docs/PROGRAM_DATA.md)
   analytics/    Event vocabulary from docs/ANALYTICS.md + GTM dataLayer transport
 scripts/        Offline curation tooling (source snapshots)

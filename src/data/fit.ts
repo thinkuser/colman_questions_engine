@@ -1,4 +1,4 @@
-import type { ProgramId, ProgramVector } from "@/engine";
+import type { ProgramId, ProgramInput, ProgramVector, RealityCheckInput } from "@/engine";
 import computerScience from "./content/fit/computer_science.json";
 import dataScience from "./content/fit/data_science.json";
 import managementInformationSystems from "./content/fit/management_information_systems.json";
@@ -39,5 +39,22 @@ export function getProgramVectors(ids: readonly ProgramId[]): Record<ProgramId, 
       }
       return [id, { ...profile.dimensions }];
     }),
+  );
+}
+
+/** Engine program inputs (id + vector) for the selected programs, preserving selection order. */
+export function getProgramInputs(ids: readonly ProgramId[]): ProgramInput[] {
+  const vectors = getProgramVectors(ids);
+  return ids.map((id) => ({ id, vector: vectors[id]! }));
+}
+
+/** Reality-check definitions for the selected programs, in the engine's generic input shape. */
+export function getRealityCheckInputs(ids: readonly ProgramId[]): RealityCheckInput[] {
+  return ids.flatMap((id) =>
+    (FIT_PROFILES.get(id)?.reality_checks ?? []).map((check) => ({
+      id: check.id,
+      programId: id,
+      relatedDimensions: check.related_dimensions,
+    })),
   );
 }

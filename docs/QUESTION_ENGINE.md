@@ -39,7 +39,7 @@ Type: `tradeoff`, weight 3.
 ### Q3 — math tolerance
 Prompt: How do you feel about studies with significant mathematics?
 Scale 1–5 from `prefer as little as possible` to `I enjoy mathematical challenge`.
-Primary signal: `math_affinity`.
+Primary signal: `math_affinity = answer − 3` (1 → −2 … 5 → +2), DEC-020.
 Type: `self_rating`, weight 1.5.
 Important: low math tolerance creates a possible reality-check warning; it does not automatically disqualify Data Science or Computer Science.
 
@@ -112,6 +112,7 @@ Use as alternatives/A-B-test candidates, not all at once.
 - Stop after 5–7 questions if confidence is sufficient.
 - If top-two scores remain close, ask one tie-breaker.
 - If all selected programs show weak fit, stop forcing a winner and return `no_strong_fit`.
+- The question bank must carry enough neutral or negative information (e.g. "neither", "least attractive", "none of these") to identify genuine `no_strong_fit` candidates. With positive-only options, every answer combination scores at least partial fit, and candidates are pushed towards a pilot program (THI-7 calibration, `docs/SCORING.md`).
 
 ## Scoring concept
 Each answer updates a normalized candidate vector. Program fit is based on weighted similarity between candidate vector and program vector.
@@ -120,6 +121,8 @@ Pseudo-formula:
 `fit(program) = sum(dimension_weight[d] * similarity(candidate[d], program[d]))`
 
 The exact normalization and thresholds must be implemented in a simple, testable function and covered by unit tests.
+
+Implemented in THI-7. The formula (DEC-019) and the proposed thresholds (DEC-018, pending review and revalidation in THI-8) are documented in `docs/SCORING.md`.
 
 ## Evidence
 Store answer-level evidence so result copy can say why the match occurred. Result explanations must point back to concrete choices, not generic text.
