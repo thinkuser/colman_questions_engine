@@ -46,7 +46,7 @@ describe("acceptance criteria", () => {
     const result = run(id).result;
     expect(result.bestFitProgram).toBe(program);
     expect(result.fitClassification).not.toBe("no_strong_fit");
-    if (id === "low_math_cs") expect(result.realityChecks.map((c) => c.id)).toContain(check);
+    expect(result.realityChecks.map((c) => c.id)).toContain(check);
   });
 
   it("typical coherent personas finish in 5 questions", () => {
@@ -122,7 +122,8 @@ describe("sanity table (real bank, PROPOSED DEC-018 thresholds)", () => {
       classification: "strong_fit",
       nearTie: false,
       stop: "pair_answers_agree",
-      checks: [],
+      // Explicit Q3 = 1 now triggers the math checks for both top-two programs (explicit-negative rule, DEC-018).
+      checks: ["cs_math_load", "ds_math_statistics_programming"],
     },
     mixed_cs_ds: {
       n: 7,

@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import raw from "@/data/content/question_bank.json";
-import { buildQuestionBank, QUESTION_BANK, QUESTION_TEXT_EN, type QuestionBankFile } from "@/data";
+import {
+  assertPairCoverage,
+  buildQuestionBank,
+  PROGRAM_IDS,
+  QUESTION_BANK,
+  QUESTION_TEXT_EN,
+  V1_PILOT_PAIRS,
+  type QuestionBankFile,
+} from "@/data";
 import { getBankQuestion, mathToleranceSignal } from "@/engine";
 
 const signalsOf = (questionId: string) =>
@@ -151,15 +159,32 @@ describe("question bank validation", () => {
     expect(() => buildQuestionBank(bank)).toThrow();
   });
 
-  it("rejects a missing branch for a program pair", () => {
-    const bank = clone();
-    bank.branches = bank.branches.slice(1);
-    expect(() => buildQuestionBank(bank)).toThrow(/no branch/);
-  });
-
   it("rejects an opening list that points at a pair question", () => {
     const bank = clone();
     bank.opening_question_ids[2] = "CSDS-1";
     expect(() => buildQuestionBank(bank)).toThrow(/role "opening"/);
+  });
+});
+
+describe("scale-ready structure (DEC-023)", () => {
+  it("does not require a curated branch for every program pair in the generic bank", () => {
+    const bank = clone();
+    bank.branches = bank.branches.slice(1);
+    expect(() => buildQuestionBank(bank)).not.toThrow();
+    expect(() => buildQuestionBank({ ...clone(), branches: [] })).not.toThrow();
+  });
+
+  it("does not require new branches when a program is added to the catalog", () => {
+    expect(() => buildQuestionBank(raw, [...PROGRAM_IDS, "law", "psychology"])).not.toThrow();
+  });
+
+  it("still enforces V1 pilot coverage separately", () => {
+    expect(() => assertPairCoverage(QUESTION_BANK, V1_PILOT_PAIRS)).not.toThrow();
+    const partial = buildQuestionBank({ ...clone(), branches: clone().branches.slice(1) });
+    expect(() => assertPairCoverage(partial, V1_PILOT_PAIRS)).toThrow(/no curated branch/);
+  });
+
+  it("lists the V1 pilot pairs explicitly rather than deriving all combinations", () => {
+    expect(V1_PILOT_PAIRS).toHaveLength(3);
   });
 });

@@ -97,6 +97,8 @@ Which future sounds more attractive?
 ## V1 pair-question signals (DEC-021)
 Source of truth: `src/data/content/question_bank.json`, tested against this table. Option A favours the first program of the pair and option B the second.
 
+**Scale note (DEC-023):** these branches are **curated V1 overrides** for the three-program pilot, not the permanent architecture. The bank does not require a branch for every program pair. A future generic selector will pick questions by the dimensions that most differentiate the current leading programs, with curated branches kept as optional overrides. `favours` is V1 routing metadata; the scoring signal is always the dimension vector.
+
 | Q | Type | A signals | B signals |
 |---|---|---|---|
 | CSDS-1 | tradeoff | abstract_problem_solving +2, coding_depth +1 | data_modeling +2, statistical_thinking +1 |

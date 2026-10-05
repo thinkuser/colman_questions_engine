@@ -65,6 +65,14 @@ const LOW_MATH_CS = [
   answer("CSDS-1", "cs"),
   answer("CSDS-2", "cs"),
 ];
+/** Low math + DS interests (the path the adaptive flow takes: DS/MIS branch). */
+const LOW_MATH_DS = [
+  answer("Q1", "B"),
+  answer("Q2", "B"),
+  answer("Q3", "1"),
+  answer("DSMIS-1", "ds"),
+  answer("DSMIS-2", "ds"),
+];
 
 describe("computeFit result contract", () => {
   it("is deterministic", () => {
@@ -187,7 +195,45 @@ describe("reality checks", () => {
       min: -3,
       max: 4.5,
       threshold: -0.5,
+      reasons: ["net_negative_bottom_third", "explicit_negative_answer"],
+      explicitNegativeQuestionIds: ["Q3"],
     });
+  });
+
+  it("triggers on an explicit negative answer even when other answers bring the aggregate back to zero", () => {
+    // Low math + DS interests: Q3 = 1 (−3) is cancelled by Q1-B (+1.5) and DSMIS-2-ds (+1.5) → C[math] = 0.
+    const result = computeFit(fitInput(LOW_MATH_DS));
+    expect(result.candidateVector.math_affinity).toBe(0);
+    expect(result.bestFitProgram).toBe(DS);
+    const ds = result.realityChecks.find((check) => check.id === "ds_math_statistics_programming");
+    expect(ds).toBeDefined();
+    expect(ds!.triggeredDimensions[0]).toMatchObject({
+      dimension: "math_affinity",
+      value: 0,
+      reasons: ["explicit_negative_answer"],
+      explicitNegativeQuestionIds: ["Q3"],
+    });
+  });
+
+  it("does not let the explicit-negative trigger change fit, ranking, or classification", () => {
+    const input = fitInput(LOW_MATH_DS);
+    const withChecks = computeFit(input);
+    const withoutChecks = computeFit({ ...input, realityChecks: [] } satisfies FitInput);
+    expect(withChecks.realityChecks.map((check) => check.id)).toContain("ds_math_statistics_programming");
+    expect(withChecks.ranking).toEqual(withoutChecks.ranking);
+    expect(withChecks.fitClassification).toBe(withoutChecks.fitClassification);
+    expect({ ...withChecks, realityChecks: [] }).toEqual(withoutChecks);
+  });
+
+  it("never creates warnings from positive or neutral answers alone", () => {
+    const positiveOrNeutral = [
+      [answer("Q1", "B"), answer("Q2", "B"), answer("Q3", "3"), answer("DSMIS-1", "ds"), answer("DSMIS-2", "neither")],
+      [answer("Q1", "A"), answer("Q2", "A"), answer("Q3", "5"), answer("CSDS-1", "cs"), answer("CSDS-2", "cs")],
+      [answer("Q1", "C"), answer("Q2", "C"), answer("Q3", "4"), answer("CSMIS-1", "neither"), answer("CSMIS-2", "mis")],
+    ];
+    for (const answers of positiveOrNeutral) {
+      expect(computeFit(fitInput(answers)).realityChecks).toEqual([]);
+    }
   });
 
   it("requires net-negative evidence: not choosing a dimension's options is not 'materially low'", () => {

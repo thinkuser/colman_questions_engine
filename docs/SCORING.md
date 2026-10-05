@@ -50,16 +50,16 @@ normalized_fit(P)    = clamp(raw_fit(P) / ideal(P), 0, 1);   no usable signal if
 | `FIT_THRESHOLDS.consider_carefully` | `≥ 0.50`; below → `no_strong_fit` | **Proposed** |
 | `NEAR_TIE_MAX_GAP` | top-two gap `< 0.05` | **Proposed** |
 | `REALITY_CHECK_BOTTOM_FRACTION` | value `< min + (max − min) / 3` | **Proposed** (formula specified in review) |
-| `REALITY_CHECK_MAX_SIGNAL` | value also `< 0` (net-negative evidence) | **Proposed**, an addition in this PR (see below) |
+| `REALITY_CHECK_MAX_SIGNAL` | value also `< 0` (net-negative evidence) | **Proposed** (THI-7) |
+| Explicit-negative trigger | any chosen option with a negative signal on the dimension | **Proposed** (THI-8) |
 | `mathToleranceSignal` | `math_affinity = answer − 3` | Accepted (DEC-020) |
 
 ### Reality-check trigger
-For each related dimension of a check, the engine computes the attainable range of `C[d]` over the questions actually asked: each question contributes its minimum or maximum option. A dimension is **materially low** when:
-1. the range has variation (`max > min`); and
-2. `C[d] < min + (max − min) / 3`; and
-3. `C[d] < 0`, meaning net-negative evidence.
+For each related dimension of a check, the engine computes the attainable range of `C[d]` over the questions actually asked: each question contributes its minimum or maximum option. The range must have variation (`max > min`). The dimension is then **materially low** when **either** trigger holds:
+- **`net_negative_bottom_third`:** `C[d] < min + (max − min) / 3` **and** `C[d] < 0` (net-negative evidence); or
+- **`explicit_negative_answer`:** the candidate explicitly chose an option with a negative signal on it (e.g. Q3 = 1–2 on math), even if other answers bring the aggregate `C[d]` back to zero or above.
 
-A check fires when at least one related dimension is materially low, and only for the top two programs. It never changes scores.
+A check fires when at least one related dimension is materially low, and only for the top two programs. Positive or neutral answers alone never trigger. Each triggered dimension reports its `reasons` and `explicitNegativeQuestionIds`. Checks never change scores, ranking, or classification.
 
 **Why condition 3 was added:** without it, simply *not choosing* a dimension's options triggered warnings. The value sits at 0, which is the bottom of a 0..max range. In the first calibration run, 8 of 10 sanity cases fired checks. For example, Persona A (math = 5) got the MIS "technical and quantitative load" warning only because they never chose a statistics option. With condition 3, checks fire only on real negative signals, such as low math tolerance or "least attractive: coding". This is proposed for review as the meaning of "materially".
 
@@ -92,7 +92,7 @@ No threshold has been changed after seeing results. The sanity-case answer polic
 - mixed profiles stay inside the 7-question budget;
 - a close result is returned as close.
 
-The **reality-check rule** has one issue, flagged below with a proposed fix.
+The **reality-check rule** gained the explicit-negative trigger (finding 1). It changes warnings only: question counts, rankings, classifications, and the distribution below are identical with and without it.
 
 ### Sanity-case table
 Real vectors, reality checks, question bank, and adaptive flow. Values are internal `normalized_fit`, never shown to candidates.
@@ -105,7 +105,7 @@ Real vectors, reality checks, question bank, and adaptive flow. Values are inter
 | Persona D ("neither" ×3) | 6 | DSMIS-1/2/3 neither | MIS 0.477 > DS 0.168 > CS 0.154 | **no_strong_fit** | null | no_strong_fit | DS math/stats/programming; MIS technical load |
 | D′ (MIS-style answers, math 1) | 5 | DSMIS-1 mis, DSMIS-2 mis | MIS 0.923 > DS 0.370 > CS 0.322 | strong_fit | MIS | pair answers agree | DS math/stats/programming; MIS technical load |
 | Low math + CS interests | 5 | CSDS-1 cs, CSDS-2 cs | CS 0.857 > MIS 0.648 > DS 0.607 | strong_fit | CS | pair answers agree | CS math load; MIS technical load |
-| Low math + DS interests | 5 | DSMIS-1 ds, DSMIS-2 ds | DS 0.852 > CS 0.585 > MIS 0.538 | strong_fit | DS | pair answers agree | **— (see issue below)** |
+| Low math + DS interests | 5 | DSMIS-1 ds, DSMIS-2 ds | DS 0.852 > CS 0.585 > MIS 0.538 | strong_fit | DS | pair answers agree | CS math load; DS math/stats/programming (explicit Q3 = 1) |
 | Mixed CS/DS (2 selected) | 7 | CSDS-1 cs, -2 ds, -3 cs, TB ds | DS 0.867 > CS 0.794 | strong_fit | DS | tie-breaker asked | — |
 | Mixed three-way | 6 | CSMIS-1 mis, -2 cs, -3 mis | MIS 0.807 > CS 0.651 > DS 0.643 | strong_fit | MIS | clear after pair-3 | — |
 | Weak profile | 6 | CSMIS-1/2/3 neither | MIS 0.446 > DS 0.322 > CS 0.313 | no_strong_fit | null | no_strong_fit | — |
@@ -128,9 +128,14 @@ Reading it:
 - About a quarter of paths still end as near ties after the single tie-breaker. By design, those results are returned as close rather than asking more questions.
 
 ### Findings for review
-1. **Reality-check gap (the rule needs a decision).** The V1 rule requires the *net* signal `C[d] < 0`. For low-math DS (Q3 = 1), the DS answers' small math signals cancel the explicit "prefer as little math as possible": −3 from Q3, +1.5 from Q1-B and +1.5 from DSMIS-2-ds give a net 0. So **no DS math reality check fires**. Across all answer paths, **16–34% of candidates who rated math 1–2 get no reality check at all**, depending on the selection. The rule is **kept as instructed** for THI-8.
-   - **Proposed fix:** a related dimension also counts as materially low if the candidate **explicitly chose an option with a negative signal on it**, e.g. Q3 = 1–2. The rule stays generic and is still a warning only.
-   - **Before/after:** low-math-DS sanity case "—" → "CS math load; DS math/stats/programming"; Q3 ≤ 2 paths with no check, 16–34% → 0%; paths with any check, ~30% → ~39%. No other sanity case changes.
+1. **Reality-check gap: resolved by the explicit-negative trigger, approved in the THI-8 review.** With only the net rule (`C[d] < 0`), low-math DS (Q3 = 1) got **no math warning**: the DS answers' small math signals cancelled the explicit "prefer as little math as possible" (−3 from Q3, +1.5 from Q1-B, +1.5 from DSMIS-2-ds, net 0). Across all answer paths, 16–34% of candidates who rated math 1–2 got no reality check at all.
+
+   | | Net rule only | With explicit-negative trigger |
+   |---|---|---|
+   | Low math + DS interests | — | CS math load; DS math/stats/programming |
+   | Q3 ≤ 2 paths with no check | 16–34% | 0% |
+   | Paths with any check | ~30% | ~39% |
+   | Other sanity cases; fit, ranking, question counts | — | unchanged |
 2. **D′ is a strong MIS fit** (0.923, with reality checks). This is accepted (DEC-022): classification uses only the preferences a candidate actually expresses.
 3. **Mixed profiles can still land in `good_fit` or `strong_fit`** when one program wins most heavily weighted answers. "Mixed three-way" ends at MIS 0.807 after pair-3. This seems acceptable for a decision-support product, and the evidence and trade-off output shows the mix.
 4. **MIS is still often second for clear CS or DS candidates** (Persona A: DS 0.756, MIS 0.732), because of the documented vectors.

@@ -26,7 +26,11 @@ export const QUESTION_ROLES = ["opening", "pair", "tie_breaker"] as const;
 export type QuestionRole = (typeof QUESTION_ROLES)[number];
 
 export interface BankOption extends AnswerOption {
-  /** The program this option points towards; null for neutral options ("neither") and opening questions. */
+  /**
+   * V1 ROUTING METADATA only (DEC-023): the program this option points towards, used by the stop rule
+   * ("pair-1 and pair-2 favour the same program"). Null for neutral options and opening questions.
+   * Scoring never reads it; the durable scoring signal is `signals` (dimension vector).
+   */
   favours: ProgramId | null;
 }
 
@@ -35,6 +39,11 @@ export interface BankQuestion extends QuestionDefinition {
   options: readonly BankOption[];
 }
 
+/**
+ * A CURATED PAIR OVERRIDE (DEC-023): hand-authored questions for an important comparison. Optional in the bank
+ * schema; the V1 flow requires one for the current top two. A future generic selector will choose questions by
+ * the dimensions that most differentiate the leading programs when no override exists (not implemented in V1).
+ */
 export interface PairBranch {
   programs: readonly [ProgramId, ProgramId];
   /** Exactly three pair questions, asked in order. */
@@ -97,7 +106,8 @@ const pairKey = (a: ProgramId, b: ProgramId) => [a, b].sort().join("|");
 export function findBranch(bank: QuestionBank, a: ProgramId, b: ProgramId): PairBranch {
   const branch = bank.branches.find((candidate) => pairKey(...candidate.programs) === pairKey(a, b));
   if (!branch) {
-    throw new Error(`Question bank has no pair branch for ${a} vs ${b}`);
+    // V1 routes only through curated overrides; a generic discrimination selector is future work (DEC-023).
+    throw new Error(`Question bank has no curated pair branch for ${a} vs ${b} (required by the V1 flow)`);
   }
   return branch;
 }

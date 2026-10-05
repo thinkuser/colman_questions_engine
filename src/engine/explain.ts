@@ -89,10 +89,21 @@ export function dimensionRange(
   return { min, max };
 }
 
+/** Questions whose chosen option carries an explicitly negative signal on `dimension` (e.g. Q3 = 1–2 on math). */
+export function explicitNegativeAnswers(answers: readonly AnsweredQuestion[], dimension: Dimension): string[] {
+  return answers
+    .filter((answer) => (chosenOption(answer).signals[dimension] ?? 0) < -EPSILON)
+    .map((answer) => answer.question.id);
+}
+
 /**
- * Generic reality checks for the top two programs only. A check triggers when at least one related dimension is
- * materially low: strictly below `min + (max − min) / 3` of its attainable range AND net-negative (< 0).
- * Dimensions without variation never trigger. Checks never modify fit (DEC-009).
+ * Generic reality checks for the top two programs only (PROPOSED, DEC-018). A related dimension with attainable
+ * variation is materially low when EITHER:
+ *   - `net_negative_bottom_third`: `C[d]` is strictly below `min + (max − min) / 3` AND net-negative (< 0); or
+ *   - `explicit_negative_answer`: the candidate explicitly chose an option with a negative signal on it, even if
+ *     other answers bring the aggregate `C[d]` back to zero or above.
+ * A check fires when at least one related dimension is materially low. Positive or neutral answers alone never
+ * trigger. Dimensions without variation never trigger. Checks never modify fit (DEC-009).
  */
 export function evaluateRealityChecks(
   answers: readonly AnsweredQuestion[],
@@ -109,8 +120,21 @@ export function evaluateRealityChecks(
       if (max - min <= EPSILON) continue;
       const threshold = min + (max - min) * REALITY_CHECK_BOTTOM_FRACTION;
       const value = candidate[dimension];
-      if (value < threshold - EPSILON && value < REALITY_CHECK_MAX_SIGNAL - EPSILON) {
-        triggeredDimensions.push({ dimension, value, min, max, threshold });
+      const explicitNegative = explicitNegativeAnswers(answers, dimension);
+      const netNegative = value < threshold - EPSILON && value < REALITY_CHECK_MAX_SIGNAL - EPSILON;
+      if (netNegative || explicitNegative.length > 0) {
+        triggeredDimensions.push({
+          dimension,
+          value,
+          min,
+          max,
+          threshold,
+          reasons: [
+            ...(netNegative ? (["net_negative_bottom_third"] as const) : []),
+            ...(explicitNegative.length > 0 ? (["explicit_negative_answer"] as const) : []),
+          ],
+          explicitNegativeQuestionIds: explicitNegative,
+        });
       }
     }
     if (triggeredDimensions.length > 0) {

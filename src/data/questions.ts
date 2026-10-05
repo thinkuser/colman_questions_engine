@@ -4,9 +4,13 @@ import raw from "./content/question_bank.json";
 import { PROGRAM_IDS } from "./programs";
 
 /**
- * V1 question bank (DEC-021): opening questions, pair branches, neutral options, tie-breakers, with explicit signals.
- * Validated at load; structural rules (relevance, neutral options, branch coverage) are enforced below so a
- * malformed bank fails tests and the build rather than producing irrelevant questions at runtime.
+ * V1 question bank (DEC-021): opening questions, curated pair branches, neutral options, tie-breakers, with
+ * explicit dimension signals. Validated at load so a malformed bank fails tests and the build.
+ *
+ * Scale note (DEC-023): curated pair branches are OPTIONAL OVERRIDES, not a structural requirement. The generic
+ * bank may contain zero or more of them; adding a program does not imply authoring branches against every other
+ * program. Only the V1 pilot pairs are required to be covered (`V1_PILOT_PAIRS`, checked separately below).
+ * `favours` is V1 routing metadata; the durable scoring signal is the dimension vector.
  */
 
 const id = z.string().regex(/^[A-Za-z0-9_-]+$/);
@@ -38,7 +42,8 @@ export const QuestionBankFileSchema = z.object({
   status_note: z.string(),
   opening_question_ids: z.tuple([id, id, id]),
   questions: z.array(QuestionSchema).min(1),
-  branches: z.array(BranchSchema).min(1),
+  /** Zero or more curated pair overrides (DEC-023). */
+  branches: z.array(BranchSchema),
 });
 
 export type QuestionBankFile = z.infer<typeof QuestionBankFileSchema>;
@@ -47,7 +52,11 @@ const fail = (message: string): never => {
   throw new Error(`Invalid question bank: ${message}`);
 };
 
-/** Validate structure and convert to the engine's QuestionBank shape. Exported for tests. */
+/**
+ * Validate structure and convert to the engine's QuestionBank shape. Exported for tests.
+ * `programIds` is only used to reject branches that reference unknown programs; it does NOT require a branch
+ * for every program pair (see `assertPairCoverage` for the V1 pilot requirement).
+ */
 export function buildQuestionBank(input: unknown, programIds: readonly string[] = PROGRAM_IDS): QuestionBank {
   const file = QuestionBankFileSchema.parse(input);
   const byId = new Map(file.questions.map((question) => [question.id, question]));
@@ -106,14 +115,6 @@ export function buildQuestionBank(input: unknown, programIds: readonly string[] 
     }
   }
 
-  for (let i = 0; i < programIds.length; i++) {
-    for (let j = i + 1; j < programIds.length; j++) {
-      if (!branchKeys.has(pairKey(programIds[i]!, programIds[j]!))) {
-        fail(`no branch for ${programIds[i]} vs ${programIds[j]}`);
-      }
-    }
-  }
-
   const questions: BankQuestion[] = file.questions.map((question) => ({
     id: question.id,
     role: question.role,
@@ -132,8 +133,28 @@ export function buildQuestionBank(input: unknown, programIds: readonly string[] 
   };
 }
 
+/**
+ * V1 pilot coverage requirement (DEC-021/DEC-023): the current V1 flow routes only through curated branches, so
+ * every pilot pair must have one. Listed explicitly — NOT derived from all combinations of PROGRAM_IDS.
+ */
+export const V1_PILOT_PAIRS: ReadonlyArray<readonly [string, string]> = [
+  ["computer_science", "data_science"],
+  ["computer_science", "management_information_systems"],
+  ["data_science", "management_information_systems"],
+];
+
+/** Throws unless each listed pair has a curated branch. */
+export function assertPairCoverage(bank: QuestionBank, pairs: ReadonlyArray<readonly [string, string]>): void {
+  const key = (a: string, b: string) => [a, b].sort().join("|");
+  const covered = new Set(bank.branches.map((branch) => key(...branch.programs)));
+  for (const [a, b] of pairs) {
+    if (!covered.has(key(a, b))) fail(`V1 pilot pair ${a} vs ${b} has no curated branch`);
+  }
+}
+
 /** The validated V1 question bank, ready to hand to `nextAdaptiveStep`. */
 export const QUESTION_BANK: QuestionBank = buildQuestionBank(raw);
+assertPairCoverage(QUESTION_BANK, V1_PILOT_PAIRS);
 
 /** Internal English reference copy (prompts/labels) for each question. Hebrew copy is added in THI-9. */
 export const QUESTION_TEXT_EN: ReadonlyMap<string, { prompt: string; options: Record<string, string> }> = new Map(
