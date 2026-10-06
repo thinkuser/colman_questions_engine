@@ -196,3 +196,34 @@ Status: accepted — specified in the THI-11 instructions.
 - **Canonical values:** programs, `comparison_cluster`, `main_decision_pair` and `branch_id` use alphabetical id order; the winner is carried separately as `recommended_program`.
 - **Session context is separate from product state.** `comparison_id`, first-touch UTMs and the last question exposure live in a versioned `sessionStorage` record; the durable comparison payload `{ version, selectedProgramIds, answers }` is unchanged.
 - **No fake events.** `curriculum_click`, `career_click`, `whatsapp_click`, `lead_submit` and `comparison_share` stay in the vocabulary but are not emitted; no UI element was made interactive for analytics.
+
+## DEC-027 — V2 career-project discovery (projects route, they never score)
+Status: accepted — V2 product direction (`docs/V2_ALL_PROGRAMS_SPEC.md`); implemented as data and pure logic in THI-13.
+
+- V2 opens with **"אם הייתם יכולים להצטרף מחר לאחד מהפרויקטים האלה — מה הכי מושך אתכם?"** (plural forms, consistent with V1). The candidate picks **1 or 2** projects; 0 or more than 2 is invalid for a started discovery.
+- A project is **routing only**: it brings a candidate pool of programs into consideration and contributes **zero fit points**. Being in the pool is not evidence of fit. The pool is the union of the selected projects' programs, de-duplicated.
+- **Pool ordering is deterministic and is not a ranking.** Selected projects are canonicalised to project display order, then programs accumulate in each project's own order, so click order never matters. THI-14 must not use pool array position as a hidden ranking or tie-break signal: ranking comes only from scored answers and evidence, and a true tie stays a tie unless an explicit, documented rule resolves it.
+- The company is **hypothetical scenario context, not the measured signal**: text only, a neutral icon id, no logos, no implied sponsorship, partnership or hiring. The opening carries the accepted disclaimer: "שמות החברות מופיעים לצורך המחשה בלבד. אין בכך כדי להעיד על שיתוף פעולה, חסות או קשר מסחרי עם החברות המוזכרות." This is product copy, not a legal opinion.
+- Initial projects and pools: Spotify (CS / DS / MIS), Wolt (Business / Economics / Accounting), TikTok (Psychology / Behavioral Science / Economics + Psychology), Duolingo (Education / Psychology / Behavioral Science), Nike (Communication / Communication + Management / Business), AI product (Law), Apple Store (Interior Design). Adjacent programs for Law and Interior Design surface through later answers, not through the pool.
+- Data: `src/data/content/discovery/career_projects.json`; logic: `validateProjectSelection` / `buildCandidatePool` in `src/engine/discovery.ts`; wiring: `startDiscovery` in `src/flow/discovery.ts`. Scoring, shortlisting and routing over the pool are THI-14.
+
+## DEC-028 — V2 question clusters: data schema, no fixed question count
+Status: accepted — THI-13 review.
+
+- A **cluster** has core programs, optional **adjacent** programs (neighbours that answers may point to, e.g. Business inside the Law cluster), an optional **precision module**, a `max_questions` bound (7 today) and an ordered list of questions.
+- Questions are addressed by **position** (1, 2, 3, ...). Positions must run 1..n without gaps, with n ≤ `max_questions`. Clusters ship Q1–Q4 and gain Q5–Q7 later **as data only**: nothing in the schema or code assumes a count.
+- Question kinds: `scenario`, `focus`, `tiebreaker`, `reality_check`. The data carries **no weights**; what each kind is worth is the THI-14 engine's decision.
+- An answer points to one or more programs (a shared signal such as "Communication / Communication + Management" lists both) or to none (a neutral option). Targets must be the cluster's core or adjacent programs. **Reality-check answers point to no program and never rank** (DEC-009); they carry a `reality_level`.
+- The `tech` cluster uses the preserved V1 CS / DS / MIS engine as its precision module (`v1_tech`), which must cover exactly the V1 pilot programs. `PrecisionModuleAdapter` is an interface only until THI-14. No N×N pair structure exists in the V2 data.
+- Question content is not part of THI-13: non-tech clusters are THI-15 and the tech discovery handoff is THI-14. The shipped lists are empty.
+- Data: `src/data/content/discovery/clusters.json`; types: `V2Cluster` / `V2Question` in `src/engine/discovery.ts`; validation: `buildClusters` in `src/data/discovery.ts`.
+
+## DEC-029 — V2 program catalog layer
+Status: accepted — THI-13 review.
+
+- The 14 V2 programs live in a **catalog layer** (`src/data/content/catalog/programs.json`): identity and provenance only. That is the Hebrew name, aliases, qualifier, English label, sources, facts status, and work statements for the generic head-to-head (THI-15 content).
+- The catalog is **separate from the V1 pilot**. `PROGRAM_IDS` / `PILOT_PROGRAMS` and the V1 comparison flow, persistence and engine still see exactly CS, DS and MIS. The catalog reuses those ids, and a load-time check requires their names, aliases, qualifier and official URLs to match the V1 facts layer.
+- **Two source layers** per program: `colman` (academic facts, colman.ac.il; at least one required) and `academy` (prospect-facing language, academy.org.il). Hosts are checked against the layer. All supplied URLs are registered in `sources.json` as provenance.
+- **Name verification without copying pages.** Names and aliases are verified verbatim ("תואר ראשון ב…") against official degree headings recorded in `src/data/content/catalog/verified_headings.json`. Each entry holds only program id, source id, the heading and its retrieval date: no page body, curriculum, admissions or marketing copy. Full-page snapshots are committed only for sources that back verbatim official facts (the V1 pilot pages and the admissions page); headings for those pages must also match their snapshot. Nothing is fetched at runtime (DEC-012).
+- **No academic facts are added for the 11 new programs** (`facts_status: pending_curation`). Their official facts, fit profiles and admissions follow the existing three-layer rules when curated.
+- **Qualifiers:** MIS keeps the mandatory `דו-חוגי עם מנהל עסקים` (DEC-015). **Economics + Psychology carries the candidate-facing qualifier `דו-חוגי`**, since it is published as a double major on both official sites. Canonical name `כלכלה ופסיכולוגיה`, alias `פסיכולוגיה וכלכלה`. The qualifier must be shown with the name wherever candidates see it.

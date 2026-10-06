@@ -1,0 +1,149 @@
+{
+  "status_note": "Minimal verification record for V2 catalog names (THI-13, DEC-029). Each entry is only the degree heading of an official program page, as read on retrieved_at, proving that the catalog's candidate-facing names and aliases are the official ones. It deliberately contains no page body, curriculum, admissions or marketing copy. Full-page snapshots are committed only for sources that back verbatim official facts (V1 pilot).",
+  "headings": [
+    {
+      "program_id": "computer_science",
+      "source_id": "colman_cs_program_page",
+      "verified_degree_heading": "תואר ראשון במדעי המחשב BSc",
+      "retrieved_at": "2026-10-05"
+    },
+    {
+      "program_id": "computer_science",
+      "source_id": "academy_cs_page",
+      "verified_degree_heading": "תואר ראשון במדעי המחשב",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "data_science",
+      "source_id": "colman_ds_program_page",
+      "verified_degree_heading": "תואר ראשון במדע הנתונים",
+      "retrieved_at": "2026-10-05"
+    },
+    {
+      "program_id": "data_science",
+      "source_id": "colman_ds_program_page",
+      "verified_degree_heading": "תואר ראשון במדעי הנתונים BSc",
+      "retrieved_at": "2026-10-05"
+    },
+    {
+      "program_id": "data_science",
+      "source_id": "academy_ds_page",
+      "verified_degree_heading": "תואר ראשון במדע הנתונים",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "management_information_systems",
+      "source_id": "academy_mis_page",
+      "verified_degree_heading": "תואר ראשון בניהול מערכות מידע ומנהל עסקים (דו חוגי)",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "business_administration",
+      "source_id": "colman_business_administration_program_page",
+      "verified_degree_heading": "תואר ראשון במנהל עסקים",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "economics_and_management",
+      "source_id": "colman_economics_program_page",
+      "verified_degree_heading": "תואר ראשון בכלכלה וניהול",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "economics_and_management",
+      "source_id": "academy_economics_page",
+      "verified_degree_heading": "תואר ראשון בכלכלה וניהול",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "accounting",
+      "source_id": "colman_accounting_program_page",
+      "verified_degree_heading": "תואר ראשון בחשבונאות BA",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "accounting",
+      "source_id": "academy_accounting_page",
+      "verified_degree_heading": "תואר ראשון בחשבונאות",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "psychology",
+      "source_id": "colman_psychology_program_page",
+      "verified_degree_heading": "תואר ראשון בפסיכולוגיה BA",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "psychology",
+      "source_id": "academy_psychology_page",
+      "verified_degree_heading": "תואר ראשון בפסיכולוגיה",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "behavioral_science",
+      "source_id": "colman_behavioral_science_program_page",
+      "verified_degree_heading": "תואר ראשון במדעי ההתנהגות BA",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "education",
+      "source_id": "colman_education_program_page",
+      "verified_degree_heading": "תואר ראשון בחינוך BA",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "education",
+      "source_id": "academy_education_page",
+      "verified_degree_heading": "תואר ראשון בחינוך",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "economics_and_psychology",
+      "source_id": "colman_economics_psychology_program_page",
+      "verified_degree_heading": "תואר ראשון בפסיכולוגיה וכלכלה (מסלול דו חוגי) BA",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "economics_and_psychology",
+      "source_id": "academy_economics_psychology_page",
+      "verified_degree_heading": "תואר ראשון בכלכלה ופסיכולוגיה – דו חוגי",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "communication",
+      "source_id": "colman_communication_program_page",
+      "verified_degree_heading": "תואר ראשון בתקשורת BA",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "communication",
+      "source_id": "academy_communication_page",
+      "verified_degree_heading": "תואר ראשון בתקשורת",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "communication_and_management",
+      "source_id": "colman_communication_management_program_page",
+      "verified_degree_heading": "תואר ראשון בתקשורת וניהול BA",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "law",
+      "source_id": "colman_law_program_page",
+      "verified_degree_heading": "תואר ראשון במשפטים LLB",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "interior_design",
+      "source_id": "colman_interior_design_program_page",
+      "verified_degree_heading": "תואר ראשון בעיצוב פנים",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "program_id": "interior_design",
+      "source_id": "academy_interior_design_page",
+      "verified_degree_heading": "תואר ראשון בעיצוב פנים",
+      "retrieved_at": "2026-10-06"
+    }
+  ]
+}

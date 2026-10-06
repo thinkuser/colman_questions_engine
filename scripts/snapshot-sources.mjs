@@ -2,8 +2,13 @@
 // Snapshots are the evidence that official program facts were copied verbatim (see docs/PROGRAM_DATA.md).
 // The app never fetches these pages at runtime (DEC-012).
 //
-// Usage: pnpm snapshot:sources
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+// Usage: pnpm snapshot:sources            (refresh every registered source)
+//        pnpm snapshot:sources --missing  (only sources that have no snapshot yet, e.g. newly registered ones)
+//
+// Commit full-page snapshots only for sources that back verbatim official facts (docs/PROGRAM_DATA.md). For
+// identity-only sources (V2 catalog names), read the local output and record just the degree heading in
+// src/data/content/catalog/verified_headings.json; do not commit the page copy.
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 const contentDir = fileURLToPath(new URL("../src/data/content/", import.meta.url));
@@ -42,7 +47,15 @@ export function htmlToSnapshotText(html) {
 async function main() {
   const { sources } = JSON.parse(await readFile(`${contentDir}sources.json`, "utf8"));
   await mkdir(snapshotDir, { recursive: true });
+  const onlyMissing = process.argv.includes("--missing");
   for (const source of sources) {
+    if (onlyMissing) {
+      const exists = await access(`${snapshotDir}${source.id}.txt`).then(
+        () => true,
+        () => false,
+      );
+      if (exists) continue;
+    }
     const response = await fetch(source.url, { headers: { "User-Agent": "COLMAN-StudyMatch-curation" } });
     if (!response.ok) {
       throw new Error(`${source.id}: HTTP ${response.status} for ${source.url}`);

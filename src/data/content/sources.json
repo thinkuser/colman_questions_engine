@@ -23,6 +23,138 @@
       "url": "https://www.academy.org.il/admission/",
       "title_he": "תנאי קבלה",
       "retrieved_at": "2026-10-05"
+    },
+    {
+      "id": "colman_ba_programs_index",
+      "url": "https://www.colman.ac.il/academics/ba/",
+      "title_he": "לימודי תואר ראשון BA",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "academy_cs_page",
+      "url": "https://www.academy.org.il/ba/computer-science/",
+      "title_he": "תואר ראשון במדעי המחשב",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "academy_ds_page",
+      "url": "https://www.academy.org.il/ba/data-science/",
+      "title_he": "תואר ראשון במדע הנתונים",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "academy_mis_page",
+      "url": "https://www.academy.org.il/ba-management-information-systems/",
+      "title_he": "תואר ראשון בניהול מערכות מידע ומנהל עסקים (דו חוגי)",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "colman_business_administration_program_page",
+      "url": "https://www.colman.ac.il/academics/ba/business-administration/",
+      "title_he": "תואר ראשון במנהל עסקים",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "colman_economics_program_page",
+      "url": "https://www.colman.ac.il/academics/ba/economy/",
+      "title_he": "תואר ראשון בכלכלה וניהול BA",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "academy_economics_page",
+      "url": "https://www.academy.org.il/ba/economy/",
+      "title_he": "תואר ראשון בכלכלה וניהול",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "colman_accounting_program_page",
+      "url": "https://www.colman.ac.il/academics/ba/accounting/",
+      "title_he": "תואר ראשון בחשבונאות",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "academy_accounting_page",
+      "url": "https://www.academy.org.il/ba/accounting/",
+      "title_he": "תואר ראשון בחשבונאות",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "colman_psychology_program_page",
+      "url": "https://www.colman.ac.il/academics/ba/psychology/",
+      "title_he": "תואר ראשון בפסיכולוגיה",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "academy_psychology_page",
+      "url": "https://www.academy.org.il/ba/psychology/",
+      "title_he": "תואר ראשון בפסיכולוגיה",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "colman_behavioral_science_program_page",
+      "url": "https://www.colman.ac.il/academics/ba/behavioral-science/",
+      "title_he": "תואר ראשון במדעי ההתנהגות",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "colman_education_program_page",
+      "url": "https://www.colman.ac.il/academics/ba/education/",
+      "title_he": "תואר ראשון בחינוך עם תעודת הוראה",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "academy_education_page",
+      "url": "https://www.academy.org.il/ba/education/",
+      "title_he": "תואר ראשון בחינוך",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "colman_economics_psychology_program_page",
+      "url": "https://www.colman.ac.il/academics/ba/economics-psychology-studies/",
+      "title_he": "תואר ראשון בפסיכולוגיה וכלכלה - מסלול דו חוגי",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "academy_economics_psychology_page",
+      "url": "https://www.academy.org.il/ba/economics_psychology_studies/",
+      "title_he": "תואר ראשון בכלכלה ופסיכולוגיה – דו חוגי",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "colman_communication_program_page",
+      "url": "https://www.colman.ac.il/academics/ba/communication-content-media/",
+      "title_he": "תואר ראשון בתקשורת BA",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "academy_communication_page",
+      "url": "https://www.academy.org.il/ba/media-school/",
+      "title_he": "תואר ראשון בתקשורת",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "colman_communication_management_program_page",
+      "url": "https://www.colman.ac.il/academics/ba/communication-and-managment/",
+      "title_he": "לימודי תואר ראשון בתקשורת וניהול",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "colman_law_program_page",
+      "url": "https://www.colman.ac.il/academics/ba/law/",
+      "title_he": "תואר ראשון במשפטים",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "colman_interior_design_program_page",
+      "url": "https://www.colman.ac.il/academics/ba/interior-design/",
+      "title_he": "לימודי תואר ראשון בעיצוב פנים",
+      "retrieved_at": "2026-10-06"
+    },
+    {
+      "id": "academy_interior_design_page",
+      "url": "https://www.academy.org.il/ba/interior-design/",
+      "title_he": "תואר ראשון בעיצוב פנים",
+      "retrieved_at": "2026-10-06"
     }
   ]
 }

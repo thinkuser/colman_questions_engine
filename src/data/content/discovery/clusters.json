@@ -1,0 +1,59 @@
+{
+  "version": "v2",
+  "status_note": "V2 question clusters (THI-13, DEC-028). A cluster groups programs and holds an ordered list of questions addressed by position (1, 2, 3, ...). Clusters ship Q1-Q4 and may later gain Q5-Q7 as data only: the schema has no fixed question count, only each cluster's max_questions. Question content is THI-15 (non-tech clusters) and THI-14 (tech discovery handoff); until then the lists are empty. Options name the program(s) they point to; reality-check options point to none and never rank. Weights and stop rules belong to the THI-14 engine, not to this data.",
+  "clusters": [
+    {
+      "id": "tech",
+      "program_ids": ["computer_science", "data_science", "management_information_systems"],
+      "adjacent_program_ids": [],
+      "precision_module": "v1_tech",
+      "max_questions": 7,
+      "questions": []
+    },
+    {
+      "id": "business",
+      "program_ids": ["business_administration", "economics_and_management", "accounting"],
+      "adjacent_program_ids": [],
+      "precision_module": null,
+      "max_questions": 7,
+      "questions": []
+    },
+    {
+      "id": "people",
+      "program_ids": ["psychology", "behavioral_science", "education", "economics_and_psychology"],
+      "adjacent_program_ids": [],
+      "precision_module": null,
+      "max_questions": 7,
+      "questions": []
+    },
+    {
+      "id": "communication",
+      "program_ids": ["communication", "communication_and_management", "business_administration"],
+      "adjacent_program_ids": [],
+      "precision_module": null,
+      "max_questions": 7,
+      "questions": []
+    },
+    {
+      "id": "law",
+      "program_ids": ["law"],
+      "adjacent_program_ids": [
+        "business_administration",
+        "communication",
+        "communication_and_management",
+        "management_information_systems"
+      ],
+      "precision_module": null,
+      "max_questions": 7,
+      "questions": []
+    },
+    {
+      "id": "interior_design",
+      "program_ids": ["interior_design"],
+      "adjacent_program_ids": ["communication", "business_administration", "behavioral_science", "data_science"],
+      "precision_module": null,
+      "max_questions": 7,
+      "questions": []
+    }
+  ]
+}

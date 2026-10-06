@@ -1,0 +1,95 @@
+{
+  "version": "v2",
+  "status_note": "V2 career-project discovery (THI-13, DEC-027). Selecting a project only builds the candidate pool; it contributes zero fit points. The company is hypothetical scenario context, not the measured signal: text only, no logos, no implied partnership. Opening prompt, helper and brand disclaimer are the accepted V2 wording, kept identical to docs/V2_ALL_PROGRAMS_SPEC.md (sections 5 and 11; plural forms, consistent with V1); card copy is StudyMatch imagination-layer copy.",
+  "opening": {
+    "prompt_he": "אם הייתם יכולים להצטרף מחר לאחד מהפרויקטים האלה — מה הכי מושך אתכם?",
+    "helper_he": "אפשר לבחור עד שניים. אל תחשבו איזה תואר “נכון” לכם — רק מה נשמע לכם מעניין לעבוד עליו.",
+    "brand_disclaimer_he": "שמות החברות מופיעים לצורך המחשה בלבד. אין בכך כדי להעיד על שיתוף פעולה, חסות או קשר מסחרי עם החברות המוזכרות."
+  },
+  "projects": [
+    {
+      "id": "spotify_discover_weekly",
+      "order": 1,
+      "enabled": true,
+      "brand_name": "Spotify",
+      "icon": "music",
+      "title_he": "לשפר את Discover Weekly",
+      "scenario_he": "לעזור לכל משתמש לגלות בכל שבוע שירים חדשים שבאמת יאהב.",
+      "cluster_id": "tech",
+      "candidate_program_ids": ["computer_science", "data_science", "management_information_systems"],
+      "doc_refs": ["docs/V2_ALL_PROGRAMS_SPEC.md#5-opening-career-projects"]
+    },
+    {
+      "id": "wolt_new_city",
+      "order": 2,
+      "enabled": true,
+      "brand_name": "Wolt",
+      "icon": "city_map",
+      "title_he": "להיכנס לעיר חדשה",
+      "scenario_he": "להחליט אם ואיך Wolt נכנסת לעיר חדשה.",
+      "cluster_id": "business",
+      "candidate_program_ids": ["business_administration", "economics_and_management", "accounting"],
+      "doc_refs": ["docs/V2_ALL_PROGRAMS_SPEC.md#5-opening-career-projects"]
+    },
+    {
+      "id": "tiktok_endless_scroll",
+      "order": 3,
+      "enabled": true,
+      "brand_name": "TikTok",
+      "icon": "phone_scroll",
+      "title_he": "להבין למה ממשיכים לגלול",
+      "scenario_he": "להבין למה אנשים ממשיכים לגלול גם אחרי ש״עוד סרטון אחד וזהו״.",
+      "cluster_id": "people",
+      "candidate_program_ids": ["psychology", "behavioral_science", "economics_and_psychology"],
+      "doc_refs": ["docs/V2_ALL_PROGRAMS_SPEC.md#5-opening-career-projects"]
+    },
+    {
+      "id": "duolingo_persistence",
+      "order": 4,
+      "enabled": true,
+      "brand_name": "Duolingo",
+      "icon": "learning_path",
+      "title_he": "לעזור לאנשים להתמיד",
+      "scenario_he": "לעזור לאנשים שמתחילים ללמוד שפה באמת להמשיך עם זה.",
+      "cluster_id": "people",
+      "candidate_program_ids": ["education", "psychology", "behavioral_science"],
+      "doc_refs": ["docs/V2_ALL_PROGRAMS_SPEC.md#5-opening-career-projects"]
+    },
+    {
+      "id": "nike_israel_launch",
+      "order": 5,
+      "enabled": true,
+      "brand_name": "Nike",
+      "icon": "sneaker",
+      "title_he": "להשיק מוצר חדש בישראל",
+      "scenario_he": "להשיק בישראל נעל חדשה ולגרום לאנשים לרצות אותה.",
+      "cluster_id": "communication",
+      "candidate_program_ids": ["communication", "communication_and_management", "business_administration"],
+      "doc_refs": ["docs/V2_ALL_PROGRAMS_SPEC.md#5-opening-career-projects"]
+    },
+    {
+      "id": "ai_feature_privacy",
+      "order": 6,
+      "enabled": true,
+      "brand_name": null,
+      "icon": "shield",
+      "title_he": "להשיק פיצ'ר AI בלי להסתבך",
+      "scenario_he": "להשיק פיצ'ר שמשתמש במידע של משתמשים — בלי להיתקל בבעיות של פרטיות וזכויות.",
+      "cluster_id": "law",
+      "candidate_program_ids": ["law"],
+      "doc_refs": ["docs/V2_ALL_PROGRAMS_SPEC.md#5-opening-career-projects"]
+    },
+    {
+      "id": "apple_store_space",
+      "order": 7,
+      "enabled": true,
+      "brand_name": "Apple",
+      "icon": "storefront",
+      "title_he": "להפוך חלל ריק לחוויה",
+      "scenario_he": "להפוך חלל ריק לחנות שאנשים זוכרים את החוויה שבה.",
+      "cluster_id": "interior_design",
+      "candidate_program_ids": ["interior_design"],
+      "doc_refs": ["docs/V2_ALL_PROGRAMS_SPEC.md#5-opening-career-projects"]
+    }
+  ]
+}
