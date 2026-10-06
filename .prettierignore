@@ -5,3 +5,6 @@ pnpm-lock.yaml
 coverage/
 # Markdown is hand-formatted product documentation; do not reflow it.
 *.md
+.next-e2e-*/
+playwright-report/
+test-results/

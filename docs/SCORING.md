@@ -5,7 +5,7 @@ The deterministic fit engine, implemented in `src/engine` (THI-7). It decides fi
 Status:
 - Formula: **accepted** (DEC-019).
 - Q3 math mapping: **accepted** (DEC-020).
-- All thresholds: **proposed, pending review** (DEC-018). **Revalidated in THI-8** against the real question bank (DEC-021) and kept unchanged; see "THI-8 revalidation" below.
+- All thresholds: **accepted as the V1 pilot operational baseline** (DEC-018); heuristics, not scientifically validated, to be revisited with real-candidate data and not tuned before the pilot. **Revalidated in THI-8** against the real question bank (DEC-021) and kept unchanged; see "THI-8 revalidation" below.
 
 ## Formula (DEC-019)
 
@@ -61,7 +61,7 @@ For each related dimension of a check, the engine computes the attainable range 
 
 A check fires when at least one related dimension is materially low, and only for the top two programs. Positive or neutral answers alone never trigger. Each triggered dimension reports its `reasons` and `explicitNegativeQuestionIds`. Checks never change scores, ranking, or classification.
 
-**Why condition 3 was added:** without it, simply *not choosing* a dimension's options triggered warnings. The value sits at 0, which is the bottom of a 0..max range. In the first calibration run, 8 of 10 sanity cases fired checks. For example, Persona A (math = 5) got the MIS "technical and quantitative load" warning only because they never chose a statistics option. With condition 3, checks fire only on real negative signals, such as low math tolerance or "least attractive: coding". This is proposed for review as the meaning of "materially".
+**Why condition 3 was added:** without it, simply *not choosing* a dimension's options triggered warnings. The value sits at 0, which is the bottom of a 0..max range. In the first calibration run, 8 of 10 sanity cases fired checks. For example, Persona A (math = 5) got the MIS "technical and quantitative load" warning only because they never chose a statistics option. With condition 3, checks fire only on real negative signals, such as low math tolerance or "least attractive: coding". This is the accepted V1 meaning of "materially" (DEC-018).
 
 ## Calibration method and rationale
 

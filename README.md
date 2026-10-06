@@ -31,7 +31,7 @@ The LLM may explain a result, but the deterministic engine decides the match.
 7. `docs/ANALYTICS.md` — GA4/BigQuery measurement plan.
 8. `docs/PERSONAS_AND_TESTS.md` — sanity personas and acceptance criteria.
 9. `docs/PROGRAM_DATA.md` — program data layers, evidence rules, curation workflow.
-10. `docs/SCORING.md` — fit formula, proposed thresholds, calibration evidence.
+10. `docs/SCORING.md` — fit formula, V1 pilot thresholds (DEC-018), calibration evidence.
 
 ## Workflow
 GitHub is the source of truth.
@@ -68,6 +68,7 @@ pnpm dev          # http://localhost:3000
 | `pnpm dev` | Local dev server |
 | `pnpm build` / `pnpm start` | Production build / serve the build |
 | `pnpm test` | Unit tests (Vitest, Node environment) |
+| `pnpm e2e` | Pilot acceptance E2E (Playwright, real production build; first run: `pnpm exec playwright install chromium`). See `docs/QA_ACCEPTANCE_V1.md` |
 | `pnpm typecheck` | TypeScript, strict mode |
 | `pnpm lint` | ESLint, including module-boundary rules |
 | `pnpm check` | lint + typecheck + test (run before opening a PR) |
