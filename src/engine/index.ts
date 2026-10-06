@@ -4,6 +4,7 @@
  */
 export * from "./adaptive";
 export * from "./computeFit";
+export * from "./discovery";
 export * from "./constants";
 export * from "./dimensions";
 export * from "./explain";

@@ -1,0 +1,153 @@
+{
+  "version": "v2",
+  "status_note": "StudyMatch V2 program catalog (THI-13): the 14 programs in V2 scope, in display order. Identity only: candidate-facing names, aliases, qualifiers and provenance. Every name and alias is verified verbatim against an official degree heading of the program's own cited pages (catalog/verified_headings.json). No academic facts are added here; detailed official facts exist only for the V1 pilot programs (facts/). Work statements for the generic head-to-head are THI-15 content.",
+  "last_reviewed": "2026-10-06",
+  "programs": [
+    {
+      "program_id": "computer_science",
+      "program_name_he": "מדעי המחשב",
+      "program_name_aliases_he": [],
+      "program_qualifier_he": null,
+      "program_name_en": "Computer Science",
+      "sources": { "colman": ["colman_cs_program_page"], "academy": ["academy_cs_page"] },
+      "facts_status": "verified_v1_pilot",
+      "work_statements_he": []
+    },
+    {
+      "program_id": "data_science",
+      "program_name_he": "מדע הנתונים",
+      "program_name_aliases_he": ["מדעי הנתונים"],
+      "program_qualifier_he": null,
+      "program_name_en": "Data Science",
+      "sources": { "colman": ["colman_ds_program_page"], "academy": ["academy_ds_page"] },
+      "facts_status": "verified_v1_pilot",
+      "work_statements_he": []
+    },
+    {
+      "program_id": "management_information_systems",
+      "program_name_he": "ניהול מערכות מידע",
+      "program_name_aliases_he": ["ניהול מערכות מידע ומנהל עסקים"],
+      "program_qualifier_he": "דו-חוגי עם מנהל עסקים",
+      "program_name_en": "Management Information Systems",
+      "sources": { "colman": ["colman_mis_program_page"], "academy": ["academy_mis_page"] },
+      "facts_status": "verified_v1_pilot",
+      "work_statements_he": []
+    },
+    {
+      "program_id": "business_administration",
+      "program_name_he": "מנהל עסקים",
+      "program_name_aliases_he": [],
+      "program_qualifier_he": null,
+      "program_name_en": "Business Administration",
+      "sources": { "colman": ["colman_business_administration_program_page"], "academy": [] },
+      "facts_status": "pending_curation",
+      "work_statements_he": []
+    },
+    {
+      "program_id": "economics_and_management",
+      "program_name_he": "כלכלה וניהול",
+      "program_name_aliases_he": [],
+      "program_qualifier_he": null,
+      "program_name_en": "Economics and Management",
+      "sources": { "colman": ["colman_economics_program_page"], "academy": ["academy_economics_page"] },
+      "facts_status": "pending_curation",
+      "work_statements_he": []
+    },
+    {
+      "program_id": "accounting",
+      "program_name_he": "חשבונאות",
+      "program_name_aliases_he": [],
+      "program_qualifier_he": null,
+      "program_name_en": "Accounting",
+      "sources": { "colman": ["colman_accounting_program_page"], "academy": ["academy_accounting_page"] },
+      "facts_status": "pending_curation",
+      "work_statements_he": []
+    },
+    {
+      "program_id": "psychology",
+      "program_name_he": "פסיכולוגיה",
+      "program_name_aliases_he": [],
+      "program_qualifier_he": null,
+      "program_name_en": "Psychology",
+      "sources": { "colman": ["colman_psychology_program_page"], "academy": ["academy_psychology_page"] },
+      "facts_status": "pending_curation",
+      "work_statements_he": []
+    },
+    {
+      "program_id": "behavioral_science",
+      "program_name_he": "מדעי ההתנהגות",
+      "program_name_aliases_he": [],
+      "program_qualifier_he": null,
+      "program_name_en": "Behavioral Science",
+      "sources": { "colman": ["colman_behavioral_science_program_page"], "academy": [] },
+      "facts_status": "pending_curation",
+      "work_statements_he": []
+    },
+    {
+      "program_id": "education",
+      "program_name_he": "חינוך",
+      "program_name_aliases_he": [],
+      "program_qualifier_he": null,
+      "program_name_en": "Education",
+      "sources": { "colman": ["colman_education_program_page"], "academy": ["academy_education_page"] },
+      "facts_status": "pending_curation",
+      "work_statements_he": []
+    },
+    {
+      "program_id": "economics_and_psychology",
+      "program_name_he": "כלכלה ופסיכולוגיה",
+      "program_name_aliases_he": ["פסיכולוגיה וכלכלה"],
+      "program_qualifier_he": "דו-חוגי",
+      "program_name_en": "Economics and Psychology",
+      "sources": {
+        "colman": ["colman_economics_psychology_program_page"],
+        "academy": ["academy_economics_psychology_page"]
+      },
+      "facts_status": "pending_curation",
+      "work_statements_he": []
+    },
+    {
+      "program_id": "communication",
+      "program_name_he": "תקשורת",
+      "program_name_aliases_he": [],
+      "program_qualifier_he": null,
+      "program_name_en": "Communication",
+      "sources": { "colman": ["colman_communication_program_page"], "academy": ["academy_communication_page"] },
+      "facts_status": "pending_curation",
+      "work_statements_he": []
+    },
+    {
+      "program_id": "communication_and_management",
+      "program_name_he": "תקשורת וניהול",
+      "program_name_aliases_he": [],
+      "program_qualifier_he": null,
+      "program_name_en": "Communication and Management",
+      "sources": { "colman": ["colman_communication_management_program_page"], "academy": [] },
+      "facts_status": "pending_curation",
+      "work_statements_he": []
+    },
+    {
+      "program_id": "law",
+      "program_name_he": "משפטים",
+      "program_name_aliases_he": [],
+      "program_qualifier_he": null,
+      "program_name_en": "Law",
+      "sources": { "colman": ["colman_law_program_page"], "academy": [] },
+      "facts_status": "pending_curation",
+      "work_statements_he": []
+    },
+    {
+      "program_id": "interior_design",
+      "program_name_he": "עיצוב פנים",
+      "program_name_aliases_he": [],
+      "program_qualifier_he": null,
+      "program_name_en": "Interior Design",
+      "sources": {
+        "colman": ["colman_interior_design_program_page"],
+        "academy": ["academy_interior_design_page"]
+      },
+      "facts_status": "pending_curation",
+      "work_statements_he": []
+    }
+  ]
+}

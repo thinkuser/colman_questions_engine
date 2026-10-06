@@ -80,3 +80,21 @@ Current state: CS and DS are `usable_as_published`. MIS is `manual_confirmation_
 ## Still open
 - **Official pages do not distinguish entry-level from future roles.** Those fields stay empty; no distinction is invented.
 - `less_suitable_for` has no defined source and stays empty.
+
+## V2 program catalog (THI-13, DEC-029)
+V2 covers 14 programs. Their identity lives in a fourth, separate file, `src/data/content/catalog/programs.json`, loaded by `src/data/catalog.ts` (`V2_PROGRAM_CATALOG`, `V2_PROGRAM_IDS`, `getCatalogProgram`).
+
+| Field | Meaning |
+|---|---|
+| `program_id` | Stable id. The three V1 pilot ids are reused unchanged. |
+| `program_name_he`, `program_name_aliases_he` | Candidate-facing name and other official wordings. Each must appear verbatim ("תואר ראשון ב…") in a verified degree heading of one of the program's own cited pages (`catalog/verified_headings.json`). |
+| `program_qualifier_he` | Mandatory display qualifier when non-null (DEC-015). MIS: `דו-חוגי עם מנהל עסקים`; Economics + Psychology: `דו-חוגי`. |
+| `sources.colman` / `sources.academy` | Source ids on the academic layer (colman.ac.il, at least one) and the candidate-facing layer (academy.org.il). Hosts are checked. |
+| `facts_status` | `verified_v1_pilot` for CS / DS / MIS (detailed facts in `facts/`), `pending_curation` for the 11 new programs (no academic facts yet). |
+| `work_statements_he` | "Day at work" statements for the generic head-to-head. Empty until THI-15. |
+
+Rules:
+- The catalog is **not** the V1 pilot list. `PROGRAM_IDS` / `PILOT_PROGRAMS` stay CS, DS and MIS, so the V1 comparison flow, persistence and engine are unchanged. For those three, the catalog must match the facts layer (names, aliases, qualifier, official URLs); the loader enforces it.
+- Adding academic content for a new program follows the existing three-layer rules: facts verbatim from snapshots, fit profile as an editorial layer, admissions isolated.
+- **Name verification record.** `catalog/verified_headings.json` holds, per checked page, only `program_id`, `source_id`, the official `verified_degree_heading` and `retrieved_at`: no page body, curriculum, admissions or marketing copy. Tests require every name and alias to appear in it, every cited page without a committed snapshot to have an entry, entries to be short degree headings, and headings for pages that do have a committed V1 snapshot to match it verbatim.
+- **Full-page snapshots are committed only for sources that back verbatim official facts** (currently the V1 pilot pages and the admissions page). For identity-only sources, run `pnpm snapshot:sources --missing` locally to read the page, record the heading, and do not commit the page copy (the repository is public).

@@ -32,6 +32,8 @@ The LLM may explain a result, but the deterministic engine decides the match.
 8. `docs/PERSONAS_AND_TESTS.md` — sanity personas and acceptance criteria.
 9. `docs/PROGRAM_DATA.md` — program data layers, evidence rules, curation workflow.
 10. `docs/SCORING.md` — fit formula, V1 pilot thresholds (DEC-018), calibration evidence.
+11. `docs/V2_ALL_PROGRAMS_SPEC.md` — StudyMatch V2 (all programs, career-project discovery) and implementation status.
+12. `docs/V2_QUESTION_BANK.md` — V2 career-imagination question content and its data representation.
 
 ## Workflow
 GitHub is the source of truth.
