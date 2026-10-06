@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { nextComparisonStep } from "@/flow";
+import { useAnalytics } from "@/ui/analytics/useAnalytics";
 import { QuestionCard } from "@/ui/components/QuestionCard";
 import { QuestionProgress } from "@/ui/components/QuestionProgress";
 import { StepIndicator } from "@/ui/components/StepIndicator";
@@ -25,6 +26,13 @@ export function QuestionsStep() {
     () => (allowed ? nextComparisonStep({ selectedProgramIds, answers }) : null),
     [allowed, selectedProgramIds, answers],
   );
+
+  const analytics = useAnalytics();
+  // Exposure of the displayed question (deduplicated by the tracker; Back shows a new exposure).
+  const exposureKey = step?.status === "ask" ? `${step.questionNumber}:${step.question.id}` : null;
+  useEffect(() => {
+    if (exposureKey) analytics.questionViewed();
+  }, [exposureKey, analytics]);
 
   if (!allowed || step?.status !== "ask") {
     return null;

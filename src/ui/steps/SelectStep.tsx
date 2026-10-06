@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useId } from "react";
 import { useRouter } from "next/navigation";
 import { PILOT_PROGRAMS } from "@/data";
 import { canStartQuestions, MAX_SELECTED_PROGRAMS } from "@/flow";
 import { ProgramName } from "@/ui/components/ProgramName";
+import { useAnalytics } from "@/ui/analytics/useAnalytics";
 import { StepIndicator } from "@/ui/components/StepIndicator";
 import { copy } from "@/ui/copy.he";
 import { STEP_PATHS } from "@/ui/routes";
@@ -13,6 +15,12 @@ export function SelectStep() {
   const { state, dispatch, hydrated } = useComparison();
   const router = useRouter();
   const selectedCount = state.selectedProgramIds.length;
+  const analytics = useAnalytics();
+  // One token per mounted view: re-renders (and Strict Mode effect re-runs) never duplicate degree_compare_view.
+  const viewToken = useId();
+  useEffect(() => {
+    if (hydrated) analytics.compareViewed(viewToken);
+  }, [hydrated, analytics, viewToken]);
 
   if (!hydrated) {
     return null;

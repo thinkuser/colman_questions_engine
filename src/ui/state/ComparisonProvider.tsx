@@ -1,12 +1,17 @@
 "use client";
 
-import { createContext, useContext, useEffect, useReducer, type Dispatch, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useReducer, type ReactNode } from "react";
+import type { DispatchOptions } from "@/analytics";
 import { comparisonReducer, initialComparisonState, type ComparisonAction, type ComparisonState } from "@/flow";
+import { getBrowserTracker } from "@/ui/analytics/browserTracker";
 import { loadStoredComparison, saveStoredComparison } from "./storage";
+
+/** Dispatch plus optional analytics options (`silent`: programmatic changes that are not candidate actions). */
+export type TrackedDispatch = (action: ComparisonAction, options?: DispatchOptions) => void;
 
 interface ComparisonContextValue {
   state: ComparisonState;
-  dispatch: Dispatch<ComparisonAction>;
+  dispatch: TrackedDispatch;
   /** False until the durable state has been restored on the client. Guards and steps wait for it. */
   hydrated: boolean;
 }
@@ -33,11 +38,29 @@ function shellReducer(shell: Shell, action: ShellAction): Shell {
  * On mount it restores the durable state (selection + answers) and from then on keeps it saved.
  */
 export function ComparisonProvider({ children }: { children: ReactNode }) {
-  const [{ state, hydrated }, dispatch] = useReducer(shellReducer, { state: initialComparisonState, hydrated: false });
+  const [{ state, hydrated }, rawDispatch] = useReducer(shellReducer, {
+    state: initialComparisonState,
+    hydrated: false,
+  });
+
+  // Analytics observes: the action is recorded for replay, then applied by the unchanged product reducer.
+  const dispatch = useCallback<TrackedDispatch>((action, options) => {
+    getBrowserTracker()?.enqueue(action, options);
+    rawDispatch(action);
+  }, []);
 
   useEffect(() => {
-    dispatch({ type: "restored", restored: loadStoredComparison() });
+    const restored = loadStoredComparison();
+    // Restoring after a refresh is not a candidate action: analytics is initialised silently.
+    getBrowserTracker()?.hydrate(restored, window.location.search);
+    rawDispatch({ type: "restored", restored });
   }, []);
+
+  // Layout effects run before any passive effect, so events caused by an action (answer, completion) are emitted
+  // before the events of the screen it leads to (question_view).
+  useLayoutEffect(() => {
+    getBrowserTracker()?.flush();
+  }, [state]);
 
   useEffect(() => {
     if (hydrated) {

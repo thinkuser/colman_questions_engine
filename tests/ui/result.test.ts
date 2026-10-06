@@ -8,7 +8,17 @@ import { ResultPage } from "@/ui/components/result/ResultPage";
 import { ALL_PILOT, CS, DS, MIS, enumerateRuns, runFlow } from "../engine/fixtures";
 import { SANITY_CASES } from "../engine/sanityCases";
 
-const handlers = { onCompareFocused: () => {}, onRestart: () => {}, onBackToQuestion: () => {} };
+const noop = () => {};
+const handlers = {
+  onCompareFocused: noop,
+  onRestart: noop,
+  onBackToQuestion: noop,
+  onMirrorResponse: noop,
+  onAdmissionClick: noop,
+  onAdvisorClick: noop,
+  onSecondaryView: noop,
+  onRealityCheckView: noop,
+};
 const MIS_NAME = "ניהול מערכות מידע";
 const MIS_QUALIFIER = "דו-חוגי עם מנהל עסקים";
 

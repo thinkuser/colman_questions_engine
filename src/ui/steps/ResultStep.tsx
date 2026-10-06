@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { buildResultView } from "@/flow";
+import { useAnalytics } from "@/ui/analytics/useAnalytics";
 import { ResultPage } from "@/ui/components/result/ResultPage";
 import { StepIndicator } from "@/ui/components/StepIndicator";
 import { STEP_PATHS } from "@/ui/routes";
@@ -17,6 +18,7 @@ import { useStepGuard } from "@/ui/state/useStepGuard";
 export function ResultStep() {
   const { state, dispatch } = useComparison();
   const router = useRouter();
+  const analytics = useAnalytics();
   const allowed = useStepGuard("result");
   const { result, answers, selectedProgramIds } = state;
   const advisorUrl = process.env.NEXT_PUBLIC_ADVISOR_URL ?? null;
@@ -41,13 +43,19 @@ export function ResultStep() {
         view={view}
         handlers={{
           onRestart: restart,
+          onMirrorResponse: analytics.mirrorResponse,
+          onAdmissionClick: analytics.admissionClick,
+          onAdvisorClick: analytics.advisorClick,
+          onSecondaryView: analytics.secondaryProgramViewed,
+          onRealityCheckView: analytics.realityCheckViewed,
           // Back reopens the last question; the route guard then moves the URL to /questions.
           onBackToQuestion: () => dispatch({ type: "go_back" }),
           onCompareFocused: () => {
             const pair = view.ctas.compareFocused;
+            // Tracked as restart_comparison; the preselected pair is programmatic, not a candidate selection.
             dispatch({ type: "restart" });
             for (const programId of pair ?? []) {
-              dispatch({ type: "toggle_program", programId });
+              dispatch({ type: "toggle_program", programId }, { silent: true });
             }
             router.push(STEP_PATHS.select);
           },
