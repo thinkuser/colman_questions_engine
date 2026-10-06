@@ -1,0 +1,135 @@
+{
+  "status_note": "Per-program candidate-facing result copy (THI-10). Titles, stories and workflow steps are editorial; everything factual (learning items, course names, careers, why COLMAN) is shown verbatim from the official facts layer and referenced here by exact course text or a unique prefix of a fact. References are validated at load.",
+  "programs": {
+    "computer_science": {
+      "positioning_he": "לבנות את הטכנולוגיה: מערכות, אלגוריתמים ותוכנה",
+      "learn_themes": [
+        {
+          "title_he": "יסודות: מתמטיקה, אלגוריתמיקה ותכנות",
+          "facts": [{ "field": "what_you_learn", "starts_with": "כבר בשנה הראשונה הסטודנטים לומדים קורסי ליבה" }],
+          "courses": []
+        },
+        {
+          "title_he": "עולמות הבינה המלאכותית",
+          "facts": [{ "field": "what_you_learn", "starts_with": "במהלך התואר נלמדים קורסים מרכזיים בעולמות ה- AI" }],
+          "courses": ["למידה חישובית (Machine Learning)", "למידה עמוקה (Deep Learning)", "רשתות נוירונים"]
+        },
+        {
+          "title_he": "פיתוח, נתונים וסייבר בעידן ה-AI",
+          "facts": [],
+          "courses": ["תכנות מונחה AI", "פיתוח מערכות Backend מבוססות AI ו- LLM", "Data Engineering", "סייבר בעולם AI"]
+        },
+        {
+          "title_he": "התנסות מעשית ופרויקט גמר",
+          "facts": [
+            { "field": "what_you_learn", "starts_with": "הלימודים כוללים התנסות מעשית" },
+            { "field": "what_you_learn", "starts_with": "בשנה האחרונה ללימודים מבצעים" }
+          ],
+          "courses": ["פרויקט גמר (שנה ג')"]
+        }
+      ],
+      "real_world": {
+        "challenge_he": "אפליקציה שמשרתת מיליוני משתמשים צריכה להיות מהירה ואמינה, וצריך לבנות אותה.",
+        "steps_he": ["מבינים את הבעיה", "מתכננים אלגוריתם", "כותבים קוד", "בונים ובודקים מערכת שעובדת"],
+        "supported_by": { "field": "what_you_learn", "starts_with": "הלימודים כוללים התנסות מעשית" }
+      },
+      "reality_checks": {
+        "cs_math_load": {
+          "body_he": "בתואר במדעי המחשב לומדים כבר בשנה הראשונה קורסי ליבה בדגש על מתמטיקה, אלגוריתמיקה ותכנות, ולכן כדאי לקחת בחשבון שהמתמטיקה היא חלק משמעותי מהדרך."
+        }
+      }
+    },
+    "data_science": {
+      "positioning_he": "ללמוד ולחזות מתוך נתונים",
+      "learn_themes": [
+        {
+          "title_he": "יסודות במתמטיקה ובסטטיסטיקה",
+          "facts": [{ "field": "what_you_learn", "starts_with": "התוכנית מספקת רקע משמעותי וחזק" }],
+          "courses": ["אנליזה מתמטית", "אלגברה ליניארית I", "מבוא להסתברות", "מבוא לסטטיסטיקה"]
+        },
+        {
+          "title_he": "אלגוריתמים, למידת מכונה ובינה מלאכותית",
+          "facts": [
+            { "field": "what_you_learn", "starts_with": "במסגרת התוכנית מתעמקים הסטודנטים" },
+            { "field": "what_you_learn", "starts_with": "תלמדו כיצד כלים מתקדמים של בינה מלאכותית" }
+          ],
+          "courses": []
+        },
+        {
+          "title_he": "עבודה מעשית עם נתונים",
+          "facts": [{ "field": "what_you_learn", "starts_with": "בין התחומים שבהם ניתן ליישם" }],
+          "courses": ["ניתוח נתונים", "ניהול נתוני ענק ( Big Data)"]
+        }
+      ],
+      "real_world": {
+        "challenge_he": "יש לחברה מיליון לקוחות, ורוצים לדעת מי מהם צפוי לעזוב ולמה.",
+        "steps_he": [
+          "אוספים נתונים",
+          "מבינים ומנקים אותם",
+          "מחפשים תבניות",
+          "בונים מודל ובודקים אותו",
+          "מסבירים את התובנה ופועלים לפיה"
+        ],
+        "supported_by": { "field": "program_notes", "starts_with": "מדע הנתונים עוסק בתחקור מאגרים עתירי נתונים" }
+      },
+      "reality_checks": {
+        "ds_math_statistics_programming": {
+          "body_he": "בינה מלאכותית ולמידת מכונה הן חלק חשוב מהתוכנית, אבל התואר דורש גם בסיס משמעותי של מתמטיקה, סטטיסטיקה ותכנות. כדאי לקחת את זה בחשבון."
+        }
+      }
+    },
+    "management_information_systems": {
+      "positioning_he": "להשתמש בטכנולוגיה ובנתונים כדי לפתור בעיות עסקיות וארגוניות",
+      "learn_themes": [
+        {
+          "title_he": "פיתוח תוכנה ואפליקציות",
+          "facts": [
+            { "field": "what_you_learn", "starts_with": "פיתוח תוכנה (פייתון Python" },
+            { "field": "what_you_learn", "starts_with": "פיתוח אפליקציות WEB" }
+          ],
+          "courses": ["יסודות התכנות", "תכנות מונחה עצמים + תירגול", "פיתוח מערכות WEB + תירגול"]
+        },
+        {
+          "title_he": "עיצוב וניתוח מערכות מידע",
+          "facts": [{ "field": "what_you_learn", "starts_with": "עיצוב וניתוח מערכות מידע" }],
+          "courses": ["ניתוח מערכות מידע", "עיצוב מערכות מידע ונתונים", "מסדי נתונים"]
+        },
+        {
+          "title_he": "נתונים, BI ובינה מלאכותית",
+          "facts": [
+            { "field": "what_you_learn", "starts_with": "תכנות בשפת פייתון לניתוח" },
+            { "field": "what_you_learn", "starts_with": "ויזואליה של מידע ונתונים" },
+            { "field": "what_you_learn", "starts_with": "הפקת תובנות מכמויות גדולות" }
+          ],
+          "courses": ["בינה עסקית", "כריית נתונים ומערכות לומדות"]
+        },
+        {
+          "title_he": "ניהול ועסקים",
+          "facts": [{ "field": "what_you_learn", "starts_with": "לצד ידע נרחב בתחום הטכנולוגי" }],
+          "courses": ["יסודות השיווק א", "חשבונאות פיננסית", "יסודות המימון"]
+        },
+        {
+          "title_he": "יסודות כמותיים",
+          "facts": [],
+          "courses": ["מתמטיקה 1 + תירגול", "סטטיסטיקה א", "מתמטיקה בדידה + תירגול"]
+        }
+      ],
+      "real_world": {
+        "challenge_he": "ארגון רוצה מערכת חדשה לניהול לקוחות, וצריך להבין מה היא צריכה לעשות ואיך מגיעים לפתרון.",
+        "steps_he": [
+          "מבינים את הצורך העסקי",
+          "מגדירים דרישות",
+          "בוחרים טכנולוגיה ונתונים",
+          "מלווים את הפיתוח",
+          "בודקים שהפתרון באמת משרת את הארגון"
+        ],
+        "supported_by": { "field": "why_colman", "starts_with": "גולת הכותרת של התוכנית הוא קורס הפרקטיקום" }
+      },
+      "reality_checks": {
+        "mis_technical_and_quantitative_load": {
+          "body_he": "זה לא תואר בעסקים עם קצת טכנולוגיה. לצד לימודי הניהול התוכנית כוללת גם תכנות, מסדי נתונים, מתמטיקה וסטטיסטיקה, ולכן כדאי לקחת בחשבון שיש בה עבודה טכנית וכמותית משמעותית."
+        }
+      }
+    }
+  }
+}

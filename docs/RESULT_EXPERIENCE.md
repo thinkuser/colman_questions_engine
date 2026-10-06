@@ -90,3 +90,6 @@ Explain that the selected programs may not match the candidate's preferences wel
 
 ## Core output philosophy
 The result must answer not only `What won?`, but `What is the decision I actually need to make?`
+
+## Implementation (THI-10)
+See DEC-025. Copy: `src/data/content/result_copy/`; view model: `src/flow/resultView.ts`; components: `src/ui/components/result/`. Optional configuration: `NEXT_PUBLIC_ADVISOR_URL` (see `.env.example`).

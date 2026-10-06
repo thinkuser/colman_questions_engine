@@ -1,76 +1,58 @@
 "use client";
 
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { getQuestionCopyHe } from "@/data";
-import { ProgramList } from "@/ui/components/ProgramList";
+import { buildResultView } from "@/flow";
+import { ResultPage } from "@/ui/components/result/ResultPage";
 import { StepIndicator } from "@/ui/components/StepIndicator";
-import { copy } from "@/ui/copy.he";
 import { STEP_PATHS } from "@/ui/routes";
 import { useComparison } from "@/ui/state/ComparisonProvider";
 import { useStepGuard } from "@/ui/state/useStepGuard";
 
 /**
- * Temporary completion screen (THI-9): proves the select, questions, complete flow works end to end.
- * The real recommendation experience is THI-10. No scores, rankings or percentages are shown here.
+ * Candidate-facing result (THI-10). The result is always the engine's output for the stored answers (recomputed on
+ * refresh); this step only builds the view model from it and wires the actions to the flow.
+ * The advisor CTA destination is configuration (NEXT_PUBLIC_ADVISOR_URL); without it the CTA is not offered.
  */
 export function ResultStep() {
   const { state, dispatch } = useComparison();
   const router = useRouter();
   const allowed = useStepGuard("result");
+  const { result, answers, selectedProgramIds } = state;
+  const advisorUrl = process.env.NEXT_PUBLIC_ADVISOR_URL ?? null;
+  const view = useMemo(
+    () => (allowed && result ? buildResultView(result, answers, selectedProgramIds, { advisorUrl }) : null),
+    [allowed, result, answers, selectedProgramIds, advisorUrl],
+  );
 
-  if (!allowed) {
+  if (!view) {
     return null;
   }
 
-  function handleRestart() {
+  const restart = () => {
     dispatch({ type: "restart" });
     router.push(STEP_PATHS.select);
-  }
+  };
 
   return (
     <section className="space-y-6">
       <StepIndicator current="result" />
-      <h1 className="text-2xl font-bold">{copy.result.heading}</h1>
-      <p className="text-slate-600">{copy.result.placeholder}</p>
-
-      <div className="space-y-2">
-        <p className="font-medium">{copy.result.compared}</p>
-        <ProgramList programIds={state.selectedProgramIds} />
-      </div>
-
-      <div className="space-y-3 rounded-xl border border-dashed border-slate-300 p-4" data-testid="dev-summary">
-        <h2 className="font-semibold">{copy.result.summaryHeading}</h2>
-        <p className="text-sm text-slate-600">{copy.result.answeredCount(state.answers.length)}</p>
-        <ol className="space-y-3 text-sm">
-          {state.answers.map(({ questionId, answerId }) => {
-            const questionCopy = getQuestionCopyHe(questionId);
-            const chosen = questionCopy.options.find((option) => option.id === answerId);
-            return (
-              <li key={questionId}>
-                <p className="text-slate-600">{questionCopy.prompt}</p>
-                <p className="font-medium">{chosen?.label}</p>
-              </li>
-            );
-          })}
-        </ol>
-      </div>
-
-      <div className="flex items-center justify-between gap-4">
-        <button
-          type="button"
-          className="min-h-11 rounded-lg px-3 text-brand underline"
-          onClick={() => dispatch({ type: "go_back" })}
-        >
-          {copy.result.back}
-        </button>
-        <button
-          type="button"
-          className="min-h-12 rounded-xl border-2 border-brand px-6 py-3 font-semibold text-brand"
-          onClick={handleRestart}
-        >
-          {copy.result.restart}
-        </button>
-      </div>
+      <ResultPage
+        view={view}
+        handlers={{
+          onRestart: restart,
+          // Back reopens the last question; the route guard then moves the URL to /questions.
+          onBackToQuestion: () => dispatch({ type: "go_back" }),
+          onCompareFocused: () => {
+            const pair = view.ctas.compareFocused;
+            dispatch({ type: "restart" });
+            for (const programId of pair ?? []) {
+              dispatch({ type: "toggle_program", programId });
+            }
+            router.push(STEP_PATHS.select);
+          },
+        }}
+      />
     </section>
   );
 }

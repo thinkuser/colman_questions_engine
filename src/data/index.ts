@@ -5,5 +5,6 @@
 export * from "./fit";
 export * from "./programs";
 export * from "./questions";
+export * from "./resultCopy";
 export * from "./schema";
 export * from "./sources";
