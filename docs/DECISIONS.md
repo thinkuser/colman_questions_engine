@@ -79,7 +79,11 @@ Each program's admissions record has a `usage_status`:
 `management_information_systems` is `manual_confirmation_required`: its published conditional-admission wording is internally ambiguous. This status is for admission-check features only and never affects fit or scoring (DEC-008).
 
 ## DEC-018 — Fit, near-tie, and reality-check thresholds
-Status: **proposed — pending review** (THI-7). Not accepted. These were calibration seeds validated against synthetic pair-question signals in THI-7. **THI-8 revalidated them against the real question bank (DEC-021) and kept the fit and near-tie thresholds unchanged**; see `docs/SCORING.md` → "THI-8 revalidation". The reality-check rule gained an explicit-negative trigger in THI-8 (below).
+Status: **accepted for V1 pilot** — validated through THI-7 calibration, THI-8 question-bank revalidation, exhaustive path tests, and THI-12 acceptance QA.
+
+**What this acceptance means.** These thresholds are the **approved operational baseline for the V1 pilot**. They are **not psychometrically or scientifically validated thresholds**: they are transparent product heuristics, calibrated against the sanity personas and the exhaustive answer-path distributions (`docs/SCORING.md`), not against real-candidate outcomes. They should be **revisited after collecting real-candidate behavioural and outcome data**. Accepting DEC-018 now does **not** mean tuning them before the pilot: the values and the reality-check rules below stay exactly as they are for the pilot.
+
+History: proposed in THI-7 as calibration seeds (validated against synthetic pair-question signals); **THI-8 revalidated them against the real question bank (DEC-021) and kept the fit and near-tie thresholds unchanged** (`docs/SCORING.md` → "THI-8 revalidation"); the reality-check rule gained an explicit-negative trigger in THI-8 (below); THI-12 acceptance QA exercised them end to end with no change needed.
 
 All values apply to `normalized_fit` (raw fit / attainable ideal):
 - `strong_fit` ≥ 0.80; `good_fit` ≥ 0.65; `consider_carefully` ≥ 0.50; `no_strong_fit` < 0.50.

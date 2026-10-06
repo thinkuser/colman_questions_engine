@@ -31,7 +31,7 @@ The LLM may explain a result, but the deterministic engine decides the match.
 7. `docs/ANALYTICS.md` — GA4/BigQuery measurement plan.
 8. `docs/PERSONAS_AND_TESTS.md` — sanity personas and acceptance criteria.
 9. `docs/PROGRAM_DATA.md` — program data layers, evidence rules, curation workflow.
-10. `docs/SCORING.md` — fit formula, proposed thresholds, calibration evidence.
+10. `docs/SCORING.md` — fit formula, V1 pilot thresholds (DEC-018), calibration evidence.
 
 ## Workflow
 GitHub is the source of truth.

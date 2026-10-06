@@ -125,15 +125,16 @@ None remaining. One blocking-class defect was found and **fixed within THI-12**:
 ### Non-blocking follow-ups
 - **N-1.** The unknown-route 404 page is the default English Next.js text ("This page could not be found.") inside the Hebrew document. Candidates only see it via a bad URL. Add a Hebrew 404.
 - **N-2.** The advisor destination is not defined anywhere: the CTA is hidden until `NEXT_PUBLIC_ADVISOR_URL` is set. Product must provide the destination before launch if an advisor route is wanted.
-- **N-3.** DEC-018 (fit / near-tie / reality-check thresholds) is still **"proposed - pending review"** by product. The behaviour validated here depends on it. Recommend accepting or adjusting it with real-candidate data.
+- **N-3 (resolved as a pre-pilot item).** DEC-018 (fit / near-tie / reality-check thresholds) is now **accepted for the V1 pilot** as the approved operational baseline. It is not a pre-pilot blocker or open decision. The thresholds are heuristics, not psychometrically or scientifically validated, and should be **revisited after real-candidate behavioural and outcome data**; they should not be tuned before the pilot.
 - **N-4.** Coverage is Chromium only. No Firefox, WebKit/iOS Safari, real-device or screen-reader testing. Do a short real-device pass (iOS Safari, Android Chrome) before launch.
 - **N-5.** The E2E suite runs against the production build. React Strict Mode double-effects (dev only) were verified manually during THI-11 but are not part of the automated run.
 - **N-6.** At 320px the three step-indicator pills wrap onto two lines each. Cosmetic.
 - **N-7.** Hebrew copy is a first draft (carried from THI-10). A native-speaker review and real candidate feedback should drive any wording changes.
 - **N-8.** `secondary_program_view` / `reality_check_view` are deduplicated in memory, so a refresh while the section is in view counts again (documented in `docs/ANALYTICS.md`).
 - **N-9.** Next.js auto-adds the E2E build folders to `tsconfig.json` `include` when the E2E servers build. It is harmless but noisy in diffs.
+- **N-10.** The Playwright E2E suite is not wired into GitHub Actions. Running it in CI (with browser install and caching) is a documented follow-up, deliberately not part of THI-12.
 
 ### Pilot readiness
 **READY WITH KNOWN NON-BLOCKERS**
 
-All core paths work end to end (four personas, near tie, low-math cases, Back, restart, refresh, corrupt storage, analytics, mobile and RTL), and the one defect found (B-1) is fixed and covered. Before real candidates see it, product should resolve N-2 (advisor destination) and N-3 (accept the thresholds), and run the N-4 real-device smoke.
+All core paths work end to end (four personas, near tie, low-math cases, Back, restart, refresh, corrupt storage, analytics, mobile and RTL), and the one defect found (B-1) is fixed and covered. DEC-018 is accepted for the V1 pilot (N-3 is no longer an open pre-pilot item). Before real candidates see it, product should resolve N-2 (advisor destination) and run the N-4 real-device smoke.
