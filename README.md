@@ -98,5 +98,6 @@ docs/           Product source of truth
 - Admissions data (`@/data/admissions`) is isolated from fit/scoring (DEC-008); pure modules may not import it.
 - Program facts live only in `src/data/content`; UI reads them through `@/data` and never hardcodes them.
 - UI components dispatch actions and read selectors; they do not contain fit, routing, or question-selection logic.
+- Analytics: `src/analytics/` (see `docs/ANALYTICS.md`, DEC-026); components use `useAnalytics()` and never push to the dataLayer directly.
 - Result copy lives in `src/data/content/result_copy/` (evidence wording, dimension phrases, pair axes, per-program copy), validated by `src/data/resultCopy.ts` and turned into a view model by `src/flow/resultView.ts`.
 - Interface Hebrew strings live in `src/ui/copy.he.ts`. Candidate-facing question and answer copy is structured data in `src/data/content/question_copy_he.json` (validated against the bank by `src/data/questions.ts`); IDs and code stay in English.

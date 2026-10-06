@@ -14,6 +14,7 @@ import {
   RealWorldSection,
   WhyColmanSection,
 } from "./ProgramSections";
+import { ViewOnce } from "@/ui/components/ViewOnce";
 import { CtaSection, NotYouSection, type ResultActionHandlers } from "./ResultActions";
 
 /**
@@ -28,14 +29,18 @@ export function ResultPage({ view, handlers }: { view: ResultView; handlers: Res
     <div className="space-y-5" data-result-kind={view.kind}>
       <ResultHero view={view} />
       <EvidenceSection view={view} />
-      <MirrorSection view={view} />
+      <MirrorSection view={view} onResponse={handlers.onMirrorResponse} />
       <AlternativesSection view={view} />
       <TradeoffSection view={view} />
       <LearnSection view={view} />
       <RealWorldSection view={view} />
       <CareersSection view={view} />
-      <RealityChecksSection view={view} />
-      <SecondarySection view={view} />
+      <RealityChecksSection view={view} onCheckView={handlers.onRealityCheckView} />
+      {view.kind !== "no_strong_fit" && (
+        <ViewOnce onView={handlers.onSecondaryView}>
+          <SecondarySection view={view} />
+        </ViewOnce>
+      )}
       <WhyColmanSection view={view} />
       <CtaSection view={view} handlers={handlers} />
       <NotYouSection handlers={handlers} />

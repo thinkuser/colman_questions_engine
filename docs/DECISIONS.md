@@ -182,3 +182,13 @@ Status: accepted — specified in the THI-10 instructions.
 - **Reality checks** are warnings: the lead line quotes the candidate's actual answer for an explicit-negative trigger (or a plain-language dimension sentence for a net-negative trigger), followed by the program's own wording. They never disqualify and never alter fit (DEC-009).
 - **Shared first year (DEC-016)** appears only in the CS/DS main decision as context, never as evidence.
 - **CTAs:** admission information links to the official `academy.org.il` page and the program page to its official `colman.ac.il` page; no eligibility logic (DEC-008). The advisor CTA is shown only when `NEXT_PUBLIC_ADVISOR_URL` is configured (no contact destination is invented). "Compare again" restarts, preselecting the top two when three programs were compared.
+
+## DEC-026 — Analytics observes the product (funnel instrumentation)
+Status: accepted — specified in the THI-11 instructions.
+
+- **Observer only.** Analytics never takes part in scoring, routing, results, persistence validation or product state. Events are derived by replaying dispatched actions through the same pure reducer; rejected actions and state restoration therefore emit nothing. Every analytics failure is swallowed.
+- **Centralised.** `src/analytics/` is the only analytics boundary; components call typed helpers (`useAnalytics()`) and never build `dataLayer` payloads. The transport stays the GTM `dataLayer`; there is no direct GA4 dependency and no network call.
+- **Contract additions** (documented in `docs/ANALYTICS.md`): `comparison_id`, `program_id`, `result_kind`, `leading_program`. `leading_program` is the top-ranked program after each accepted answer (analytical metadata, never the recommendation).
+- **Canonical values:** programs, `comparison_cluster`, `main_decision_pair` and `branch_id` use alphabetical id order; the winner is carried separately as `recommended_program`.
+- **Session context is separate from product state.** `comparison_id`, first-touch UTMs and the last question exposure live in a versioned `sessionStorage` record; the durable comparison payload `{ version, selectedProgramIds, answers }` is unchanged.
+- **No fake events.** `curriculum_click`, `career_click`, `whatsapp_click`, `lead_submit` and `comparison_share` stay in the vocabulary but are not emitted; no UI element was made interactive for analytics.

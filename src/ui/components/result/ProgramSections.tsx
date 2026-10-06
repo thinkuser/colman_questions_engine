@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import type { ResultView } from "@/flow";
 import { ProgramName } from "@/ui/components/ProgramName";
+import type { ProgramId } from "@/engine";
+import { ViewOnce } from "@/ui/components/ViewOnce";
 import { copy } from "@/ui/copy.he";
 
 /**
@@ -97,19 +99,31 @@ export function CareersSection({ view }: { view: ResultView }) {
 }
 
 /** Warnings, never disqualification: shown only for checks the engine triggered. */
-export function RealityChecksSection({ view }: { view: ResultView }) {
+export function RealityChecksSection({
+  view,
+  onCheckView,
+}: {
+  view: ResultView;
+  onCheckView?: (programId: ProgramId) => void;
+}) {
   if (view.realityChecks.length === 0) return null;
   return (
     <Card label={copy.result.realityTitle}>
       <h2 className="text-lg font-bold">{copy.result.realityTitle}</h2>
       <ul className="space-y-3">
         {view.realityChecks.map((check) => (
-          <li key={check.id} data-reality-check={check.id} className="min-w-0 space-y-1 rounded-xl bg-amber-50 p-3">
-            <ProgramName program={check.program} className="font-semibold" />
-            {check.leadLines.map((line) => (
-              <p key={line}>{line}.</p>
-            ))}
-            <p className="text-slate-700">{check.bodyHe}</p>
+          <li key={check.id}>
+            <ViewOnce
+              data-reality-check={check.id}
+              className="min-w-0 space-y-1 rounded-xl bg-amber-50 p-3"
+              onView={() => onCheckView?.(check.program.id)}
+            >
+              <ProgramName program={check.program} className="font-semibold" />
+              {check.leadLines.map((line) => (
+                <p key={line}>{line}.</p>
+              ))}
+              <p className="text-slate-700">{check.bodyHe}</p>
+            </ViewOnce>
           </li>
         ))}
       </ul>

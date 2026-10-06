@@ -99,7 +99,7 @@ export function EvidenceSection({ view }: { view: ResultView }) {
 }
 
 /** Reflection of the result, not a score. The response stays local to the page and never changes the result. */
-export function MirrorSection({ view }: { view: ResultView }) {
+export function MirrorSection({ view, onResponse }: { view: ResultView; onResponse?: (value: "yes" | "no") => void }) {
   const [response, setResponse] = useState<"yes" | "no" | null>(null);
   return (
     <Card label={copy.result.mirrorTitle}>
@@ -110,14 +110,20 @@ export function MirrorSection({ view }: { view: ResultView }) {
           <button
             type="button"
             className="min-h-12 flex-1 rounded-xl bg-brand px-4 font-semibold text-white"
-            onClick={() => setResponse("yes")}
+            onClick={() => {
+              setResponse("yes");
+              onResponse?.("yes");
+            }}
           >
             {copy.result.mirrorYes}
           </button>
           <button
             type="button"
             className="min-h-12 flex-1 rounded-xl border-2 border-brand px-4 font-semibold text-brand"
-            onClick={() => setResponse("no")}
+            onClick={() => {
+              setResponse("no");
+              onResponse?.("no");
+            }}
           >
             {copy.result.mirrorNo}
           </button>

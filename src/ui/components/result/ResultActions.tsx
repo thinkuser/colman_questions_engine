@@ -1,9 +1,16 @@
 import type { ReactNode } from "react";
+import type { ProgramId } from "@/engine";
 import type { ResultView } from "@/flow";
 import { copy } from "@/ui/copy.he";
 
 export interface ResultActionHandlers {
   onCompareFocused: () => void;
+  /** Analytics observers: report what happened, never change what happens. */
+  onMirrorResponse: (value: "yes" | "no") => void;
+  onAdmissionClick: () => void;
+  onAdvisorClick: () => void;
+  onSecondaryView: () => void;
+  onRealityCheckView: (programId: ProgramId) => void;
   onRestart: () => void;
   onBackToQuestion: () => void;
 }
@@ -13,9 +20,19 @@ const primary =
 const secondary =
   "flex min-h-12 w-full items-center justify-center rounded-xl border-2 border-brand px-4 py-3 text-center font-semibold text-brand";
 
-function ExternalLink({ href, className, children }: { href: string; className: string; children: ReactNode }) {
+function ExternalLink({
+  href,
+  className,
+  onClick,
+  children,
+}: {
+  href: string;
+  className: string;
+  onClick?: () => void;
+  children: ReactNode;
+}) {
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+    <a href={href} target="_blank" rel="noopener noreferrer" className={className} onClick={onClick}>
       {children}
       <span className="sr-only"> ({copy.result.opensNewTab})</span>
     </a>
@@ -43,7 +60,7 @@ export function CtaSection({ view, handlers }: { view: ResultView; handlers: Res
             {copy.result.exploreOthers}
           </button>
           {ctas.advisorUrl && (
-            <ExternalLink href={ctas.advisorUrl} className={secondary}>
+            <ExternalLink href={ctas.advisorUrl} className={secondary} onClick={handlers.onAdvisorClick}>
               {ctas.advisorLabelHe}
             </ExternalLink>
           )}
@@ -52,7 +69,11 @@ export function CtaSection({ view, handlers }: { view: ResultView; handlers: Res
         <>
           {kind === "near_tie" && compare}
           {ctas.admissionUrl && (
-            <ExternalLink href={ctas.admissionUrl} className={kind === "near_tie" ? secondary : primary}>
+            <ExternalLink
+              href={ctas.admissionUrl}
+              className={kind === "near_tie" ? secondary : primary}
+              onClick={handlers.onAdmissionClick}
+            >
               {copy.result.admission}
             </ExternalLink>
           )}
@@ -63,7 +84,7 @@ export function CtaSection({ view, handlers }: { view: ResultView; handlers: Res
             </ExternalLink>
           )}
           {ctas.advisorUrl && (
-            <ExternalLink href={ctas.advisorUrl} className={secondary}>
+            <ExternalLink href={ctas.advisorUrl} className={secondary} onClick={handlers.onAdvisorClick}>
               {ctas.advisorLabelHe}
             </ExternalLink>
           )}

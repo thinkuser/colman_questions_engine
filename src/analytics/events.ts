@@ -1,6 +1,6 @@
 /**
  * Analytics vocabulary. Source of truth: docs/ANALYTICS.md.
- * Event wiring into the UI is owned by THI-11; this module only fixes the names and transport.
+ * Semantics and payload conventions: docs/ANALYTICS.md. Events are emitted through FunnelTracker (funnelTracker.ts).
  */
 
 export const ANALYTICS_EVENTS = [
@@ -30,6 +30,10 @@ export const ANALYTICS_EVENTS = [
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[number];
 
 export const ANALYTICS_PARAMS = [
+  "comparison_id",
+  "program_id",
+  "result_kind",
+  "leading_program",
   "program_1",
   "program_2",
   "program_3",
