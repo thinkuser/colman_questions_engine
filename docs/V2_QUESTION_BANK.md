@@ -271,3 +271,6 @@ Questions are stored as data in `src/data/content/discovery/clusters.json` and v
 - Targets must be core or adjacent programs of the cluster. Adjacent programs today: Law cluster (Business, Communication, Communication + Management, MIS) and Interior Design cluster (Communication, Business, Behavioral Science, Data Science). Narrow these when the THI-15 mapping is final.
 - `reality_check` questions (L4, D4) have options with no programs and a `reality_level` (`positive`, `neutral`, `negative`). They never contribute ranking points.
 - Weights (+3 scenario, +4 focus, +5 tiebreaker) are applied by the THI-14 engine from the kind; they are never stored in the data.
+- `project_ids` (THI-14) marks a scenario as the opening question of those projects (B1 → Wolt, P1 → TikTok, P2 → Duolingo, C1 → Nike, L1 → AI product, D1 → Apple Store). Questions without it are general cluster questions, asked only when they separate the current leaders.
+- The Spotify scenario is **not** authored again: the tech cluster's `T1` `reuses` V1 `Q1` (same options and V1's Hebrew copy) so it is asked once and carried into the V1 precision flow. The Discover Weekly wording above is therefore not shipped.
+- A generic head-to-head is built from each program's `work_statements_he` (THI-15) when no authored question separates the two leaders (`docs/V2_SCORING.md`).

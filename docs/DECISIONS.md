@@ -217,6 +217,11 @@ Status: accepted — THI-13 review.
 - The `tech` cluster uses the preserved V1 CS / DS / MIS engine as its precision module (`v1_tech`), which must cover exactly the V1 pilot programs. `PrecisionModuleAdapter` is an interface only until THI-14. No N×N pair structure exists in the V2 data.
 - Question content is not part of THI-13: non-tech clusters are THI-15 and the tech discovery handoff is THI-14. The shipped lists are empty.
 - Data: `src/data/content/discovery/clusters.json`; types: `V2Cluster` / `V2Question` in `src/engine/discovery.ts`; validation: `buildClusters` in `src/data/discovery.ts`.
+- **Amended in THI-14** (two optional fields; nothing removed):
+  - `project_ids`: scenario applicability. The scenario is the opening question of those selected projects. Only scenario questions may name projects, and only projects of the same cluster. Questions without it are general cluster questions, asked only when they separate the current leaders (DEC-030).
+  - `reuses: { module, question_id }`: the question **is** a precision module's own question, with the same option ids and the module's own candidate copy (it must not carry its own). Its answer is carried into the module on handoff. Allowed only inside that module's cluster.
+  - V2 question ids must not collide with precision-module question ids, because both share one answer list.
+  - The tech cluster now holds `T1` (Spotify opener) reusing V1 `Q1`. Non-tech content is still THI-15.
 
 ## DEC-029 — V2 program catalog layer
 Status: accepted — THI-13 review.
@@ -227,3 +232,26 @@ Status: accepted — THI-13 review.
 - **Name verification without copying pages.** Names and aliases are verified verbatim ("תואר ראשון ב…") against official degree headings recorded in `src/data/content/catalog/verified_headings.json`. Each entry holds only program id, source id, the heading and its retrieval date: no page body, curriculum, admissions or marketing copy. Full-page snapshots are committed only for sources that back verbatim official facts (the V1 pilot pages and the admissions page); headings for those pages must also match their snapshot. Nothing is fetched at runtime (DEC-012).
 - **No academic facts are added for the 11 new programs** (`facts_status: pending_curation`). Their official facts, fit profiles and admissions follow the existing three-layer rules when curated.
 - **Qualifiers:** MIS keeps the mandatory `דו-חוגי עם מנהל עסקים` (DEC-015). **Economics + Psychology carries the candidate-facing qualifier `דו-חוגי`**, since it is published as a double major on both official sites. Canonical name `כלכלה ופסיכולוגיה`, alias `פסיכולוגיה וכלכלה`. The qualifier must be shown with the name wherever candidates see it.
+
+## DEC-030 — V2 hybrid shortlist routing and scoring
+Status: accepted — V2 product direction (`docs/V2_ALL_PROGRAMS_SPEC.md` §7–9), implemented in THI-14. **One part is open:** a generic "no strong fit" threshold (below).
+
+Full description and pressure-test traces: `docs/V2_SCORING.md`. Code: `src/engine/v2/`, wired in `src/flow/v2Step.ts`.
+
+- **Points (generic V2 only; calibration seeds, never shown):** project selection **0**; scenario **+3**; focus / head-to-head **+4**; curated tiebreaker **+5**; reality check **0**.
+  - A multi-target answer gives the full weight and one support to **each** target.
+  - Neutral answers add nothing.
+- **Support** counts only scored answers that pointed to a program. Project membership, candidate-pool order, catalogue order and cluster order are never evidence and never break ties (DEC-027).
+- **Adjacent programs** become rankable only after an answer actually points to them (DEC-022).
+- **Clear leader:** evaluated after at least 3 scored answers; needs at least 2 supporting answers **and** a lead of 4 or more points.
+- **Ceiling: 5 scored answers.** Then: a clear leader, a **near tie** (a valid result), or **insufficient positive evidence**. The engine never forces a winner. A true tie stays a tie: equal score and support share a rank.
+- **Routing:** precision handoff, then project scenarios, then resolution, then reality checks, then the next focus question:
+  - an authored question that separates the two leaders,
+  - else a generated head-to-head from curated work statements,
+  - else an explicit `needs_focus_content`.
+  - Deterministic replay; no randomness, no runtime LLM, no N×N authored pairs.
+- **Precision modules:** an adapter interface (eligibility, own questions, next step, own result). Handoff happens when every rankable program belongs to the module, or when, after the project scenarios, the evidence shortlist sits inside it (at least 2 of its programs in play). Only `v1_tech` exists.
+- **V1 tech stays separate and unchanged.** The `v1_tech` module is the V1 adaptive engine with its own scoring (DEC-018 to DEC-021) and behaviour. V2 points are never applied inside it. Spotify alone is exactly the V1 flow.
+- **No duplicate Spotify question.** The Spotify opener `T1` reuses V1 `Q1` (same options and copy). In a cross-cluster run its answer is carried into V1 as `Q1`, and V1 continues at Q2.
+- **Reality checks** are asked after the ranking is resolved, for the clusters of the resolved program(s). They are recorded as evidence and never change the ranking.
+- **Open, proposed, pending product review:** a generic **"no strong fit" threshold**. V1's normalized-fit thresholds are not transplanted into V2 points, and the accepted V2 docs define none. Until decided, the generic engine reports only `recommended`, `near_tie` or `insufficient_positive_evidence`.

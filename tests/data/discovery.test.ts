@@ -9,6 +9,9 @@ import {
   PROGRAM_IDS,
   V2_CLUSTERS,
   V2_PROGRAM_IDS,
+  getQuestionCopyHe,
+  getV2QuestionCopy,
+  QUESTION_BANK,
 } from "@/data";
 import { readFileSync } from "node:fs";
 import projectsRaw from "@/data/content/discovery/career_projects.json";
@@ -18,7 +21,7 @@ type ProjectsFile = typeof projectsRaw;
 /** Fixture shape: the shipped clusters have empty question lists, which TypeScript would infer as never[]. */
 interface FixtureOption {
   id: string;
-  label_he: string;
+  label_he?: string;
   program_ids: string[];
   reality_level?: string;
 }
@@ -26,7 +29,9 @@ interface FixtureQuestion {
   id: string;
   position: number;
   kind: string;
-  prompt_he: string;
+  prompt_he?: string;
+  project_ids?: string[];
+  reuses?: { module: string; question_id: string };
   options: FixtureOption[];
 }
 type ClustersFile = Omit<typeof clustersRaw, "clusters"> & {
@@ -204,8 +209,27 @@ describe("question clusters", () => {
     for (const cluster of V2_CLUSTERS.filter((c) => c.id !== "tech")) expect(cluster.precisionModule).toBeNull();
   });
 
-  it("ships no question content yet (THI-14 / THI-15) and no fixed question count", () => {
-    for (const cluster of V2_CLUSTERS) expect(cluster.questions).toEqual([]);
+  it("ships no non-tech question content yet (THI-15)", () => {
+    for (const cluster of V2_CLUSTERS.filter((c) => c.id !== "tech")) expect(cluster.questions).toEqual([]);
+  });
+
+  it("holds only the Spotify opener in the tech cluster, reusing V1 Q1 with V1's own options and copy (THI-14)", () => {
+    const tech = getV2Cluster("tech")!;
+    expect(tech.questions).toHaveLength(1);
+    const t1 = tech.questions[0]!;
+    expect(t1).toMatchObject({ id: "T1", position: 1, kind: "scenario", projectIds: ["spotify_discover_weekly"] });
+    expect(t1.reuses).toEqual({ moduleId: "v1_tech", questionId: "Q1" });
+    expect(t1.options.map((o) => o.id)).toEqual(
+      QUESTION_BANK.questions.find((q) => q.id === "Q1")!.options.map((o) => o.id),
+    );
+    expect(Object.fromEntries(t1.options.map((o) => [o.id, o.programIds]))).toEqual({
+      A: ["computer_science"],
+      B: ["data_science"],
+      C: ["management_information_systems"],
+    });
+    // No duplicated candidate copy: the V2 question shows exactly V1 Q1's Hebrew copy.
+    expect(getV2QuestionCopy("T1")).toEqual(getQuestionCopyHe("Q1"));
+    expect(JSON.stringify(clustersRaw)).not.toMatch(/prompt_he|label_he/);
   });
 });
 
@@ -372,5 +396,84 @@ describe("question schema extensibility", () => {
       },
     ];
     expect(() => buildClusters(file)).toThrow(/duplicate question id "L1"/);
+  });
+});
+
+describe("THI-14 schema additions: project applicability and reused precision questions", () => {
+  const techOf = (file: ClustersFile) => file.clusters.find((c) => c.id === "tech")!;
+  const businessOf = (file: ClustersFile) => file.clusters.find((c) => c.id === "business")!;
+  const generalQuestion = (id: string, extra: Partial<FixtureQuestion> = {}): FixtureQuestion => ({
+    id,
+    position: 1,
+    kind: "scenario",
+    prompt_he: "שאלה",
+    options: [
+      { id: "A", label_he: "א", program_ids: ["business_administration"] },
+      { id: "B", label_he: "ב", program_ids: ["accounting"] },
+    ],
+    ...extra,
+  });
+
+  it("rejects a reused question that also carries its own copy (no duplicated candidate copy)", () => {
+    const file = clustersFile();
+    techOf(file).questions[0]!.prompt_he = "עותק כפול";
+    expect(() => buildClusters(file)).toThrow(/must not carry its own copy/);
+  });
+
+  it("rejects reusing an unknown precision question or with different options", () => {
+    const unknown = clustersFile();
+    techOf(unknown).questions[0]!.reuses = { module: "v1_tech", question_id: "Q99" };
+    expect(() => buildClusters(unknown)).toThrow(/reuses unknown question "Q99"/);
+
+    const options = clustersFile();
+    techOf(options).questions[0]!.options.pop();
+    expect(() => buildClusters(options)).toThrow(/must list exactly the options of "Q1"/);
+  });
+
+  it("rejects reusing a module question outside that module's cluster", () => {
+    const file = clustersFile();
+    businessOf(file).questions = [
+      generalQuestion("B1", {
+        prompt_he: undefined,
+        options: [
+          { id: "A", program_ids: ["business_administration"] },
+          { id: "B", program_ids: ["accounting"] },
+          { id: "C", program_ids: ["economics_and_management"] },
+        ],
+        reuses: { module: "v1_tech", question_id: "Q1" },
+      }),
+    ];
+    expect(() => buildClusters(file)).toThrow(/outside that module's cluster/);
+  });
+
+  it("requires copy on authored questions", () => {
+    const file = clustersFile();
+    businessOf(file).questions = [generalQuestion("B1", { prompt_he: undefined })];
+    expect(() => buildClusters(file)).toThrow(/needs prompt_he/);
+  });
+
+  it("rejects V2 question ids that collide with precision-module question ids (they share one answer list)", () => {
+    const file = clustersFile();
+    businessOf(file).questions = [generalQuestion("Q2")];
+    expect(() => buildClusters(file)).toThrow(/collides with a precision-module question id/);
+  });
+
+  it("allows project applicability only on scenario questions, for projects of the same cluster", () => {
+    const notScenario = clustersFile();
+    businessOf(notScenario).questions = [generalQuestion("B1", { kind: "focus", project_ids: ["wolt_new_city"] })];
+    expect(() => buildClusters(notScenario)).toThrow(/only scenario questions name projects/);
+
+    const otherCluster = clustersFile();
+    businessOf(otherCluster).questions = [generalQuestion("B1", { project_ids: ["nike_israel_launch"] })];
+    const built = buildClusters(otherCluster).clusters;
+    expect(() => buildCareerProjects(projectsRaw, built, V2_PROGRAM_IDS)).toThrow(
+      /names project "nike_israel_launch" of another cluster/,
+    );
+
+    const unknown = clustersFile();
+    businessOf(unknown).questions = [generalQuestion("B1", { project_ids: ["zara_launch"] })];
+    expect(() => buildCareerProjects(projectsRaw, buildClusters(unknown).clusters, V2_PROGRAM_IDS)).toThrow(
+      /unknown project "zara_launch"/,
+    );
   });
 });

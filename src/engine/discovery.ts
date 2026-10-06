@@ -133,6 +133,16 @@ export interface V2Question {
   /** 1-based position within the cluster. Positions are contiguous; there is no fixed question count. */
   position: number;
   kind: V2QuestionKind;
+  /**
+   * Scenario applicability: the selected project(s) this scenario opens. Null for a general cluster question, which is
+   * asked only when it separates the current leaders (THI-14).
+   */
+  projectIds: readonly string[] | null;
+  /**
+   * Set when the question IS a precision module's own question: the answer is carried into the module on handoff so
+   * the candidate never answers the same question twice (THI-14).
+   */
+  reuses: { moduleId: PrecisionModuleId; questionId: string } | null;
   options: readonly V2AnswerOption[];
 }
 
@@ -154,12 +164,4 @@ export interface V2Cluster {
   questions: readonly V2Question[];
 }
 
-/**
- * Interface reserved for THI-14: hand a candidate pool to a precision module. Declared so module boundaries are
- * explicit now; THI-13 implements no routing or scoring behind it.
- */
-export interface PrecisionModuleAdapter {
-  id: PrecisionModuleId;
-  /** The programs the module is able to decide between. */
-  programIds: readonly ProgramId[];
-}
+// The precision-module adapter interface and the V2 router live in ./v2 (THI-14).
