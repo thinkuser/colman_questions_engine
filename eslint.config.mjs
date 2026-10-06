@@ -25,7 +25,16 @@ const eslintConfig = [
   ...nextCoreWebVitals,
   ...nextTypescript,
   {
-    ignores: [".next/**", "out/**", "build/**", "coverage/**", "next-env.d.ts"],
+    ignores: [
+      ".next/**",
+      ".next-e2e-*/**",
+      "playwright-report/**",
+      "test-results/**",
+      "out/**",
+      "build/**",
+      "coverage/**",
+      "next-env.d.ts",
+    ],
   },
   {
     files: ["src/engine/**", "src/flow/**", "src/data/**", "src/analytics/**"],

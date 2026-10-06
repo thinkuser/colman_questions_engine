@@ -14,11 +14,25 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", ".next/dev/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    ".next-e2e-advisor/types/**/*.ts",
+    ".next-e2e-advisor/dev/types/**/*.ts",
+    ".next-e2e-plain/types/**/*.ts",
+    ".next-e2e-plain/dev/types/**/*.ts"
+  ],
+  "exclude": ["node_modules", ".next-e2e-advisor", ".next-e2e-plain"]
 }

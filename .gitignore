@@ -26,3 +26,8 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# e2e
+.next-e2e-*/
+playwright-report/
+test-results/

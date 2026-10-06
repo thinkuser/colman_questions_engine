@@ -68,6 +68,7 @@ pnpm dev          # http://localhost:3000
 | `pnpm dev` | Local dev server |
 | `pnpm build` / `pnpm start` | Production build / serve the build |
 | `pnpm test` | Unit tests (Vitest, Node environment) |
+| `pnpm e2e` | Pilot acceptance E2E (Playwright, real production build; first run: `pnpm exec playwright install chromium`). See `docs/QA_ACCEPTANCE_V1.md` |
 | `pnpm typecheck` | TypeScript, strict mode |
 | `pnpm lint` | ESLint, including module-boundary rules |
 | `pnpm check` | lint + typecheck + test (run before opening a PR) |
