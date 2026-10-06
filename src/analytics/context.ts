@@ -70,13 +70,17 @@ export function comparisonContext(input: {
 }
 
 /**
- * Result metadata used by completion and result-page events. `recommended_program` exists only when the engine
- * has a best-fit program (never invented for no_strong_fit); the pair is canonical, not winner-first.
+ * Result metadata used by completion and result-page events.
+ * - `recommended_program` is the actual recommendation: present only when the engine has a best-fit program
+ *   (never invented for no_strong_fit).
+ * - `secondary_program` is analytical rank #2: the second member of `mainDecision`, which the engine keeps even for
+ *   no_strong_fit. It is deliberately NOT the candidate-facing `secondaryProgram` field (null for no-fit).
+ * - The pair is canonical, not winner-first.
  */
 export function resultParams(result: FitResult): AnalyticsParams {
   const params: AnalyticsParams = {};
   if (result.bestFitProgram) params.recommended_program = result.bestFitProgram;
-  if (result.secondaryProgram) params.secondary_program = result.secondaryProgram;
+  params.secondary_program = result.mainDecision[1];
   params.main_decision_pair = canonicalPair(...result.mainDecision);
   params.fit_classification = result.fitClassification;
   params.result_kind = resultKind(result);

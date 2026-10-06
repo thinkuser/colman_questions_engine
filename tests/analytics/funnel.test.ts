@@ -347,6 +347,12 @@ describe("completion events", () => {
     expect(completed.result_kind).toBe("no_strong_fit");
     expect(completed.fit_classification).toBe("no_strong_fit");
     expect(completed.recommended_program).toBeUndefined();
+    // Analytical rank #2 is kept even though there is no recommendation.
+    const result = h.tracker.getState().result!;
+    expect(result.bestFitProgram).toBeNull();
+    expect(result.secondaryProgram).toBeNull();
+    expect(completed.secondary_program).toBeDefined();
+    expect(completed.secondary_program).toBe(result.mainDecision[1]);
     expect(completed.main_decision_pair).toBeDefined();
     expect(h.of("recommended_program")).toHaveLength(0);
     // The leading program during the questions is analytical metadata, not a recommendation.

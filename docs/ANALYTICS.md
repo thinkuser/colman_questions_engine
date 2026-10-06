@@ -40,8 +40,8 @@ Added to (almost) every event: `comparison_id` (only while a comparison is runni
 | `comparison_id` | UUID of one actual comparison run (see lifecycle). Analytical key only; never product or scoring state. |
 | `program_id` | The single program an event is about (`degree_selected`, `change_program`, `reality_check_view`, `secondary_program_view`). |
 | `program_1..3`, `selected_program_count`, `comparison_cluster` | Selected programs (canonical order). |
-| `recommended_program` | The final engine recommendation. Present only when the engine has a best-fit program. |
-| `secondary_program` | The engine's second program, when it exists. |
+| `recommended_program` | The actual final recommendation. Present only when the engine has a best-fit program; absent for `no_strong_fit`. |
+| `secondary_program` | Analytical rank #2: the second member of the final `mainDecision`. **Still present for `no_strong_fit`**, where there is no recommendation but the engine keeps its ranked top two. It is not the candidate-facing secondary-program field, which is null for no-fit. |
 | `main_decision_pair` | Canonical pair of the top two programs. Always present on a completed result. |
 | `fit_classification` | Engine class of the top program: `strong_fit`, `good_fit`, `consider_carefully`, `no_strong_fit`. |
 | `result_kind` | `recommended`, `near_tie` or `no_strong_fit`. Needed because `fit_classification` alone cannot show near ties. |
@@ -65,7 +65,7 @@ Status **wired** means emitted today; **future** means the vocabulary exists but
 | `question_answer` | The reducer **accepts** an answer. Never on double taps, stale questions or invalid options. | `question_id`, `question_type`, `answer_id`, `question_index`, `is_tie_breaker`, `branch_id`, `leading_program` | wired |
 | `adaptive_branch_selected` | The pair branch becomes determined (right after the third opening answer). Once per determination; not repeated for each branch question. | `branch_id` | wired |
 | `tie_breaker_view` | The tie-breaker is displayed. Emitted **in addition to** its `question_view`. At most one per comparison. | as `question_view` | wired |
-| `comparison_completed` | The engine reaches a result. | `questions_answered`, `recommended_program`\*, `secondary_program`\*, `main_decision_pair`, `fit_classification`, `result_kind` | wired |
+| `comparison_completed` | The engine reaches a result. | `questions_answered`, `recommended_program`\*, `secondary_program`, `main_decision_pair`, `fit_classification`, `result_kind` | wired |
 | `recommended_program` | Only when the engine has a best-fit program (so never for `no_strong_fit`). A near tie may emit it; `result_kind=near_tie` marks the ambiguity. | same as `comparison_completed` | wired |
 | `mirror_response` | The candidate answers the mirror ("זה נשמע כמוכם?"). Presentation state only; it never changes the result. | `mirror_response`, result metadata | wired |
 | `secondary_program_view` | The secondary-program section is actually exposed (IntersectionObserver), once per completed result. | `program_id` (the secondary program), result metadata | wired |
@@ -76,7 +76,7 @@ Status **wired** means emitted today; **future** means the vocabulary exists but
 | `curriculum_click`, `career_click` | No such interaction exists (learn and career content is static). | | **future** |
 | `whatsapp_click`, `lead_submit`, `comparison_share` | CRM, WhatsApp and sharing are not built. | | **future** |
 
-\* present only when the engine provides them.
+\* present only when the engine has a best-fit program: `recommended_program` is never invented for `no_strong_fit`, while `secondary_program` is always present on a completed result.
 
 ### Focused comparison
 The result page's "focused comparison of the top two" action is represented by **`restart_comparison`** (context of the abandoned run). The pair it preselects is programmatic, not a candidate choice, so it emits no `degree_selected`; the next explicit start emits `comparison_started` with the narrower selection and a new `comparison_id`.
