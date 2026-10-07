@@ -15,9 +15,9 @@ export interface GenericResultHandlers {
 }
 
 const primaryButton =
-  "flex min-h-12 w-full items-center justify-center rounded-xl bg-brand px-4 py-3 text-center font-semibold text-white";
+  "flex min-h-12 w-full items-center justify-center rounded-xl bg-colman-blue px-4 py-3 text-center font-semibold text-white transition-colors hover:bg-colman-blue-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-colman-blue";
 const secondaryButton =
-  "flex min-h-12 w-full items-center justify-center rounded-xl border-2 border-brand px-4 py-3 text-center font-semibold text-brand";
+  "flex min-h-12 w-full items-center justify-center rounded-xl border-2 border-colman-blue px-4 py-3 text-center font-semibold text-colman-blue transition-colors hover:bg-colman-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-colman-blue";
 
 function ExternalLink({
   href,
@@ -63,7 +63,7 @@ function ChosenList({ items }: { items: readonly string[] }) {
   return (
     <ul className="space-y-2">
       {items.map((text) => (
-        <li key={text} className="rounded-lg bg-slate-50 p-3 leading-snug break-words text-slate-800">
+        <li key={text} className="rounded-lg bg-colman-surface p-3 leading-snug break-words text-slate-800">
           {text}
         </li>
       ))}
@@ -80,7 +80,7 @@ function Reality({ view, onView }: { view: RealityView; onView: (programId: stri
         data-program-id={view.programId}
         className="min-w-0 space-y-2 rounded-2xl border border-amber-200 bg-amber-50 p-4 break-words"
       >
-        <h2 className="text-lg font-bold">{view.headingHe}</h2>
+        <h2 className="text-lg font-bold text-colman-blue-dark">{view.headingHe}</h2>
         <p className="leading-snug text-slate-800">{view.promptHe}</p>
         <p className="leading-snug text-slate-700">
           <span className="font-semibold">{V2_RESULT_COPY.reality.answered}</span> {view.answerHe}
@@ -97,7 +97,16 @@ function Reality({ view, onView }: { view: RealityView; onView: (programId: stri
  * same weight), and a reality check is a calm "worth knowing" note that never disqualifies. Facts are limited to the
  * candidate's own choices, work-imagination statements and official links.
  */
-export function GenericResultPage({ view, handlers }: { view: GenericResultView; handlers: GenericResultHandlers }) {
+export function GenericResultPage({
+  view,
+  handlers,
+  leadSlot,
+}: {
+  view: GenericResultView;
+  handlers: GenericResultHandlers;
+  /** The lead form: after the exploration actions, before the "not right for you" escape hatch. */
+  leadSlot?: ReactNode;
+}) {
   const { directions } = view;
   const [primary, secondary] = directions;
   const copyV = V2_RESULT_COPY;
@@ -105,22 +114,22 @@ export function GenericResultPage({ view, handlers }: { view: GenericResultView;
   return (
     <div className="space-y-5" data-result-kind={view.kind} data-result-flow="v2">
       {/* Hero */}
-      <header className="space-y-3 rounded-2xl bg-brand/5 p-5">
+      <header className="colman-wash space-y-3 rounded-2xl border border-colman-border p-5">
         {view.kind === "recommended" && primary && (
           <>
-            <p className="text-sm font-semibold text-brand">{view.eyebrowHe}</p>
+            <p className="text-sm font-semibold text-colman-purple-ink">{view.eyebrowHe}</p>
             <DirectionName direction={primary} as="h1" />
           </>
         )}
         {view.kind === "near_tie" && (
           <>
-            <h1 className="text-xl leading-snug font-bold sm:text-2xl">{view.eyebrowHe}</h1>
+            <h1 className="text-xl leading-snug font-bold text-colman-blue-dark sm:text-2xl">{view.eyebrowHe}</h1>
             <p className="text-slate-700">{view.bodyHe}</p>
           </>
         )}
         {view.kind === "insufficient_positive_evidence" && (
           <>
-            <h1 className="text-xl leading-snug font-bold sm:text-2xl">{view.headingHe}</h1>
+            <h1 className="text-xl leading-snug font-bold text-colman-blue-dark sm:text-2xl">{view.headingHe}</h1>
             <p className="text-slate-700">{view.bodyHe}</p>
           </>
         )}
@@ -129,7 +138,7 @@ export function GenericResultPage({ view, handlers }: { view: GenericResultView;
       {/* Why / what pulled */}
       {view.kind === "recommended" && primary && (
         <section aria-label={copyV.recommended.whyTitle} className="min-w-0 space-y-3 break-words">
-          <h2 className="text-lg font-bold">{copyV.recommended.whyTitle}</h2>
+          <h2 className="text-lg font-bold text-colman-blue-dark">{copyV.recommended.whyTitle}</h2>
           {view.patternHe && <p className="text-slate-700">{view.patternHe}</p>}
           <p className="text-sm font-semibold text-slate-600">{copyV.recommended.chosenLead}</p>
           <ChosenList items={primary.chosenHe} />
@@ -143,7 +152,7 @@ export function GenericResultPage({ view, handlers }: { view: GenericResultView;
               key={direction.programId}
               data-direction-id={direction.programId}
               aria-label={direction.nameHe}
-              className="min-w-0 space-y-3 rounded-2xl border-2 border-slate-200 p-4 break-words"
+              className="min-w-0 space-y-3 rounded-2xl border-2 border-colman-border bg-white p-4 break-words"
             >
               <DirectionName direction={direction} />
               <p className="text-sm font-semibold text-slate-600">{copyV.nearTie.pulledTitle}</p>
@@ -159,7 +168,7 @@ export function GenericResultPage({ view, handlers }: { view: GenericResultView;
           data-direction-id={primary.programId}
           className="min-w-0 space-y-3 break-words"
         >
-          <h2 className="text-lg font-bold">{copyV.insufficient.weakTitle}</h2>
+          <h2 className="text-lg font-bold text-colman-blue-dark">{copyV.insufficient.weakTitle}</h2>
           <p className="text-slate-700">{copyV.insufficient.weakBody}</p>
           <DirectionName direction={primary} as="h3" />
           <ChosenList items={primary.chosenHe} />
@@ -169,7 +178,7 @@ export function GenericResultPage({ view, handlers }: { view: GenericResultView;
       {/* Main decision */}
       {view.mainDecision && (
         <section aria-label={view.mainDecision.titleHe} className="min-w-0 space-y-2 break-words">
-          <h2 className="text-lg font-bold">{view.mainDecision.titleHe}</h2>
+          <h2 className="text-lg font-bold text-colman-blue-dark">{view.mainDecision.titleHe}</h2>
           <p className="leading-relaxed text-slate-800">{view.mainDecision.textHe}</p>
         </section>
       )}
@@ -180,9 +189,9 @@ export function GenericResultPage({ view, handlers }: { view: GenericResultView;
           <section
             aria-label={copyV.recommended.secondaryTitle}
             data-direction-id={secondary.programId}
-            className="min-w-0 space-y-3 rounded-2xl bg-slate-50 p-4 break-words"
+            className="min-w-0 space-y-3 rounded-2xl bg-colman-surface p-4 break-words"
           >
-            <h2 className="text-lg font-bold">{copyV.recommended.secondaryTitle}</h2>
+            <h2 className="text-lg font-bold text-colman-blue-dark">{copyV.recommended.secondaryTitle}</h2>
             <DirectionName direction={secondary} as="h3" />
             <p className="text-slate-700">{copyV.recommended.secondaryBody}</p>
             <ChosenList items={secondary.chosenHe} />
@@ -197,7 +206,7 @@ export function GenericResultPage({ view, handlers }: { view: GenericResultView;
 
       {/* Explore + actions */}
       <section aria-label={copyV.explore.title} className="min-w-0 space-y-3 break-words">
-        <h2 className="text-lg font-bold">{copyV.explore.title}</h2>
+        <h2 className="text-lg font-bold text-colman-blue-dark">{copyV.explore.title}</h2>
         {directions.map((direction, index) =>
           direction.programUrl ? (
             <ExternalLink
@@ -234,17 +243,19 @@ export function GenericResultPage({ view, handlers }: { view: GenericResultView;
         {view.limitedFacts && <p className="text-sm text-slate-600">{copyV.explore.factsNote}</p>}
       </section>
 
+      {leadSlot}
+
       {/* Escape hatch */}
       <section
         aria-label={copyV.actions.notYouTitle}
-        className="min-w-0 space-y-3 rounded-2xl bg-slate-50 p-4 break-words"
+        className="min-w-0 space-y-3 rounded-2xl bg-colman-surface p-4 break-words"
       >
-        <h2 className="text-lg font-bold">{copyV.actions.notYouTitle}</h2>
+        <h2 className="text-lg font-bold text-colman-blue-dark">{copyV.actions.notYouTitle}</h2>
         <p className="text-slate-700">{copyV.actions.notYouBody}</p>
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            className="min-h-11 rounded-lg px-3 text-brand underline"
+            className="min-h-11 rounded-lg px-3 text-colman-blue underline"
             onClick={handlers.onBackToQuestion}
           >
             {copyV.actions.backToQuestion}

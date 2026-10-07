@@ -20,6 +20,13 @@ export function useDiscoveryAnalytics() {
         getDiscoveryTracker()?.officialProgramClick(programId, role),
       secondaryProgramViewed: () => getDiscoveryTracker()?.secondaryProgramViewed(),
       realityCheckViewed: (programId: string) => getDiscoveryTracker()?.realityCheckViewed(programId),
+      // Lead form: ids and outcomes only. Field values never reach analytics.
+      leadFormViewed: () => getDiscoveryTracker()?.leadFormViewed(),
+      leadFormSubmitted: () => getDiscoveryTracker()?.leadFormSubmitted(),
+      leadFormSucceeded: () => getDiscoveryTracker()?.leadFormSucceeded(),
+      leadFormFailed: (errorType: "validation" | "server" | "network") =>
+        getDiscoveryTracker()?.leadFormFailed(errorType),
+      journeyId: () => getDiscoveryTracker()?.getJourneyId() ?? null,
     }),
     [],
   );

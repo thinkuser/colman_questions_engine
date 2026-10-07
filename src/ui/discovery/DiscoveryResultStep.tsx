@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { buildV2ResultView, discoveryStep } from "@/flow";
+import { buildV2ResultView, discoveryStep, leadContextFromResult } from "@/flow";
 import { useDiscoveryAnalytics } from "@/ui/analytics/useDiscoveryAnalytics";
 import { ResultPage } from "@/ui/components/result/ResultPage";
 import { V2_PATHS } from "@/ui/routes";
 import { useDiscovery, useDiscoveryGuard } from "@/ui/state/DiscoveryProvider";
 import { DiscoveryStepIndicator } from "./DiscoveryStepIndicator";
 import { GenericResultPage } from "./GenericResultPage";
+import { LeadForm } from "./LeadForm";
 
 /**
  * V2 result. Always the engine's output for the stored projects and answers (recomputed on refresh); this step builds
@@ -36,6 +37,20 @@ export function DiscoveryResultStep() {
 
   if (!view) return null;
 
+  const leadForm = (
+    <LeadForm
+      context={leadContextFromResult(view)}
+      selectedProjectIds={state.selectedProjectIds}
+      comparisonId={analytics.journeyId}
+      analytics={{
+        onView: analytics.leadFormViewed,
+        onSubmit: analytics.leadFormSubmitted,
+        onSuccess: analytics.leadFormSucceeded,
+        onError: analytics.leadFormFailed,
+      }}
+    />
+  );
+
   const restart = () => {
     dispatch({ type: "restart" });
     router.push(V2_PATHS.select);
@@ -49,6 +64,7 @@ export function DiscoveryResultStep() {
       {view.type === "generic" ? (
         <GenericResultPage
           view={view}
+          leadSlot={leadForm}
           handlers={{
             onAdmissionClick: analytics.admissionClick,
             onAdvisorClick: analytics.advisorClick,
@@ -63,6 +79,7 @@ export function DiscoveryResultStep() {
         <>
           <ResultPage
             view={view.view}
+            leadSlot={leadForm}
             handlers={{
               onRestart: restart,
               onMirrorResponse: analytics.mirrorResponse,

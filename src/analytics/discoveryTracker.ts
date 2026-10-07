@@ -26,6 +26,7 @@ import { trackEvent, type DataLayerEvent, type DataLayerHost } from "./track";
 export const DISCOVERY_ANALYTICS_STORAGE_KEY = "colman-studymatch:analytics-v2";
 export const DISCOVERY_ANALYTICS_STORAGE_VERSION = 1;
 export const FLOW_VERSION = "v2";
+export type LeadErrorType = "validation" | "server" | "network";
 
 const StoredContextSchema = z.strictObject({
   version: z.literal(DISCOVERY_ANALYTICS_STORAGE_VERSION),
@@ -171,6 +172,27 @@ export class DiscoveryTracker {
       if (!result || !this.once(`result:${this.journeyId}:${this.epoch}`)) return;
       this.emit("studymatch_result_view", { ...this.context(), ...this.resultParams(result.analytics) });
     });
+  }
+
+  /** The lead form was shown (once per completed result). Lead events carry the result context and NEVER field values. */
+  leadFormViewed(): void {
+    if (!this.once(`lead-view:${this.journeyId}:${this.epoch}`)) return;
+    this.resultEvent("lead_form_view");
+  }
+
+  /** A submission attempt started (the form passed client validation and the request is being sent). */
+  leadFormSubmitted(): void {
+    this.resultEvent("lead_form_submit");
+  }
+
+  /** Only after the server confirmed that the lead reached the webhook. */
+  leadFormSucceeded(): void {
+    this.resultEvent("lead_form_success");
+  }
+
+  /** A failed attempt: invalid fields ("validation") or the lead did not reach the destination ("server" | "network"). */
+  leadFormFailed(errorType: LeadErrorType): void {
+    this.resultEvent("lead_form_error", { error_type: errorType });
   }
 
   secondaryProgramViewed(): void {

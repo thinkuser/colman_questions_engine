@@ -34,6 +34,11 @@ export const ANALYTICS_EVENTS = [
   "studymatch_result_view",
   "official_program_click",
   "discovery_back",
+  // V2 lead form (THI-16 review pass). Metadata only: never a field value.
+  "lead_form_view",
+  "lead_form_submit",
+  "lead_form_success",
+  "lead_form_error",
 ] as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[number];
@@ -84,6 +89,7 @@ export const ANALYTICS_PARAMS = [
   "scored_answer_count",
   "total_answer_count",
   "link_role",
+  "error_type",
 ] as const;
 
 export type AnalyticsParamName = (typeof ANALYTICS_PARAMS)[number];

@@ -39,8 +39,10 @@ export function DiscoverStep() {
     <section className="space-y-6">
       <DiscoveryStepIndicator current="select" />
       <header className="space-y-2">
-        <h1 className="text-2xl leading-snug font-bold">{DISCOVERY_OPENING.prompt}</h1>
-        <p className="text-slate-600">{DISCOVERY_OPENING.helper}</p>
+        <h1 className="text-2xl leading-snug font-bold text-colman-blue-dark sm:text-3xl">
+          {DISCOVERY_OPENING.prompt}
+        </h1>
+        <p className="text-lg leading-snug text-slate-700">{DISCOVERY_OPENING.helper}</p>
       </header>
 
       <ul className="grid gap-3 sm:grid-cols-2" aria-label={copy.v2.discover.projectsLabel}>
@@ -64,12 +66,12 @@ export function DiscoverStep() {
 
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-4">
-          <span className="text-sm text-slate-600" aria-live="polite" data-testid="selection-status">
+          <span className="text-sm font-medium text-colman-blue-dark" aria-live="polite" data-testid="selection-status">
             {maxed ? copy.v2.discover.maxReached : copy.v2.discover.selectedCount(selected.length)}
           </span>
           <button
             type="button"
-            className="min-h-12 shrink-0 rounded-xl bg-brand px-6 py-3 font-semibold text-white disabled:opacity-40"
+            className="min-h-12 shrink-0 rounded-xl bg-colman-blue px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-colman-blue-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-colman-blue disabled:opacity-40 disabled:shadow-none"
             disabled={!canStartDiscovery(state)}
             onClick={handleStart}
           >

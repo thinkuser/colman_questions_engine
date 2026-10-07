@@ -16,7 +16,7 @@ V1 stays at `/`, `/questions`, `/result`, unchanged. V2 is a separate namespace 
 ## Journey
 `discover → select 1-2 projects → answer → route → (V1 Tech precision | generic focus) → reality check → result → explore / convert`
 
-- **No lead gate, no admissions gating, no candidate-facing scores or percentages, no psychometric wording.** A near tie and "insufficient positive evidence" are legitimate outcomes. Project and company names are imagination context only; there are no logos and the brand disclaimer is shown on the discovery screen and on every result.
+- **No lead gate before the result** (the lead form comes AFTER the result, see "Lead infrastructure"), no admissions gating, no candidate-facing scores or percentages, no psychometric wording.** A near tie and "insufficient positive evidence" are legitimate outcomes. Project and company names are imagination context only; there are no logos and the brand disclaimer is shown on the discovery screen and on every result.
 - **Progress** is a stage indicator (projects / questions / result) and an indeterminate bar labelled "בונים את הכיוון שלכם". There is deliberately no "question 2 of 5": adaptive routes and the Tech module vary in length.
 
 ## Project selection (UX)
@@ -52,8 +52,40 @@ Built by pure helpers in `src/flow/v2ResultView.ts` (`buildV2ResultView`), unit-
 - **Official-facts limitation.** Eleven programs are still `pending_curation`: for them the result carries only the verified name and qualifier, the candidate's own choices, work-imagination statements and the official link, with a note that curriculum and admissions details are on the college site. Detailed facts are used only for V1 pilot programs. No course lists, admissions conditions, salaries or career promises are invented.
 - **Links** come from the source registry (candidate-facing academy page first, else the college page); they open in a new tab with `noopener`. The admissions link is the existing official page. The **advisor CTA** is rendered only when `NEXT_PUBLIC_ADVISOR_URL` is set.
 
+## Lead infrastructure (review pass)
+Every V2 result (recommended, near tie, insufficient positive evidence, and the Tech precision result reached through `/v2`) ends with a lead form, placed after the exploration actions and before the "לא מרגיש לכם נכון?" escape hatch. V1 at `/` is untouched (`ResultPage` only gained an optional slot that V1 never passes).
+
+- **Fields:** שם פרטי, שם משפחה, טלפון, and an unchecked consent checkbox. No email. A visually hidden honeypot (`website`) is rejected by the server. No CAPTCHA.
+- **Copy** is in `src/data/v2LeadCopy.ts`. Heading "רוצים שנעזור לכם לעשות את הצעד הבא?"; button "חזרו אליי עם פרטים". The consent wording is the College-style baseline and **is subject to College legal approval**; `LEAD_CONSENT_VERSION` is sent with every lead so the wording agreed to is identifiable. No privacy-policy URL exists in the structured sources, so none is linked.
+- **Validation** (shared pure code in `src/flow/lead.ts`, client for UX, server as authority): names 2-50 letters (Hebrew or English, spaces, hyphen, apostrophe, geresh); phone accepts 05X, 07X and landlines with spaces/hyphens/dots/parentheses, `+972`, `972`, `00972`, a stray "(0)", and foreign numbers written with `+` or `00`; normalised to local form (`0501234567`) plus E.164. Consent must be `true`. Errors are short inline Hebrew messages tied to fields with `aria-describedby`; the form is never cleared on failure.
+- **Architecture:** browser → same-origin `POST /api/v2/lead` (`src/app/api/v2/lead/route.ts`, logic in `src/server/leadHandler.ts`) → server validates → server `POST`s JSON to `LEAD_WEBHOOK_URL`. The variable is **server-only** (never `NEXT_PUBLIC_`), so the destination (n8n, a Sheets bridge, a CRM) never reaches the browser and can change without touching the client.
+- **Failure behaviour (no fake success):** webhook not configured or malformed → `503 not_configured`; webhook non-2xx, network error or 8 s timeout → `502 delivery_failed`; invalid input → `400` (honeypot: `400 rejected`); wrong content type `415`; body over 10 KB `413`. The UI shows "כרגע לא הצלחנו לשלוח את הפרטים. נסו שוב בעוד רגע.", keeps every typed value and allows a retry. Success is shown only after the API returned `200`.
+- **Webhook payload** (names are derived on the server from the catalog; the client sends only ids and roles):
+
+```json
+{
+  "first_name": "דנה", "last_name": "לוי", "phone": "0501234567", "phone_e164": "+972501234567",
+  "consent": true, "consent_text_version": "2026-10-draft-1",
+  "flow_version": "v2", "comparison_id": "<same id as the analytics journey>",
+  "result_kind": "recommended | near_tie | insufficient_positive_evidence | v1_precision_result",
+  "primary_program": { "id": "accounting", "name": "..." },
+  "alternative_programs": [{ "id": "...", "name": "...", "role": "alternative | peer | weak_direction" }],
+  "selected_project_ids": ["wolt_new_city"],
+  "submitted_at": "2026-10-07T09:30:00.000Z"
+}
+```
+
+- **Result-role mapping:** recommended → primary = the recommendation, the shown runner-up = `alternative`. Near tie → `primary_program: null`, both shown programs are `peer` (no winner is chosen). Insufficient → primary null, the single weak direction (if shown) = `weak_direction`. Tech precision → primary = the V1 best fit, V1 secondary = `alternative`.
+- **PII boundary:** name and phone exist only in the form, the same-origin request, server memory and the outbound webhook. They never enter `dataLayer`, `sessionStorage`/`localStorage`, URLs or console output (server logs only a status code). Covered by unit and browser tests. Nothing about the lead is persisted client-side: a refresh after success shows the form again.
+- **Not in this pass:** rate limiting beyond the honeypot, CAPTCHA, retry queue/idempotency key at the webhook, double-opt-in. See the PR's remaining concerns.
+
+## Visual system (review pass)
+- **Tokens** (`src/app/globals.css`): `--colman-blue` (#3e48ce, the College site's primary), `--colman-blue-dark`, `--colman-purple` (#8759ff, the site's accent), `--colman-magenta`, `--colman-surface`, `--colman-border`, plus text-safe `-ink` variants. They are exposed to Tailwind (`bg-colman-blue`, `border-colman-border`, …). `.colman-theme` (applied in `src/app/v2/layout.tsx`) re-points `--color-brand` to the COLMAN blue for the whole V2 subtree, including the reused V1 question and result components, so the V1 route at `/` keeps its own colours (tested).
+- **Company-name tones** (`src/ui/discovery/projectBrand.ts`, colours in `globals.css`): Spotify green, Wolt turquoise, Duolingo green, TikTok pink-red (icon in teal), Nike near-black, Apple neutral grey, the AI project in COLMAN magenta. Text variants are darkened to pass 4.5:1 on white and on the selected-card tint. The tone is keyed by project id and is visual only: it cannot affect routing, scoring or analytics. **No logos or brand marks are used or recreated, and nothing implies partnership or endorsement** (the disclaimer stays on the page).
+- Selected cards: COLMAN-blue border, soft blue/purple/magenta wash, a COLMAN-blue "נבחר" pill with a check mark (still not colour alone). Results: gradient-washed hero, COLMAN-blue buttons, a distinct lead card with a gradient edge. Reality notes stay calm amber.
+
 ## Analytics
-See `docs/ANALYTICS.md` ("V2 discovery events"). Analytics observes only: a failure or a missing `dataLayer` never affects the flow.
+See `docs/ANALYTICS.md` ("V2 discovery events", "V2 lead form events"). Analytics observes only: a failure or a missing `dataLayer` never affects the flow.
 
 ## Acceptance personas
 `tests/flow/v2Personas.ts` is the single source for the engine test (`tests/flow/v2Personas.test.ts`) and the browser suite (`e2e/discovery.spec.ts`, plus 320 / 390 / desktop layout in `e2e/discovery-layout.spec.ts` and the no-advisor build in `e2e/discovery-noadvisor.spec.ts`).

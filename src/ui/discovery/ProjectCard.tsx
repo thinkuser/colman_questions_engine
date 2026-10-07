@@ -1,6 +1,7 @@
 import type { CareerProjectCopy } from "@/data";
 import { copy } from "@/ui/copy.he";
 import { ProjectIcon } from "./ProjectIcon";
+import { toneStyle } from "./projectBrand";
 
 /**
  * One selectable career project. A real button with `aria-pressed`, so keyboard and screen-reader users get the same
@@ -31,26 +32,31 @@ export function ProjectCard({
       onClick={() => {
         if (!blocked) onToggle(projectId);
       }}
-      className={`flex min-h-24 w-full flex-col gap-2 rounded-2xl border-2 p-4 text-start transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+      style={toneStyle(projectId)}
+      className={`flex min-h-24 w-full flex-col gap-3 rounded-2xl border-2 p-4 text-start transition-[border-color,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-colman-blue ${
         selected
-          ? "border-brand bg-brand/5 ring-2 ring-brand/30"
+          ? "colman-wash border-colman-blue shadow-md ring-2 ring-colman-purple/30"
           : blocked
             ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-60"
-            : "border-slate-200 bg-white hover:border-brand"
+            : "border-colman-border bg-white hover:border-colman-blue hover:shadow-sm"
       }`}
     >
       <span className="flex items-start gap-3">
-        <ProjectIcon icon={project.icon} className="size-8 shrink-0 text-brand" />
+        <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-colman-surface text-(--tone-icon)">
+          <ProjectIcon icon={project.icon} className="size-8" />
+        </span>
         <span className="min-w-0 flex-1">
           {project.brandName && (
-            <span className="block text-sm font-semibold text-slate-600 [direction:ltr] [unicode-bidi:plaintext] text-start">
+            <span className="block text-base font-bold tracking-wide text-(--tone) [direction:ltr] [unicode-bidi:plaintext] text-start">
               {project.brandName}
             </span>
           )}
-          <span className="block text-lg leading-snug font-bold break-words">{project.title}</span>
+          <span className="block text-lg leading-snug font-bold break-words text-colman-blue-dark">
+            {project.title}
+          </span>
         </span>
         {selected && (
-          <span className="flex shrink-0 items-center gap-1 rounded-full bg-brand px-2.5 py-1 text-sm font-semibold text-white">
+          <span className="flex shrink-0 items-center gap-1 rounded-full bg-colman-blue px-2.5 py-1 text-sm font-semibold text-white">
             <svg
               viewBox="0 0 16 16"
               className="size-4"

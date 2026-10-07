@@ -2,7 +2,7 @@
   "version": "v2",
   "status_note": "V2 career-project discovery (THI-13, DEC-027). Selecting a project only builds the candidate pool; it contributes zero fit points. The company is hypothetical scenario context, not the measured signal: text only, no logos, no implied partnership. Opening prompt, helper and brand disclaimer are the accepted V2 wording, kept identical to docs/V2_ALL_PROGRAMS_SPEC.md (sections 5 and 11; plural forms, consistent with V1); card copy is StudyMatch imagination-layer copy.",
   "opening": {
-    "prompt_he": "אם הייתם יכולים להצטרף מחר לאחד מהפרויקטים האלה — מה הכי מושך אתכם?",
+    "prompt_he": "אם הייתם יכולים להצטרף מחר לאחד מהפרויקטים האלה, מה הכי מושך אתכם?",
     "helper_he": "אפשר לבחור עד שניים. אל תחשבו איזה תואר “נכון” לכם — רק מה נשמע לכם מעניין לעבוד עליו.",
     "brand_disclaimer_he": "שמות החברות מופיעים לצורך המחשה בלבד. אין בכך כדי להעיד על שיתוף פעולה, חסות או קשר מסחרי עם החברות המוזכרות."
   },

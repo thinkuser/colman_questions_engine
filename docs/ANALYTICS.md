@@ -143,7 +143,19 @@ Every V2 event carries `flow_version: "v2"`. Session context is in `sessionStora
 
 **Result parameters:** `result_kind` (`recommended`, `near_tie`, `insufficient_positive_evidence`, `v1_precision_result`), `recommended_program` (only when one exists), `alternative_programs` (canonical list: the runner-up, both near-tie programs, or the one weak direction), `selected_project_count`, `scored_answer_count` (answers that went through generic scoring, neutral ones included), `total_answer_count` (every candidate answer including reality checks and precision questions). V1 events keep `fit_classification`, `main_decision_pair` and the V1 `result_kind` values; V2 events never set them.
 
-New parameter names: `flow_version`, `project_id`, `project_ids`, `project_count_available`, `selected_project_count`, `selection_count`, `selection_position`, `question_mode`, `question_kind`, `is_generated_focus`, `focus_program_count`, `is_neutral`, `module_id`, `seeded_answer_count`, `alternative_programs`, `scored_answer_count`, `total_answer_count`, `link_role`.
+### V2 lead form events (review pass)
+All carry `flow_version: "v2"`, `comparison_id` (the same id the lead payload sends, so a lead can be joined to its StudyMatch journey) and the result parameters above. **They never carry a field value** (no name, phone, consent text or anything typed); a test asserts the vocabulary has no personal-data parameter.
+
+| Event | Fired when | Extra parameters |
+|---|---|---|
+| `lead_form_view` | The lead form scrolls into view (once per completed result) | - |
+| `lead_form_submit` | A submission attempt started: the form passed client validation and the request is sent | - |
+| `lead_form_success` | Only after `/api/v2/lead` answered 200 (the webhook accepted the lead) | - |
+| `lead_form_error` | A failed attempt | `error_type`: `validation` (client or server field errors), `server` (non-2xx, incl. 503 not configured), `network` |
+
+The V1 `lead_submit` event is unchanged and unused by V2.
+
+New parameter names: `error_type` and `flow_version`, `project_id`, `project_ids`, `project_count_available`, `selected_project_count`, `selection_count`, `selection_position`, `question_mode`, `question_kind`, `is_generated_focus`, `focus_program_count`, `is_neutral`, `module_id`, `seeded_answer_count`, `alternative_programs`, `scored_answer_count`, `total_answer_count`, `link_role`.
 
 Analysis hints: group V2 runs by `comparison_id` and `flow_version`; demand by `project_ids`; neutral rate by question with `is_neutral`; how often generated focus appears with `is_generated_focus`; the journey length distribution with `total_answer_count` on `studymatch_result_view`; handoff rate with `precision_module_handoff`.
 

@@ -8,7 +8,12 @@ export const metadata: Metadata = {
   description: copy.v2.appDescription,
 };
 
-// V2 career-project discovery. Its journey state is separate from the V1 comparison state.
+// V2 career-project discovery. Its journey state is separate from the V1 comparison state, and `colman-theme` scopes
+// the COLMAN brand tokens to this subtree so V1 styling is untouched.
 export default function DiscoveryLayout({ children }: { children: ReactNode }) {
-  return <DiscoveryProvider>{children}</DiscoveryProvider>;
+  return (
+    <DiscoveryProvider>
+      <div className="colman-theme">{children}</div>
+    </DiscoveryProvider>
+  );
 }

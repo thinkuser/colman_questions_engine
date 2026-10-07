@@ -1,9 +1,11 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { CAREER_PROJECTS, getCareerProjectCopy } from "@/data";
+import { CAREER_PROJECTS, DISCOVERY_OPENING, getCareerProjectCopy } from "@/data";
 import { buildV2ResultView, discoveryReducer, discoveryStep, initialDiscoveryState } from "@/flow";
 import { ChoiceQuestionCard } from "@/ui/components/ChoiceQuestionCard";
+import { LeadForm } from "@/ui/discovery/LeadForm";
+import { PROJECT_BRAND_TONE, toneStyle } from "@/ui/discovery/projectBrand";
 import { GenericResultPage } from "@/ui/discovery/GenericResultPage";
 import { ProjectCard } from "@/ui/discovery/ProjectCard";
 import { ProjectIcon } from "@/ui/discovery/ProjectIcon";
@@ -175,5 +177,90 @@ describe("generic result page (static markup)", () => {
 
   it("repeats the brand disclaimer", () => {
     expect(recommended).toContain("לצורך המחשה בלבד");
+  });
+});
+
+describe("brand tones (visual only)", () => {
+  it("gives every project a company tone and renders the company name with it, as text, with no logo", () => {
+    for (const project of CAREER_PROJECTS) {
+      expect(PROJECT_BRAND_TONE[project.id], project.id).toBeDefined();
+      const copy = getCareerProjectCopy(project.id)!;
+      const html = renderToStaticMarkup(
+        createElement(ProjectCard, {
+          projectId: project.id,
+          project: copy,
+          selected: false,
+          blocked: false,
+          onToggle: noop,
+        }),
+      );
+      expect(html).toContain(`--tone:var(--tone-${PROJECT_BRAND_TONE[project.id]})`);
+      expect(html).not.toContain("<img");
+      expect(html).not.toMatch(/logo|swoosh|apple\.svg/i);
+    }
+  });
+
+  it("maps the agreed company colours and falls back to COLMAN blue for an unknown project", () => {
+    expect(PROJECT_BRAND_TONE).toMatchObject({
+      spotify_discover_weekly: "spotify",
+      wolt_new_city: "wolt",
+      duolingo_persistence: "duolingo",
+      tiktok_endless_scroll: "tiktok",
+      nike_israel_launch: "nike",
+      apple_store_space: "apple",
+      ai_feature_privacy: "ai",
+    });
+    expect(toneStyle("unknown")).toMatchObject({ "--tone": "var(--colman-blue)" });
+  });
+
+  it("does not change selection behaviour: toggling still depends only on the project id", () => {
+    let state = initialDiscoveryState;
+    for (const id of ["wolt_new_city", "nike_israel_launch", "tiktok_endless_scroll"]) {
+      state = discoveryReducer(state, { type: "toggle_project", projectId: id });
+    }
+    expect(state.selectedProjectIds).toEqual(["wolt_new_city", "nike_israel_launch"]);
+  });
+
+  it("uses the corrected opening punctuation", () => {
+    expect(DISCOVERY_OPENING.prompt).toBe("אם הייתם יכולים להצטרף מחר לאחד מהפרויקטים האלה, מה הכי מושך אתכם?");
+    expect(DISCOVERY_OPENING.prompt).not.toContain("—");
+  });
+});
+
+describe("lead form (static markup)", () => {
+  const context = { resultKind: "near_tie" as const, primaryProgramId: null, alternatives: [] };
+  const html = renderToStaticMarkup(
+    createElement(LeadForm, {
+      context,
+      selectedProjectIds: ["wolt_new_city"],
+      comparisonId: () => "journey-1",
+      analytics: { onView: noop, onSubmit: noop, onSuccess: noop, onError: noop },
+    }),
+  );
+  const visible = html.replace(/<[^>]*>/g, " ");
+
+  it("has the three fields, the consent checkbox and the agreed copy, and no email field", () => {
+    for (const label of ["שם פרטי", "שם משפחה", "טלפון", "חזרו אליי עם פרטים", "רוצים שנעזור לכם לעשות את הצעד הבא?"]) {
+      expect(visible).toContain(label);
+    }
+    expect(visible).toContain("אני מאשר/ת ומסכים/ה לרישום פרטי במאגרי המידע של המסלול האקדמי המכללה למינהל");
+    expect(html).not.toMatch(/type="email"|name="email"/);
+  });
+
+  it("is accessible: labels, autocomplete, tel keyboard, a real unchecked checkbox", () => {
+    // Static markup keeps React attribute names; the real DOM attributes are asserted in the browser suite.
+    expect(html).toContain('autoComplete="given-name"');
+    expect(html).toContain('autoComplete="family-name"');
+    expect(html).toContain('autoComplete="tel"');
+    expect(html).toContain('inputMode="tel"');
+    expect(html).toMatch(/<input[^>]*type="checkbox"/);
+    expect(html).not.toMatch(/type="checkbox"[^>]*checked/);
+    expect((html.match(/<label/g) ?? []).length).toBeGreaterThanOrEqual(5);
+  });
+
+  it("hides the honeypot from people and assistive technology and never links an invented privacy URL", () => {
+    expect(html).toMatch(/aria-hidden="true"[^>]*>\s*<label[^>]*>Website/);
+    expect(html).toContain('tabindex="-1"');
+    expect(html).not.toMatch(/href=/);
   });
 });

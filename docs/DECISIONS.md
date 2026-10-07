@@ -200,7 +200,7 @@ Status: accepted — specified in the THI-11 instructions.
 ## DEC-027 — V2 career-project discovery (projects route, they never score)
 Status: accepted — V2 product direction (`docs/V2_ALL_PROGRAMS_SPEC.md`); implemented as data and pure logic in THI-13.
 
-- V2 opens with **"אם הייתם יכולים להצטרף מחר לאחד מהפרויקטים האלה — מה הכי מושך אתכם?"** (plural forms, consistent with V1). The candidate picks **1 or 2** projects; 0 or more than 2 is invalid for a started discovery.
+- V2 opens with **"אם הייתם יכולים להצטרף מחר לאחד מהפרויקטים האלה, מה הכי מושך אתכם?"** (plural forms, consistent with V1). The candidate picks **1 or 2** projects; 0 or more than 2 is invalid for a started discovery.
 - A project is **routing only**: it brings a candidate pool of programs into consideration and contributes **zero fit points**. Being in the pool is not evidence of fit. The pool is the union of the selected projects' programs, de-duplicated.
 - **Pool ordering is deterministic and is not a ranking.** Selected projects are canonicalised to project display order, then programs accumulate in each project's own order, so click order never matters. THI-14 must not use pool array position as a hidden ranking or tie-break signal: ranking comes only from scored answers and evidence, and a true tie stays a tie unless an explicit, documented rule resolves it.
 - The company is **hypothetical scenario context, not the measured signal**: text only, a neutral icon id, no logos, no implied sponsorship, partnership or hiring. The opening carries the accepted disclaimer: "שמות החברות מופיעים לצורך המחשה בלבד. אין בכך כדי להעיד על שיתוף פעולה, חסות או קשר מסחרי עם החברות המוזכרות." This is product copy, not a legal opinion.
@@ -269,6 +269,16 @@ Full description and pressure-test traces: `docs/V2_SCORING.md`. Code: `src/engi
   - recorded as evidence with `forProgramIds`; never changes scores, support, ranking or the answer count.
 - **Open, proposed, pending product review:** a generic **"no strong fit" threshold**. V1's normalized-fit thresholds are not transplanted into V2 points, and the accepted V2 docs define none. Until decided, the generic engine reports only `recommended`, `near_tie` or `insufficient_positive_evidence`.
 - **Accepted product decisions (THI-14 review):** a cross-cluster Spotify journey may exceed 5–7 questions (generic questions before handoff plus V1's remaining ones); THI-16 QA must measure it. V1 `Q1` stays the Spotify question (no duplicate Discover Weekly question).
+
+## DEC-032 — V2 lead capture and COLMAN visual system
+Status: accepted for review — THI-16 review pass.
+
+- Every V2 result ends with a lead form (after exploration, before the escape hatch). Personal data goes only to a same-origin API (`/api/v2/lead`) that validates and forwards to the **server-only** `LEAD_WEBHOOK_URL`; the destination is never shipped to the browser. An unconfigured or failing webhook yields an honest error (503/502), never a fake success.
+- PII never enters analytics, storage, URLs or logs. Lead analytics is metadata only and joins to the journey through `comparison_id`.
+- A near tie has no winner in the lead payload (`primary_program: null`, both programs `peer`).
+- Consent wording is a College-style baseline pending legal approval; its version is sent with each lead.
+- V2 adopts the COLMAN colours (tokens scoped to `.colman-theme`); V1 styling is untouched. Company names on project cards carry a company-associated colour as visual metadata only (no logos, no implied partnership, no effect on logic).
+- No routing, scoring, mapping or launch-switch change (DEC-031 still applies: `/` is V1).
 
 ## DEC-031 — V2 experience: routes, launch switch and persistence
 Status: accepted for review — THI-16.

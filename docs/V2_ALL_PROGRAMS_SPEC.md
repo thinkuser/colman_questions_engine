@@ -114,7 +114,7 @@ The initial opening set is deliberately small and visual.
 
 Accepted opening copy (plural forms, consistent with V1 and not gendered):
 
-> **אם הייתם יכולים להצטרף מחר לאחד מהפרויקטים האלה — מה הכי מושך אתכם?**
+> **אם הייתם יכולים להצטרף מחר לאחד מהפרויקטים האלה, מה הכי מושך אתכם?**
 >
 > אפשר לבחור עד שניים. אל תחשבו איזה תואר “נכון” לכם — רק מה נשמע לכם מעניין לעבוד עליו.
 

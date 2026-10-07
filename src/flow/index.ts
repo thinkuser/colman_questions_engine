@@ -9,3 +9,4 @@ export * from "./discoveryFlow";
 export * from "./discoveryPersistence";
 export * from "./v2QuestionView";
 export * from "./v2ResultView";
+export * from "./lead";

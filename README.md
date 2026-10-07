@@ -17,7 +17,7 @@ Help a prospective student compare 2–3 academic programs and understand:
 - Management Information Systems
 
 ## V2 (career-project discovery)
-V2 lets a candidate pick one or two career projects (Spotify, Wolt, TikTok, Duolingo, Nike, an AI product, an Apple Store) and routes them to one of 14 programs; the Tech room keeps the V1 precision flow. It runs at `/v2`; the V1 comparison at `/` is unchanged. See `docs/V2_EXPERIENCE.md`.
+V2 lets a candidate pick one or two career projects (Spotify, Wolt, TikTok, Duolingo, Nike, an AI product, an Apple Store) and routes them to one of 14 programs; the Tech room keeps the V1 precision flow. It runs at `/v2`; the V1 comparison at `/` is unchanged. Every V2 result ends with a lead form that posts to a same-origin API and is forwarded to the server-only `LEAD_WEBHOOK_URL` (see `.env.example`). See `docs/V2_EXPERIENCE.md`.
 
 ## Product architecture
 `Program data → Question bank → Adaptive selector → Candidate vector → Deterministic fit engine → Explanation/result experience → Analytics/lead handoff`

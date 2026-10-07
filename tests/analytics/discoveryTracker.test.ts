@@ -7,6 +7,7 @@ import {
   type DataLayerHost,
 } from "@/analytics";
 import { discoveryStep, type DiscoveryAction, type DiscoveryState } from "@/flow";
+import { personaChoice, V2_PERSONAS } from "../flow/v2Personas";
 import { memoryStorage } from "./harness";
 
 const WOLT = "wolt_new_city";
@@ -315,5 +316,78 @@ describe("privacy and robustness", () => {
     expect(() => tracker.flush()).not.toThrow();
     expect(() => tracker.questionViewed()).not.toThrow();
     expect(discoveryStep(tracker.getState())).toBeNull();
+  });
+});
+
+describe("lead form events (metadata only)", () => {
+  function completeJourney(personaId: string) {
+    const persona = V2_PERSONAS.find((candidate) => candidate.id === personaId)!;
+    const h = harness();
+    for (const projectId of persona.projects) h.toggle(projectId);
+    h.dispatch({ type: "start" });
+    for (let guard = 0; guard < 30; guard++) {
+      const step = discoveryStep(h.tracker.getState());
+      if (step?.status !== "ask") break;
+      const question = step.mode === "precision" ? step.question : step.question.question;
+      const choice = personaChoice(
+        persona,
+        question.id,
+        question.options.map((option) => option.id),
+      );
+      h.answer(question.id, choice);
+    }
+    return h;
+  }
+
+  it("emits view / submit / success / error with the result context and no field values", () => {
+    const h = completeJourney("business_vs_economics");
+    h.tracker.leadFormViewed();
+    h.tracker.leadFormViewed(); // once per completed result
+    h.tracker.leadFormSubmitted();
+    h.tracker.leadFormFailed("server");
+    h.tracker.leadFormSubmitted();
+    h.tracker.leadFormSucceeded();
+
+    expect(h.of("lead_form_view")).toHaveLength(1);
+    expect(h.of("lead_form_submit")).toHaveLength(2);
+    expect(h.of("lead_form_success")).toHaveLength(1);
+    const [error] = h.of("lead_form_error");
+    expect(error).toMatchObject({
+      flow_version: "v2",
+      result_kind: "near_tie",
+      selected_project_count: 1,
+      error_type: "server",
+    });
+    expect(error?.comparison_id).toBeTruthy();
+    expect(error?.alternative_programs).toBeTruthy();
+    expect(error).not.toHaveProperty("recommended_program"); // a near tie has no winner
+
+    const serialized = JSON.stringify(h.events());
+    for (const forbidden of ["first_name", "last_name", "phone", "consent", "email", "name"]) {
+      expect(Object.keys(error ?? {})).not.toContain(forbidden);
+    }
+    expect(serialized).not.toMatch(/\b05\d{8}\b/);
+  });
+
+  it("carries the recommended program on a recommended result", () => {
+    const h = completeJourney("accounting");
+    h.tracker.leadFormSubmitted();
+    expect(h.of("lead_form_submit")[0]).toMatchObject({
+      result_kind: "recommended",
+      recommended_program: "accounting",
+    });
+  });
+
+  it("emits nothing before a result exists", () => {
+    const h = harness();
+    h.tracker.leadFormViewed();
+    h.tracker.leadFormSubmitted();
+    expect(h.events()).toHaveLength(0);
+  });
+
+  it("keeps personal-data parameter names out of the analytics vocabulary", () => {
+    for (const name of ["first_name", "last_name", "phone", "email", "consent", "name", "website"]) {
+      expect(ANALYTICS_PARAMS as readonly string[]).not.toContain(name);
+    }
   });
 });
