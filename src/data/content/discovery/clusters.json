@@ -1,6 +1,6 @@
 {
   "version": "v2",
-  "status_note": "V2 question clusters (THI-13, DEC-028). A cluster groups programs and holds an ordered list of questions addressed by position (1, 2, 3, ...). Clusters ship Q1-Q4 and may later gain Q5-Q7 as data only: the schema has no fixed question count, only each cluster's max_questions. Question content for the non-tech clusters is THI-15; until then their lists are empty. The tech cluster holds only T1, the Spotify opener, which REUSES V1 Q1 (same options and copy, no copy of its own) so its answer carries into the V1 precision module and is never asked twice (THI-14, DEC-030). Scenario questions name the project(s) they open via project_ids. Options name the program(s) they point to; reality-check options point to none and never rank. Weights and stop rules belong to the THI-14 engine, not to this data.",
+  "status_note": "V2 question clusters (THI-13, DEC-028; content THI-15). A cluster groups programs and holds an ordered list of questions addressed by position (1, 2, 3, ...). Scored questions are Q1-Q4; Q5-Q7 are reserved for future scored precision (BR1/PR1/PR2/CR1 are reality checks placed after the scored questions, so their ids leave B5-B7, P5-P7 and C5-C7 free). The schema has no fixed question count, only each cluster's max_questions. The tech cluster holds only T1, the Spotify opener, which REUSES V1 Q1 (same options and copy, no copy of its own) so its answer carries into the V1 precision module and is never asked twice (THI-14, DEC-030). Scenario questions name the project(s) they open via project_ids. Options name the program(s) they point to; reality-check options point to none, carry a reality_level, and name the program(s) they are about via reality_for_program_ids; they never rank. Company names are hypothetical scenario context, not the measured signal. Weights and stop rules belong to the THI-14 engine, not to this data.",
   "clusters": [
     {
       "id": "tech",
@@ -41,7 +41,128 @@
       "adjacent_program_ids": [],
       "precision_module": null,
       "max_questions": 7,
-      "questions": []
+      "questions": [
+        {
+          "id": "B1",
+          "position": 1,
+          "kind": "scenario",
+          "prompt_he": "Wolt שוקלת להיכנס לעיר חדשה. איזה חלק בפרויקט הכי מושך אתכם?",
+          "project_ids": ["wolt_new_city"],
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לבנות את התוכנית: קהל, שיווק, תמחור, שותפים ואיך מוציאים את המהלך לפועל",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "B",
+              "label_he": "לבדוק אם הכניסה בכלל הגיונית: ביקוש, מחירים, תחרות ומה קורה בשוק",
+              "program_ids": ["economics_and_management"]
+            },
+            {
+              "id": "C",
+              "label_he": "לבדוק אם המספרים באמת עובדים: עלויות, הכנסות, רווחיות ואיך מודדים את הפעילות",
+              "program_ids": ["accounting"]
+            }
+          ]
+        },
+        {
+          "id": "B2",
+          "position": 2,
+          "kind": "focus",
+          "prompt_he": "חצי שנה אחרי ההשקה, הפעילות בעיר החדשה לא עומדת ביעדים. במה הייתם רוצים להתחיל?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לשנות את המוצר, השיווק או התוכנית העסקית ולבנות מהלך חדש",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "B",
+              "label_he": "לבדוק מה השתנה בביקוש, במחירים, בתחרות ובשוק",
+              "program_ids": ["economics_and_management"]
+            },
+            {
+              "id": "C",
+              "label_he": "להיכנס למספרים ולראות איפה בדיוק הפעילות מרוויחה או מפסידה",
+              "program_ids": ["accounting"]
+            }
+          ]
+        },
+        {
+          "id": "B3",
+          "position": 3,
+          "kind": "focus",
+          "prompt_he": "ההכנסות של החברה עולות, אבל הרווח יורד. מה הכי מסקרן אתכם להבין?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "מה ההנהלה צריכה לעשות אחרת כדי לשפר את העסק",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "B",
+              "label_he": "אילו כוחות בשוק יכולים להסביר את מה שקורה",
+              "program_ids": ["economics_and_management"]
+            },
+            {
+              "id": "C",
+              "label_he": "איך הדוחות בנויים ומה באמת עומד מאחורי המספרים",
+              "program_ids": ["accounting"]
+            }
+          ]
+        },
+        {
+          "id": "B4",
+          "position": 4,
+          "kind": "focus",
+          "prompt_he": "אם הייתם צריכים לבלות יום שלם במשימה אחת, במה הייתם בוחרים?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לשבת עם צוות ולבנות יוזמה או מהלך עסקי חדש",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "B",
+              "label_he": "לעבוד עם נתונים ולנסות להסביר למה אנשים או שווקים מתנהגים כמו שהם מתנהגים",
+              "program_ids": ["economics_and_management"]
+            },
+            {
+              "id": "C",
+              "label_he": "לעבור לעומק על מידע פיננסי ולמצוא מה לא מסתדר",
+              "program_ids": ["accounting"]
+            }
+          ]
+        },
+        {
+          "id": "BR1",
+          "position": 5,
+          "kind": "reality_check",
+          "prompt_he": "גם בעבודה מאוד עסקית, חשבונאות דורשת הרבה דיוק, כללים, בדיקה של פרטים ועבודה מסודרת עם מספרים. איך זה נשמע לכם?",
+          "reality_for_program_ids": ["accounting"],
+          "options": [
+            {
+              "id": "A",
+              "label_he": "דווקא החלק הזה מתאים לי",
+              "program_ids": [],
+              "reality_level": "positive"
+            },
+            {
+              "id": "B",
+              "label_he": "בסדר מבחינתי אם מבינים למה עושים את זה",
+              "program_ids": [],
+              "reality_level": "neutral"
+            },
+            {
+              "id": "C",
+              "label_he": "זה נשמע לי די מתיש",
+              "program_ids": [],
+              "reality_level": "negative"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "people",
@@ -49,7 +170,166 @@
       "adjacent_program_ids": [],
       "precision_module": null,
       "max_questions": 7,
-      "questions": []
+      "questions": [
+        {
+          "id": "P1",
+          "position": 1,
+          "kind": "scenario",
+          "prompt_he": "TikTok רוצה להבין למה אנשים ממשיכים לגלול גם אחרי שאמרו לעצמם ״עוד סרטון אחד וזהו״. מה הכי מסקרן אתכם?",
+          "project_ids": ["tiktok_endless_scroll"],
+          "options": [
+            {
+              "id": "A",
+              "label_he": "מה קורה אצל האדם עצמו — קשב, הרגלים, רגשות ומוטיבציה",
+              "program_ids": ["psychology"]
+            },
+            {
+              "id": "B",
+              "label_he": "איך חברים, קהילות, טרנדים ותרבות גורמים לקבוצות שונות להתנהג אחרת",
+              "program_ids": ["behavioral_science"]
+            },
+            {
+              "id": "C",
+              "label_he": "איך הדרך שבה מציגים בחירה, תגמול או מחיר משנה החלטות",
+              "program_ids": ["economics_and_psychology"]
+            }
+          ]
+        },
+        {
+          "id": "P2",
+          "position": 2,
+          "kind": "scenario",
+          "prompt_he": "Duolingo מגלה שהמון אנשים מתחילים ללמוד שפה, אבל רובם נעלמים אחרי שבועיים. באיזה חלק הייתם רוצים לטפל?",
+          "project_ids": ["duolingo_persistence"],
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לחקור למה אדם מאבד מוטיבציה ואיך זיכרון, קשב ורגש משפיעים על התמדה",
+              "program_ids": ["psychology"]
+            },
+            {
+              "id": "B",
+              "label_he": "לבנות דרך למידה אחרת שעוזרת לאנשים שונים להתקדם",
+              "program_ids": ["education"]
+            },
+            {
+              "id": "C",
+              "label_he": "לבדוק אם קבוצה, קהילה או תחושת שייכות יכולות לגרום לאנשים להתמיד",
+              "program_ids": ["behavioral_science"]
+            }
+          ]
+        },
+        {
+          "id": "P3",
+          "position": 3,
+          "kind": "focus",
+          "prompt_he": "Wolt משנה את הדרך שבה היא מתגמלת שליחים ורוצה להבין איך זה ישפיע. מה הייתם רוצים לבדוק?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "איך השינוי ישפיע על המוטיבציה והתחושה של כל שליח",
+              "program_ids": ["psychology"]
+            },
+            {
+              "id": "B",
+              "label_he": "איך הוא ישפיע על היחסים, התרבות וההתנהגות של הקבוצה",
+              "program_ids": ["behavioral_science"]
+            },
+            {
+              "id": "C",
+              "label_he": "איך אנשים משנים החלטות כשהתמריצים הכספיים משתנים",
+              "program_ids": ["economics_and_psychology"]
+            },
+            {
+              "id": "D",
+              "label_he": "איך אפשר להדריך ולתמוך באנשים כדי שיעברו את השינוי בצורה טובה יותר",
+              "program_ids": ["education"]
+            }
+          ]
+        },
+        {
+          "id": "P4",
+          "position": 4,
+          "kind": "focus",
+          "prompt_he": "קיבלתם לבחור יום אחד מתוך ארבעה. לאיזה הייתם הולכים?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לחקור איך לחץ משפיע על קבלת החלטות של אדם",
+              "program_ids": ["psychology"]
+            },
+            {
+              "id": "B",
+              "label_he": "להיכנס לארגון ולהבין למה שתי קבוצות עובדים מתנהגות אחרת",
+              "program_ids": ["behavioral_science"]
+            },
+            {
+              "id": "C",
+              "label_he": "לבנות פעילות שעוזרת לאנשים עם קושי בלמידה להתקדם",
+              "program_ids": ["education"]
+            },
+            {
+              "id": "D",
+              "label_he": "לנתח ניסוי שבודק איך מחיר, סיכון או דרך הצגת הבחירה משפיעים על החלטות",
+              "program_ids": ["economics_and_psychology"]
+            }
+          ]
+        },
+        {
+          "id": "PR1",
+          "position": 5,
+          "kind": "reality_check",
+          "prompt_he": "פסיכולוגיה היא לא רק שיחות עם אנשים — יש גם מחקר, סטטיסטיקה, שיטות מחקר וקריאה של חומר מקצועי. איך זה נשמע לכם?",
+          "reality_for_program_ids": ["psychology"],
+          "options": [
+            {
+              "id": "A",
+              "label_he": "דווקא החלק הזה מושך אותי",
+              "program_ids": [],
+              "reality_level": "positive"
+            },
+            {
+              "id": "B",
+              "label_he": "בסדר מבחינתי אם הנושא מעניין",
+              "program_ids": [],
+              "reality_level": "neutral"
+            },
+            {
+              "id": "C",
+              "label_he": "זה נשמע לי די מתיש",
+              "program_ids": [],
+              "reality_level": "negative"
+            }
+          ]
+        },
+        {
+          "id": "PR2",
+          "position": 6,
+          "kind": "reality_check",
+          "prompt_he": "עבודה חינוכית כוללת הרבה תכנון, ניסוי וטעייה, עבודה עם אנשים שונים ושיפור של אותה פעילות שוב ושוב עד שהיא באמת עובדת. איך זה נשמע לכם?",
+          "reality_for_program_ids": ["education"],
+          "options": [
+            {
+              "id": "A",
+              "label_he": "דווקא החלק הזה מושך אותי",
+              "program_ids": [],
+              "reality_level": "positive"
+            },
+            {
+              "id": "B",
+              "label_he": "בסדר מבחינתי אם רואים שזה עוזר לאנשים",
+              "program_ids": [],
+              "reality_level": "neutral"
+            },
+            {
+              "id": "C",
+              "label_he": "זה נשמע לי די מתיש",
+              "program_ids": [],
+              "reality_level": "negative"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "communication",
@@ -57,7 +337,128 @@
       "adjacent_program_ids": [],
       "precision_module": null,
       "max_questions": 7,
-      "questions": []
+      "questions": [
+        {
+          "id": "C1",
+          "position": 1,
+          "kind": "scenario",
+          "prompt_he": "Nike משיקה מוצר חדש בישראל. איזה חלק במהלך הכי מושך אתכם?",
+          "project_ids": ["nike_israel_launch"],
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לחשוב על הרעיון, הסיפור, הסרטונים והתוכן שאנשים יראו",
+              "program_ids": ["communication"]
+            },
+            {
+              "id": "B",
+              "label_he": "להחליט למי פונים, באילו ערוצים, עם איזה מסר ואיך נדע שהקמפיין עבד",
+              "program_ids": ["communication_and_management"]
+            },
+            {
+              "id": "C",
+              "label_he": "לראות את כל המהלך כעסק — שוק, מחיר, יעדים, צוותים ורווחיות",
+              "program_ids": ["business_administration"]
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "position": 2,
+          "kind": "focus",
+          "prompt_he": "הקמפיין מקבל מיליוני צפיות, אבל המכירות כמעט לא זזות. מה הכי הייתם רוצים לפתור?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "האם הרעיון, הסיפור והקריאייטיב באמת גורמים לאנשים להרגיש משהו",
+              "program_ids": ["communication"]
+            },
+            {
+              "id": "B",
+              "label_he": "איזה קהל, מסר, מדיה או שלב במשפך צריך לשנות כדי שהקמפיין יעבוד",
+              "program_ids": ["communication_and_management"]
+            },
+            {
+              "id": "C",
+              "label_he": "האם הבעיה בכלל בקמפיין, או במוצר, במחיר, בהפצה או בהחלטה העסקית",
+              "program_ids": ["business_administration"]
+            }
+          ]
+        },
+        {
+          "id": "C3",
+          "position": 3,
+          "kind": "focus",
+          "prompt_he": "חברה חדשה נכנסת לישראל ואף אחד עוד לא מכיר אותה. במה הייתם רוצים להתחיל?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לבנות לה קול, שפה וסיפור שאנשים ירצו לראות ולשתף",
+              "program_ids": ["communication"]
+            },
+            {
+              "id": "B",
+              "label_he": "להגדיר קהל יעד, מיצוב ואסטרטגיה שתהפוך חשיפה לצמיחה",
+              "program_ids": ["communication_and_management"]
+            },
+            {
+              "id": "C",
+              "label_he": "להחליט איפה החברה צריכה לשחק בשוק ואיך בונים סביב זה עסק שעובד",
+              "program_ids": ["business_administration"]
+            }
+          ]
+        },
+        {
+          "id": "C4",
+          "position": 4,
+          "kind": "focus",
+          "prompt_he": "איזה יום עבודה נשמע לכם הכי מעניין?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "סיעור מוחות עם יוצרים, עורכים ואנשי תוכן על קמפיין חדש",
+              "program_ids": ["communication"]
+            },
+            {
+              "id": "B",
+              "label_he": "לפתוח נתוני קמפיין עם צוות שיווק ולהחליט מה צריך לשנות כבר מחר",
+              "program_ids": ["communication_and_management"]
+            },
+            {
+              "id": "C",
+              "label_he": "ישיבת הנהלה שבה מחליטים על מוצר, שוק חדש או השקעה",
+              "program_ids": ["business_administration"]
+            }
+          ]
+        },
+        {
+          "id": "CR1",
+          "position": 5,
+          "kind": "reality_check",
+          "prompt_he": "בעבודה בתקשורת ושיווק צריך לעבוד גם עם יעדים, נתונים ומדידה — לא רק עם רעיונות ותוכן. איך זה נשמע לכם?",
+          "reality_for_program_ids": ["communication_and_management"],
+          "options": [
+            {
+              "id": "A",
+              "label_he": "דווקא החלק הזה מעניין אותי",
+              "program_ids": [],
+              "reality_level": "positive"
+            },
+            {
+              "id": "B",
+              "label_he": "בסדר מבחינתי אם יש גם מקום לרעיונות",
+              "program_ids": [],
+              "reality_level": "neutral"
+            },
+            {
+              "id": "C",
+              "label_he": "הייתי רוצה לעסוק בעיקר ברעיונות ובתוכן",
+              "program_ids": [],
+              "reality_level": "negative"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "law",
@@ -70,15 +471,257 @@
       ],
       "precision_module": null,
       "max_questions": 7,
-      "questions": []
+      "questions": [
+        {
+          "id": "L1",
+          "position": 1,
+          "kind": "scenario",
+          "prompt_he": "חברת AI רוצה להשיק פיצ'ר שמשתמש בתוכן ובמידע אישי של המשתמשים. איזה חלק הכי הייתם רוצים לפתור?",
+          "project_ids": ["ai_feature_privacy"],
+          "options": [
+            {
+              "id": "A",
+              "label_he": "להבין איפה עובר הגבול המשפטי, מי אחראי ומה צריך לשנות לפני ההשקה",
+              "program_ids": ["law"]
+            },
+            {
+              "id": "B",
+              "label_he": "להחליט אם נכון להשיק ומה הסיכון העסקי לחברה",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "C",
+              "label_he": "להסביר למשתמשים איך משתמשים במידע כך שהם יבינו ויוכלו לסמוך על המוצר",
+              "program_ids": ["communication", "communication_and_management"]
+            }
+          ]
+        },
+        {
+          "id": "L2",
+          "position": 2,
+          "kind": "focus",
+          "prompt_he": "יוצר טוען שמערכת AI השתמשה ביצירות שלו בלי רשות. מה הכי מסקרן אתכם לעשות?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לבדוק חוק, תקדימים וחוזים ולבנות את הטיעון",
+              "program_ids": ["law"]
+            },
+            {
+              "id": "B",
+              "label_he": "למצוא פתרון מסחרי שיאפשר גם ליוצרים וגם לחברה להמשיך לעבוד",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "C",
+              "label_he": "לשנות את המוצר או המערכת כך שהבעיה לא תחזור",
+              "program_ids": ["management_information_systems"]
+            }
+          ]
+        },
+        {
+          "id": "L3",
+          "position": 3,
+          "kind": "focus",
+          "prompt_he": "איזה יום נשמע לכם יותר מעניין?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לקרוא מקרה מורכב, למצוא פרט קטן שמשנה את התמונה ולבנות טיעון",
+              "program_ids": ["law"]
+            },
+            {
+              "id": "B",
+              "label_he": "לשבת עם הנהלה ולהחליט איזה מהלך עסקי לעשות",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "C",
+              "label_he": "לבנות קמפיין או סיפור ציבורי סביב נושא מורכב",
+              "program_ids": ["communication"]
+            }
+          ]
+        },
+        {
+          "id": "L5",
+          "position": 4,
+          "kind": "focus",
+          "prompt_he": "חברה צריכה להסביר לציבור החלטה שנויה במחלוקת. במה הייתם רוצים לטפל?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לבדוק מה החברה חייבת, רשאית ואסור לה לומר, ולנסח את זה בזהירות",
+              "program_ids": ["law"]
+            },
+            {
+              "id": "B",
+              "label_he": "לנסח את הסיפור והמסר כך שיהיו ברורים, אנושיים ובלתי נשכחים",
+              "program_ids": ["communication"]
+            },
+            {
+              "id": "C",
+              "label_he": "להחליט לאילו קהלים פונים, באילו ערוצים, ואיך נבדוק אם המסר עבד",
+              "program_ids": ["communication_and_management"]
+            }
+          ]
+        },
+        {
+          "id": "L4",
+          "position": 5,
+          "kind": "reality_check",
+          "prompt_he": "בעבודה משפטית יש הרבה קריאה, כתיבה, פרטים קטנים ומצבים שבהם אין תשובה אחת ברורה. איך זה נשמע לכם?",
+          "reality_for_program_ids": ["law"],
+          "options": [
+            {
+              "id": "A",
+              "label_he": "דווקא החלק הזה מושך אותי",
+              "program_ids": [],
+              "reality_level": "positive"
+            },
+            {
+              "id": "B",
+              "label_he": "בסדר מבחינתי אם הנושא מעניין",
+              "program_ids": [],
+              "reality_level": "neutral"
+            },
+            {
+              "id": "C",
+              "label_he": "זה נשמע לי די מתיש",
+              "program_ids": [],
+              "reality_level": "negative"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "interior_design",
       "program_ids": ["interior_design"],
-      "adjacent_program_ids": ["communication", "business_administration", "behavioral_science", "data_science"],
+      "adjacent_program_ids": ["communication", "business_administration", "behavioral_science"],
       "precision_module": null,
       "max_questions": 7,
-      "questions": []
+      "questions": [
+        {
+          "id": "D1",
+          "position": 1,
+          "kind": "scenario",
+          "prompt_he": "Apple מקבלת חלל ריק לחנות חדשה. לאן הראש שלכם הולך קודם?",
+          "project_ids": ["apple_store_space"],
+          "options": [
+            {
+              "id": "A",
+              "label_he": "איך אנשים ינועו בחלל, מה הם יראו קודם ואיך המקום ירגיש",
+              "program_ids": ["interior_design"]
+            },
+            {
+              "id": "B",
+              "label_he": "איזה סיפור של המותג אנשים צריכים להבין כשהם נכנסים",
+              "program_ids": ["communication"]
+            },
+            {
+              "id": "C",
+              "label_he": "איזה יעד עסקי החנות צריכה להשיג ואיך נדע שהיא הצליחה",
+              "program_ids": ["business_administration"]
+            }
+          ]
+        },
+        {
+          "id": "D2",
+          "position": 2,
+          "kind": "focus",
+          "prompt_he": "החנות יפה, אבל אנשים נכנסים ויוצאים מהר בלי באמת לחקור את המוצרים. מה הייתם רוצים לשנות?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "את התכנון של החלל — זרימה, מיקום, תאורה, חומרים ונקודות עניין",
+              "program_ids": ["interior_design"]
+            },
+            {
+              "id": "B",
+              "label_he": "את המסרים והסיפור שאנשים פוגשים בתוך החנות",
+              "program_ids": ["communication"]
+            },
+            {
+              "id": "C",
+              "label_he": "לבדוק איפה אנשים נעצרים ומה הם עושים כדי להבין מה לא עובד",
+              "program_ids": ["behavioral_science"]
+            }
+          ]
+        },
+        {
+          "id": "D3",
+          "position": 3,
+          "kind": "focus",
+          "prompt_he": "איזה יום עבודה נשמע לכם הכי מעניין?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לעבוד עם סקיצות, תלת־ממד, חומרים ואנשי ביצוע כדי להפוך רעיון לחלל אמיתי",
+              "program_ids": ["interior_design"]
+            },
+            {
+              "id": "B",
+              "label_he": "לבנות קונספט ויזואלי לקמפיין",
+              "program_ids": ["communication"]
+            },
+            {
+              "id": "C",
+              "label_he": "לבנות תוכנית עסקית לפתיחת הסניף",
+              "program_ids": ["business_administration"]
+            }
+          ]
+        },
+        {
+          "id": "D5",
+          "position": 4,
+          "kind": "focus",
+          "prompt_he": "החנות נפתחה, והמנהלת שואלת איפה כדאי להשקיע עוד מאמץ. מה הייתם עונים?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "בשיפור החוויה בחלל עצמו — איך מרגישים, זזים ומתמצאים בו",
+              "program_ids": ["interior_design"]
+            },
+            {
+              "id": "B",
+              "label_he": "בסיפור ובמסרים שהחנות משדרת ללקוחות",
+              "program_ids": ["communication"]
+            },
+            {
+              "id": "C",
+              "label_he": "בתוכנית העסקית — עלויות, תמחור ואיך החנות מגיעה ליעדים",
+              "program_ids": ["business_administration"]
+            }
+          ]
+        },
+        {
+          "id": "D4",
+          "position": 5,
+          "kind": "reality_check",
+          "prompt_he": "גם בפרויקט מאוד יצירתי צריך לעבוד עם מידות, תוכניות, מגבלות, תקציב ולעשות הרבה תיקונים עד שהחלל באמת עובד. איך זה נשמע לכם?",
+          "reality_for_program_ids": ["interior_design"],
+          "options": [
+            {
+              "id": "A",
+              "label_he": "זה דווקא חלק מהכיף מבחינתי",
+              "program_ids": [],
+              "reality_level": "positive"
+            },
+            {
+              "id": "B",
+              "label_he": "בסדר, כל עוד יש גם מקום ליצירתיות",
+              "program_ids": [],
+              "reality_level": "neutral"
+            },
+            {
+              "id": "C",
+              "label_he": "הייתי רוצה יצירה עם הרבה פחות מגבלות טכניות",
+              "program_ids": [],
+              "reality_level": "negative"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

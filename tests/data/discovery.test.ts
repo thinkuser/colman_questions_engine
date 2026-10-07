@@ -210,8 +210,9 @@ describe("question clusters", () => {
     for (const cluster of V2_CLUSTERS.filter((c) => c.id !== "tech")) expect(cluster.precisionModule).toBeNull();
   });
 
-  it("ships no non-tech question content yet (THI-15)", () => {
-    for (const cluster of V2_CLUSTERS.filter((c) => c.id !== "tech")) expect(cluster.questions).toEqual([]);
+  it("ships the approved non-tech question sets (THI-15; details in tests/data/v2Content.test.ts)", () => {
+    for (const cluster of V2_CLUSTERS.filter((c) => c.id !== "tech"))
+      expect(cluster.questions.length).toBeGreaterThan(0);
   });
 
   it("holds only the Spotify opener in the tech cluster, reusing V1 Q1 with V1's own options and copy (THI-14)", () => {
@@ -230,7 +231,9 @@ describe("question clusters", () => {
     });
     // No duplicated candidate copy: the V2 question shows exactly V1 Q1's Hebrew copy.
     expect(getV2QuestionCopy("T1")).toEqual(getQuestionCopyHe("Q1"));
-    expect(JSON.stringify(clustersRaw)).not.toMatch(/prompt_he|label_he/);
+    expect(JSON.stringify(clustersRaw.clusters.find((cluster) => cluster.id === "tech"))).not.toMatch(
+      /prompt_he|label_he/,
+    );
   });
 });
 

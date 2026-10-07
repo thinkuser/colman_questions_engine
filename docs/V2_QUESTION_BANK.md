@@ -1,6 +1,6 @@
 # StudyMatch V2 — Career-Imagination Question Bank
 
-Status: initial approved content direction for V2 implementation. The initial release intentionally uses Q1–Q4 per non-tech cluster and reserves Q5–Q7 for later precision work.
+Status: approved content direction, shipped as data in THI-15 (see "Shipped content (THI-15)" at the end). The initial release intentionally uses Q1–Q4 per non-tech cluster and reserves Q5–Q7 for later precision work. The Hebrew in the sections below is the approved *source* wording (singular); the shipped copy is the plural-style polish recorded in the final section.
 
 The company is always the backdrop. The signal comes from the kind of work the candidate chooses.
 
@@ -263,14 +263,151 @@ When no curated precision module exists, the generic engine can present an A-vs-
 
 # Data representation (THI-13, DEC-028)
 
-Questions are stored as data in `src/data/content/discovery/clusters.json` and validated by `buildClusters` (`src/data/discovery.ts`). Clusters currently hold no questions; this bank is the content source for THI-14 / THI-15.
+Questions are stored as data in `src/data/content/discovery/clusters.json` and validated by `buildClusters` (`src/data/discovery.ts`). The non-tech clusters hold the content described in "Shipped content (THI-15)".
 
 - Each question has a stable `id` (e.g. `B1`), a 1-based `position`, a `kind` (`scenario`, `focus`, `tiebreaker`, `reality_check`), Hebrew `prompt_he`, and options with `label_he`.
 - Positions run 1..n without gaps, up to the cluster's `max_questions` (7). Adding B5–B7 later is a data change only.
 - An option's `program_ids` lists the program(s) it points to. A shared signal lists several programs; an option may also point to none (neutral).
-- Targets must be core or adjacent programs of the cluster. Adjacent programs today: Law cluster (Business, Communication, Communication + Management, MIS) and Interior Design cluster (Communication, Business, Behavioral Science, Data Science). Narrow these when the THI-15 mapping is final.
+- Targets must be core or adjacent programs of the cluster. Adjacent programs today: Law cluster (Business, Communication, Communication + Management, MIS) and Interior Design cluster (Communication, Business, Behavioral Science, Data Science). THI-15 narrowed the Interior Design list: Data Science is no longer adjacent because no option uses it.
 - `reality_check` questions (L4, D4) have options with no programs and a `reality_level` (`positive`, `neutral`, `negative`). They never contribute ranking points. Each must declare `reality_for_program_ids`: the program(s) it is about, from the cluster's core or adjacent programs (e.g. L4 → `law`). The engine asks a check only for a resolved program it names, searching all clusters; no other question kind may carry this field.
 - Weights (+3 scenario, +4 focus, +5 tiebreaker) are applied by the THI-14 engine from the kind; they are never stored in the data.
 - `project_ids` (THI-14) marks a scenario as the opening question of those projects (B1 → Wolt, P1 → TikTok, P2 → Duolingo, C1 → Nike, L1 → AI product, D1 → Apple Store). Questions without it are general cluster questions, asked only when they separate the current leaders.
 - The Spotify scenario is **not** authored again: the tech cluster's `T1` `reuses` V1 `Q1` (same options and V1's Hebrew copy) so it is asked once and carried into the V1 precision flow. The Discover Weekly wording above is therefore not shipped.
 - A generic focus question (the head-to-head above) is built from each program's `work_statements_he` (THI-15) when no authored question separates the evidence leading set (the supported contenders): 2-way for two programs, 3-way for three. More than three contenders, or a lone supported leader with no authored question left to test it, need authored content (`needs_focus_content`). See `docs/V2_SCORING.md`.
+
+---
+
+# Shipped content (THI-15)
+
+Source of truth: `src/data/content/discovery/clusters.json` (questions) and `src/data/content/catalog/programs.json` (work statements). Authored as data only: no router, scoring or schema change. Tests: `tests/data/v2Content.test.ts` (structure, mapping, copy QA) and `tests/flow/v2Content.test.ts` (routing on the real content).
+
+## What shipped
+| Cluster | Scored questions | Reality checks | Notes |
+|---|---|---|---|
+| Business | B1 (Wolt scenario), B2, B3, B4 | BR1 (Accounting) | 4 scored |
+| People | P1 (TikTok scenario), P2 (Duolingo scenario), P3, P4 | PR1 (Psychology), PR2 (Education) | 4 scored; P3, P4 have four options |
+| Communication | C1 (Nike scenario), C2, C3, C4 | CR1 (Communication + Management) | 4 scored |
+| Law | L1 (AI scenario), L2, L3, **L5** | L4 (Law) | **L5 is an extra question** |
+| Interior Design | D1 (Apple scenario), D2, D3, **D5** | D4 (Interior Design) | **D5 is an extra question** |
+
+- **Ids and positions.** Scored questions are positions 1-4; reality checks follow. The reality checks of Business, People and Communication use ids `BR1`, `PR1`, `PR2`, `CR1` so that B5-B7, P5-P7 and C5-C7 stay free for future *scored* precision. Law and Interior Design keep the approved ids `L4` / `D4`; their extra scored questions are `L5` / `D5` at position 4, with the reality check moved to position 5. L6-L7 and D6-D7 stay free. Position, not id, drives order, so nothing hard-codes a count.
+- **Work statements:** three for each of the 14 programs (42 in total).
+
+## Deviations from the approved baseline (for review)
+1. **Hebrew polish only.** Plural/inclusive style ("איזה חלק הכי הייתם רוצים לפתור?"), Hebrew quotation marks in P1, and gender-neutral wording for two negative reality options ("הייתי רוצה …" instead of "אני מעדיף …"). The measured distinctions are unchanged.
+2. **Extra authored questions L5 and D5** (permitted by the issue to satisfy the lone-leader rule; the copy is new and needs review):
+   - **D5** ("החנות נפתחה, והמנהלת שואלת איפה כדאי להשקיע עוד מאמץ…") offers Interior Design / Communication / Business Administration. Without it, a lone Business Administration leader (D1 = C, D3 = C) could not be tested further, because D2 has no Business option.
+   - **L5** ("חברה צריכה להסביר לציבור החלטה שנויה במחלוקת…") offers Law / Communication / Communication + Management. Without it, the L1 = C tie between Communication and Communication + Management could only be tested by generated focus questions, and an alternating A / B / neither path would run out of work statements after four answers.
+3. **Mappings the approved text left open.**
+   - **L1 C** (explain it to users) → Communication **and** Communication + Management. This is the only multi-target option in the content (full weight to each, DEC-030).
+   - **L2 C** (change the product so the problem doesn't return) → Management Information Systems only, not all Tech programs.
+   - **D2 C** (observe where people stop to understand what isn't working) → Behavioral Science only. "Behavior/Data" was not mapped to Data Science, which would add a Tech program to an Apple Store question; hence Data Science was removed from the Interior Design adjacent list.
+4. **The Duolingo project id is `duolingo_persistence`** (not `duolingo_learning`). P2 uses the real id.
+5. **Optional reality checks added:** PR2 (Education, broad: planning, trial and error, working with different people, iteration) and CR1 (Communication + Management: goals, data and measurement alongside ideas). They can be dropped without touching anything else. Business Administration, Economics and Business, Behavioral Science and Economics + Psychology have no check because there was no distinct, useful warning.
+
+## Developer QA table (not candidate UI)
+Gloss in English; the Hebrew is in the data. "Signal" says why the option is a useful, work-type signal.
+
+| Question | Option | Target(s) | Signal |
+|---|---|---|---|
+| B1 Wolt new city | A build the plan: audience, pricing, partners | Business Administration | Wants to design and launch the move |
+| | B test whether entering makes sense: demand, price, competition | Economics | Wants to read the market |
+| | C check the numbers work: costs, revenue, profitability | Accounting | Wants to verify the financial reality |
+| B2 launch underperforms | A change the product / marketing / plan | Business Administration | Acts on the business |
+| | B check what changed in demand, prices, market | Economics | Explains by the market |
+| | C find where it makes or loses money | Accounting | Explains by the numbers |
+| B3 revenue up, profit down | A what management should do differently | Business Administration | Management lens |
+| | B which market forces explain it | Economics | Market-forces lens |
+| | C how the reports are built, what is behind the numbers | Accounting | Reporting lens |
+| B4 a day at work | A team building a new initiative | Business Administration | Building with people |
+| | B data to explain why people / markets behave so | Economics | Analytical explanation |
+| | C dig into financial information to find what doesn't fit | Accounting | Precision and detection |
+| P1 TikTok scrolling | A the person: attention, habits, emotion | Psychology | Individual mind |
+| | B groups, communities, culture | Behavioral Science | Group behaviour |
+| | C how presenting a choice / reward / price changes decisions | Economics + Psychology | Decision design |
+| P2 Duolingo retention | A why a person loses motivation | Psychology | Individual mind |
+| | B build a different way to learn | Education | Designing learning |
+| | C whether a group / belonging keeps people going | Behavioral Science | Social context |
+| P3 courier incentives | A effect on each courier's motivation | Psychology | Individual mind |
+| | B effect on relationships and group culture | Behavioral Science | Group behaviour |
+| | C how people change decisions when incentives change | Economics + Psychology | Incentives and choice |
+| | D guide and support people through the change | Education | Guiding people |
+| P4 a day at work | A how pressure affects one person's decisions | Psychology | Individual mind |
+| | B why two groups at an organisation behave differently | Behavioral Science | Group behaviour |
+| | C an activity that helps people with learning difficulty progress | Education | Designing learning |
+| | D analyse an experiment on price / risk / framing | Economics + Psychology | Decision experiments |
+| C1 Nike launch | A the idea, story, videos, content | Communication | Creative content |
+| | B who to address, channels, message, how we know it worked | Communication + Management | Strategy and measurement |
+| | C the whole move as a business | Business Administration | Business view |
+| C2 viral, no sales | A do the idea and story make people feel something | Communication | Creative effect |
+| | B which audience / message / media / funnel stage to change | Communication + Management | Marketing mechanics |
+| | C maybe the problem is product, price, distribution, decision | Business Administration | Business view |
+| C3 new brand | A build its voice, language, story | Communication | Creative content |
+| | B define audience, positioning, strategy | Communication + Management | Strategy |
+| | C decide where to play and build a working business | Business Administration | Business view |
+| C4 a day at work | A brainstorm with creators and editors | Communication | Creative work |
+| | B open campaign data and decide what to change tomorrow | Communication + Management | Data-driven marketing |
+| | C a management meeting on product, market, investment | Business Administration | Business decisions |
+| L1 AI feature (scenario) | A where the legal line is, who is responsible | Law | Legal reasoning |
+| | B whether to launch, the business risk | Business Administration | Business risk |
+| | C explain data use so users understand and trust it | Communication **+** Communication + Management | Explaining to the public (the one multi-target option) |
+| L2 creator dispute | A law, precedents, contracts, build the argument | Law | Legal argument |
+| | B a commercial solution for both sides | Business Administration | Business solution |
+| | C change the product so it doesn't recur | Management Information Systems | Systems / process solution |
+| L3 a day at work | A read a complex case, find the small detail, build an argument | Law | Legal work |
+| | B management decides a business move | Business Administration | Business decisions |
+| | C a campaign / public story around a complex topic | Communication | Public narrative |
+| L5 (extra) explain a controversy | A what the company must / may / may not say | Law | Legal care |
+| | B the story and message, clear and human | Communication | Creative message |
+| | C which audiences, channels, and how to tell it worked | Communication + Management | Strategy and measurement |
+| D1 Apple Store space | A how people move, what they see first, how it feels | Interior Design | Spatial experience |
+| | B the brand story people should understand | Communication | Brand narrative |
+| | C the business goal and how we know it worked | Business Administration | Business goal |
+| D2 pretty store, little exploring | A redesign the space: flow, lighting, materials, focal points | Interior Design | Spatial fix |
+| | B change the messages and story inside | Communication | Message fix |
+| | C observe where people stop and what they do | Behavioral Science | Behaviour observation |
+| D3 a day at work | A sketches, 3D, materials, builders | Interior Design | Making a real space |
+| | B a visual concept for a campaign | Communication | Visual storytelling |
+| | C a business plan for opening the branch | Business Administration | Business planning |
+| D5 (extra) where to invest effort | A improve the in-store experience | Interior Design | Spatial experience |
+| | B the story and messages the store sends | Communication | Message |
+| | C the business plan: costs, pricing, targets | Business Administration | Business goal |
+
+| Reality check | Applies to | Warns about | Options (level) |
+|---|---|---|---|
+| BR1 | Accounting | precision, rules, checking details | positive / neutral / negative |
+| PR1 | Psychology | research, statistics, methods, professional reading | positive / neutral / negative |
+| PR2 | Education | planning, trial and error, iteration, working with different people | positive / neutral / negative |
+| CR1 | Communication + Management | goals, data and measurement alongside ideas | positive / neutral / negative |
+| L4 | Law | reading, writing, small details, no single clear answer | positive / neutral / negative |
+| D4 | Interior Design | measurements, plans, constraints, budget, many revisions | positive / neutral / negative |
+
+Reality checks carry no program ids, a `reality_level` on every option, and `reality_for_program_ids`. They never change the ranking.
+
+## Work statements (shipped)
+Three per program, as data (`work_statements_he`). A statement is "a day or task I can imagine", not an academic description.
+
+| Program | Statements (gloss) |
+|---|---|
+| Computer Science | build a system or feature that is fast and reliable; solve a hard technical problem with code and algorithms; find where code fails and fix it |
+| Data Science | find usable patterns in lots of data; build a model that predicts what comes next; check whether a pattern is real or chance |
+| Management Information Systems | turn a business need into a system or technology solution; connect people, data and technology to improve a process; help a team choose and adopt a system |
+| Business Administration | build a new business move with a team and decide how to execute it; decide on product, market, pricing or investment; connect marketing, operations and money |
+| Economics and Management | use data to understand why markets or people behave as they do; check how prices, competition and demand affect decisions; check what happens if price, demand or competition changes |
+| Accounting | go into reports and numbers to see what is really happening; find a gap or error in financial data and its meaning; check where the business makes and loses money and that the numbers are accurate |
+| Psychology | research why a person thinks, feels or decides as they do; design a study of people's behaviour; check how attention, memory or emotion affect what a person does |
+| Behavioral Science | understand why different groups behave differently; enter an organisation or community and study culture, relationships and behaviour; check how environment and group affect decisions |
+| Education | build a way of learning that helps people progress; try an educational intervention, see what works, improve it; plan training or a learning programme for people with different needs |
+| Economics + Psychology | check how price, risk or incentive affects people's decisions; analyse an experiment on how people choose where money and psychology meet; build a small experiment on how framing a choice changes what people pick |
+| Communication | turn an idea into a story, content or campaign people remember; work with creators and editors on how a message looks and sounds; write, shoot or edit content that makes people feel something |
+| Communication + Management | open campaign data and decide what to change; connect audience, message, channels and business goals; build a communication plan and check it advances the goals |
+| Law | read a complex case, find the key legal point, build an argument; check what is allowed, what is not, and how to resolve a dispute; draft a contract or opinion and think about what could go wrong |
+| Interior Design | take an empty space and plan how people move, feel and use it; work with sketches, materials, measurements and builders until it works; pick colours, lighting and materials and see how they change the feel |
+
+Statements stay inside career imagination: no course names, admissions conditions or career guarantees, and none implies that working at a named company is a graduate outcome.
+
+## Completeness results
+- **Every non-tech selection walked.** All answer paths of the 6 single-project and 15 two-project non-tech selections (5,665 complete paths): no `needs_focus_content`, no repeated question, never the V1 module, result in at most 7 answers (5 scored plus up to two reality checks). Outcomes: 2,657 recommended and 3,008 near ties.
+- **Lone leader.** For every cluster, a first answer that supports exactly one program is followed by an authored question that offers that program and an alternative, until a clear leader (three same-direction answers) or the ceiling. The two clusters that needed an extra question are Law (L5) and Interior Design (D5).
+- **`insufficient_positive_evidence` is not reachable** in production non-tech paths, because the approved options always name a program and there is no neutral authored option. A candidate who rejects generated questions with "neither" ends in a near tie. Whether authored questions should get a neutral "none of these" option is an open product question for THI-16 / review; the engine supports it.
+- **No remaining `needs_focus_content` scenario** in the non-tech production content: the exhaustive walk above found none. The engine can still report it for a program set with more than three supported contenders and no authored question separating them, or with no statement left; no production path reaches either.

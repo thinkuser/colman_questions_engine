@@ -91,7 +91,7 @@ V2 covers 14 programs. Their identity lives in a fourth, separate file, `src/dat
 | `program_qualifier_he` | Mandatory display qualifier when non-null (DEC-015). MIS: `דו-חוגי עם מנהל עסקים`; Economics + Psychology: `דו-חוגי`. |
 | `sources.colman` / `sources.academy` | Source ids on the academic layer (colman.ac.il, at least one) and the candidate-facing layer (academy.org.il). Hosts are checked. |
 | `facts_status` | `verified_v1_pilot` for CS / DS / MIS (detailed facts in `facts/`), `pending_curation` for the 11 new programs (no academic facts yet). |
-| `work_statements_he` | "Day at work" statements for the generic head-to-head. Empty until THI-15. |
+| `work_statements_he` | "A day I can imagine myself doing" statements (THI-15). Exactly three per program, Hebrew, plural-neutral infinitive fragments of at most 90 characters, never academic claims, course names, admissions or career promises. They are the option text of the generated 2-/3-way focus questions (`docs/V2_SCORING.md`), so they must differ clearly between programs: a test requires no statement to be shared. Three is also the minimum that keeps a generated question available for every path (up to three generated questions can be asked for the same program set before the 5-answer ceiling). |
 
 Rules:
 - The catalog is **not** the V1 pilot list. `PROGRAM_IDS` / `PILOT_PROGRAMS` stay CS, DS and MIS, so the V1 comparison flow, persistence and engine are unchanged. For those three, the catalog must match the facts layer (names, aliases, qualifier, official URLs); the loader enforces it.

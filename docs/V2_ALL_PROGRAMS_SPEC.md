@@ -329,16 +329,23 @@ Implemented as specified in §6–9 and recorded in DEC-030; details and pressur
 - Generic points (0 / +3 / +4 / +5 / 0), support counts, shortlist, clear-leader rule, a 5-answer ceiling with near tie, adjacent programs surfaced only by answers, a generated 2- or 3-way focus question (the head-to-head) over the whole evidence leading set (supported contenders only), and reality checks by explicit `reality_for_program_ids`.
 - `PrecisionModuleAdapter`, with the unchanged V1 engine as `v1_tech`. Spotify alone is exactly V1. The Spotify opener `T1` reuses V1 `Q1` and is carried into V1, so it is never asked twice.
 - Open: a generic "no strong fit" threshold is not defined; the engine reports `insufficient_positive_evidence` instead (DEC-030).
-- Until THI-15 adds content, non-tech projects return `needs_focus_content`.
+- Until THI-15 added content, non-tech projects returned `needs_focus_content`; they now ask real questions (see THI-15 below).
+
+### THI-15 (non-tech content)
+Authored as data only; no router, scoring or schema change. Details, the option-by-option QA table and the completeness results are in `docs/V2_QUESTION_BANK.md` ("Shipped content (THI-15)").
+- Five clusters populated: Business (B1-B4), People (P1-P4), Communication (C1-C4), Law (L1-L3, L5), Interior Design (D1-D3, D5), plus six reality checks (Accounting, Psychology, Education, Communication + Management, Law, Interior Design).
+- Three work statements for every one of the 14 programs.
+- Lone-leader completeness verified by walking every answer path of all 21 non-tech selections (6 single projects and 15 pairs): no `needs_focus_content`, ending in a recommendation or a near tie within 7 answers.
+- Two extra authored general focus questions were needed to reach that: Law L5 and Interior Design D5 (flagged in the question bank).
 
 Not implemented in THI-13, by design:
 - THI-14: `genericScoreState`, `shortlist`, scoring weights, stop rules, `genericHeadToHead` selection, the tech precision handoff (including the Spotify discovery scenario so it is not asked twice).
   - Contract for THI-14: the candidate pool is ordered deterministically (project display order, then each project's program order; click order does not matter). That array position **must not** be used as a hidden ranking or tie-break signal. Ranking comes from scored answers and evidence; a true tie stays a tie or follows an explicit, documented rule.
-- THI-15: non-tech question content (B/P/C/L/D) and per-program work statements.
+- THI-15 (now done): non-tech question content (B/P/C/L/D) and per-program work statements.
 - THI-16: discovery UX, result integration, analytics events and acceptance QA.
 
 Open questions recorded for later issues:
-- Some approved answers name "adjacent signals" rather than a single program ("Communication / Communication + Management", "Tech/MIS adjacent", "Behavior/Data adjacent"). The schema can encode one or several programs per answer; choosing the exact mapping is THI-15 content work.
+- Some approved answers name "adjacent signals" rather than a single program ("Communication / Communication + Management", "Tech/MIS adjacent", "Behavior/Data adjacent"). The schema can encode one or several programs per answer; the exact mapping was settled in THI-15: Law L1 C points to Communication and Communication + Management (the only multi-target option), Law L2 C to MIS, Interior Design D2 C to Behavioral Science. See the question bank.
 - The opening copy now uses plural forms like V1. The rest of the question bank and result copy still use singular forms; broader copy QA is THI-15 / THI-16.
 
 Resolved in the THI-13 review: Economics + Psychology carries the candidate-facing qualifier `דו-חוגי` (DEC-029).

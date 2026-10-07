@@ -100,7 +100,7 @@ When no authored question separates the leading set, the engine builds `focus:<a
 - "neither" adds no points or support but counts toward the 3-answer minimum and the 5-answer ceiling;
 - `i` is the number of generated focus questions already asked for exactly that program set.
 
-The statements are curated data (`work_statements_he` in the catalog; THI-15 content). Nothing is generated at runtime, and no N×N pair or triple content is authored. If any member lacks a statement at index `i`, the step is `needs_focus_content`.
+The statements are curated data (`work_statements_he` in the catalog; three per program, authored in THI-15). Nothing is generated at runtime, and no N×N pair or triple content is authored. If any member lacks a statement at index `i`, the step is `needs_focus_content`; with three statements per program this cannot happen before the ceiling in any production path except a program set that is asked about three times in a row (see "Content availability").
 
 ## Reality checks
 
@@ -141,10 +141,17 @@ A cross-cluster Spotify run asks the generic questions before handoff plus V1's 
 | `near_tie` | Two or more programs still close at the ceiling. |
 | `insufficient_positive_evidence` | No defensible leader from expressed preferences (neutral / rejecting answers, or a leader with a single supporting answer). Never turned into a fake recommendation. |
 | `precision` | The module's own result (for `v1_tech`, the V1 `FitResult` with its DEC-018 classes, including V1 no strong fit). |
-| `needs_focus_content` (step, not a result) | Content gap: nothing can separate the evidence leading set (a lone supported leader with no authored alternative left, more than three contenders, or missing work statements). Lists the contenders' ids. Expected for non-tech projects until THI-15. |
+| `needs_focus_content` (step, not a result) | Content gap: nothing can separate the evidence leading set (a lone supported leader with no authored alternative left, more than three contenders, or missing work statements). Lists the contenders' ids. Not reached by any production non-tech selection (see "Content availability"). |
 
 ### Open product decision: a generic "no strong fit" threshold
 V1's normalized-fit thresholds (DEC-018) belong to V1's vector model and are **not** transplanted into V2 points. The accepted V2 docs define no generic no-strong-fit threshold. The generic engine therefore only distinguishes the three states above. For example, it does not treat "a clear leader built only on weak signals" as no fit. **Proposed, pending product review:** decide whether weak-but-positive generic results need their own state, and on what evidence, once THI-15 content and real usage exist.
+
+## Content availability (THI-15)
+The production content makes the routing rules above concrete:
+- **Lone leader:** a program with the only supported answer is tested by an *authored* general question that offers it and an alternative. Every non-tech cluster has enough of them for a lone leader to be challenged to a clear result or the ceiling; Law (L5) and Interior Design (D5) each carry one extra authored focus question for exactly this.
+- **No production path ends in `needs_focus_content`.** All answer paths of the 6 single-project and 15 two-project non-tech selections were walked (5,665 complete paths): none stops on a content gap. The longest runs 7 answers (5 scored plus up to two reality checks for a near tie).
+- **Outcomes:** only `recommended` and `near_tie`. Every authored option points to a program, so `insufficient_positive_evidence` is unreachable in production non-tech paths (it is still produced by the engine, and covered in the THI-14 fixtures). A candidate who answers the generated questions with "neither" ends in a near tie, never a recommendation.
+- Spotify combined with another project is longer than the 5-7 of a focused run (up to 11 answers measured: T1, the other project's questions, then V1's remaining questions). Accepted in THI-14; THI-16 QA must measure the real journey length.
 
 ## Pressure-test traces
 

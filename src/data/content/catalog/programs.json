@@ -1,6 +1,6 @@
 {
   "version": "v2",
-  "status_note": "StudyMatch V2 program catalog (THI-13): the 14 programs in V2 scope, in display order. Identity only: candidate-facing names, aliases, qualifiers and provenance. Every name and alias is verified verbatim against an official degree heading of the program's own cited pages (catalog/verified_headings.json). No academic facts are added here; detailed official facts exist only for the V1 pilot programs (facts/). Work statements for the generic head-to-head are THI-15 content.",
+  "status_note": "StudyMatch V2 program catalog (THI-13): the 14 programs in V2 scope, in display order. Identity only: candidate-facing names, aliases, qualifiers and provenance. Every name and alias is verified verbatim against an official degree heading of the program's own cited pages (catalog/verified_headings.json). No academic facts are added here; detailed official facts exist only for the V1 pilot programs (facts/). Work statements (three per program, THI-15) are imagination-layer career fragments for the generic focus questions: not academic claims, not facts about the program.",
   "last_reviewed": "2026-10-06",
   "programs": [
     {
@@ -9,9 +9,16 @@
       "program_name_aliases_he": [],
       "program_qualifier_he": null,
       "program_name_en": "Computer Science",
-      "sources": { "colman": ["colman_cs_program_page"], "academy": ["academy_cs_page"] },
+      "sources": {
+        "colman": ["colman_cs_program_page"],
+        "academy": ["academy_cs_page"]
+      },
       "facts_status": "verified_v1_pilot",
-      "work_statements_he": []
+      "work_statements_he": [
+        "לבנות מערכת או פיצ'ר ולגרום לו לעבוד מהר ואמין",
+        "לפתור בעיה טכנית מורכבת בעזרת קוד ואלגוריתמים",
+        "למצוא איפה קוד לא עובד כמו שצריך ולתקן אותו"
+      ]
     },
     {
       "program_id": "data_science",
@@ -19,9 +26,16 @@
       "program_name_aliases_he": ["מדעי הנתונים"],
       "program_qualifier_he": null,
       "program_name_en": "Data Science",
-      "sources": { "colman": ["colman_ds_program_page"], "academy": ["academy_ds_page"] },
+      "sources": {
+        "colman": ["colman_ds_program_page"],
+        "academy": ["academy_ds_page"]
+      },
       "facts_status": "verified_v1_pilot",
-      "work_statements_he": []
+      "work_statements_he": [
+        "לקחת הרבה נתונים ולמצוא בהם דפוסים שאפשר להשתמש בהם",
+        "לבנות מודל שמנסה לחזות מה יקרה בהמשך",
+        "לבדוק אם מה שנראה בנתונים הוא באמת דפוס או סתם מקרה"
+      ]
     },
     {
       "program_id": "management_information_systems",
@@ -29,9 +43,16 @@
       "program_name_aliases_he": ["ניהול מערכות מידע ומנהל עסקים"],
       "program_qualifier_he": "דו-חוגי עם מנהל עסקים",
       "program_name_en": "Management Information Systems",
-      "sources": { "colman": ["colman_mis_program_page"], "academy": ["academy_mis_page"] },
+      "sources": {
+        "colman": ["colman_mis_program_page"],
+        "academy": ["academy_mis_page"]
+      },
       "facts_status": "verified_v1_pilot",
-      "work_statements_he": []
+      "work_statements_he": [
+        "להבין צורך עסקי ולתרגם אותו למערכת או פתרון טכנולוגי",
+        "לחבר בין אנשים, נתונים וטכנולוגיה כדי לשפר תהליך בארגון",
+        "לעזור לצוות לבחור מערכת שמתאימה לאיך שהוא עובד ולהכניס אותה לשימוש"
+      ]
     },
     {
       "program_id": "business_administration",
@@ -39,9 +60,16 @@
       "program_name_aliases_he": [],
       "program_qualifier_he": null,
       "program_name_en": "Business Administration",
-      "sources": { "colman": ["colman_business_administration_program_page"], "academy": [] },
+      "sources": {
+        "colman": ["colman_business_administration_program_page"],
+        "academy": []
+      },
       "facts_status": "pending_curation",
-      "work_statements_he": []
+      "work_statements_he": [
+        "לבנות מהלך עסקי חדש עם צוות ולהחליט איך מוציאים אותו לפועל",
+        "להחליט על מוצר, שוק, תמחור או השקעה",
+        "לחבר בין שיווק, תפעול וכסף ולהחליט מה העסק צריך לעשות עכשיו"
+      ]
     },
     {
       "program_id": "economics_and_management",
@@ -49,9 +77,16 @@
       "program_name_aliases_he": [],
       "program_qualifier_he": null,
       "program_name_en": "Economics and Management",
-      "sources": { "colman": ["colman_economics_program_page"], "academy": ["academy_economics_page"] },
+      "sources": {
+        "colman": ["colman_economics_program_page"],
+        "academy": ["academy_economics_page"]
+      },
       "facts_status": "pending_curation",
-      "work_statements_he": []
+      "work_statements_he": [
+        "לעבוד עם נתונים כדי להבין למה שוק או אנשים מתנהגים בצורה מסוימת",
+        "לבדוק איך מחירים, תחרות וביקוש משפיעים על החלטות",
+        "לבדוק מה יקרה לשוק או לחברה אם משהו משתנה — מחיר, ביקוש או תחרות"
+      ]
     },
     {
       "program_id": "accounting",
@@ -59,9 +94,16 @@
       "program_name_aliases_he": [],
       "program_qualifier_he": null,
       "program_name_en": "Accounting",
-      "sources": { "colman": ["colman_accounting_program_page"], "academy": ["academy_accounting_page"] },
+      "sources": {
+        "colman": ["colman_accounting_program_page"],
+        "academy": ["academy_accounting_page"]
+      },
       "facts_status": "pending_curation",
-      "work_statements_he": []
+      "work_statements_he": [
+        "להיכנס לדוחות ולמספרים ולהבין מה באמת קורה בעסק",
+        "למצוא פער או טעות במידע פיננסי ולהבין מה המשמעות שלו",
+        "לבדוק איפה העסק מרוויח ואיפה מפסיד, ולוודא שהמספרים מדויקים"
+      ]
     },
     {
       "program_id": "psychology",
@@ -69,9 +111,16 @@
       "program_name_aliases_he": [],
       "program_qualifier_he": null,
       "program_name_en": "Psychology",
-      "sources": { "colman": ["colman_psychology_program_page"], "academy": ["academy_psychology_page"] },
+      "sources": {
+        "colman": ["colman_psychology_program_page"],
+        "academy": ["academy_psychology_page"]
+      },
       "facts_status": "pending_curation",
-      "work_statements_he": []
+      "work_statements_he": [
+        "לחקור למה אדם חושב, מרגיש או מחליט בצורה מסוימת",
+        "לתכנן מחקר שמנסה להבין התנהגות של אנשים",
+        "לבדוק איך קשב, זיכרון או רגש משפיעים על מה שאדם עושה"
+      ]
     },
     {
       "program_id": "behavioral_science",
@@ -79,9 +128,16 @@
       "program_name_aliases_he": [],
       "program_qualifier_he": null,
       "program_name_en": "Behavioral Science",
-      "sources": { "colman": ["colman_behavioral_science_program_page"], "academy": [] },
+      "sources": {
+        "colman": ["colman_behavioral_science_program_page"],
+        "academy": []
+      },
       "facts_status": "pending_curation",
-      "work_statements_he": []
+      "work_statements_he": [
+        "להבין למה קבוצות שונות של אנשים מתנהגות אחרת",
+        "להיכנס לארגון או קהילה ולחקור תרבות, יחסים והתנהגות",
+        "לבדוק איך הסביבה והקבוצה משפיעות על ההחלטות שאנשים מקבלים"
+      ]
     },
     {
       "program_id": "education",
@@ -89,9 +145,16 @@
       "program_name_aliases_he": [],
       "program_qualifier_he": null,
       "program_name_en": "Education",
-      "sources": { "colman": ["colman_education_program_page"], "academy": ["academy_education_page"] },
+      "sources": {
+        "colman": ["colman_education_program_page"],
+        "academy": ["academy_education_page"]
+      },
       "facts_status": "pending_curation",
-      "work_statements_he": []
+      "work_statements_he": [
+        "לבנות דרך למידה שעוזרת לאנשים להתקדם",
+        "לנסות התערבות חינוכית, לראות מה עובד ולשפר אותה",
+        "לתכנן הדרכה או תוכנית למידה שמתאימה לאנשים עם צרכים שונים"
+      ]
     },
     {
       "program_id": "economics_and_psychology",
@@ -104,7 +167,11 @@
         "academy": ["academy_economics_psychology_page"]
       },
       "facts_status": "pending_curation",
-      "work_statements_he": []
+      "work_statements_he": [
+        "לבדוק איך מחיר, סיכון או תמריץ משפיעים על החלטות של אנשים",
+        "לנתח ניסוי על הדרך שבה אנשים בוחרים כשהכסף והפסיכולוגיה נפגשים",
+        "לבנות ניסוי קטן שבודק איך שינוי בהצגת בחירה משנה מה אנשים בוחרים"
+      ]
     },
     {
       "program_id": "communication",
@@ -112,9 +179,16 @@
       "program_name_aliases_he": [],
       "program_qualifier_he": null,
       "program_name_en": "Communication",
-      "sources": { "colman": ["colman_communication_program_page"], "academy": ["academy_communication_page"] },
+      "sources": {
+        "colman": ["colman_communication_program_page"],
+        "academy": ["academy_communication_page"]
+      },
       "facts_status": "pending_curation",
-      "work_statements_he": []
+      "work_statements_he": [
+        "לקחת רעיון ולהפוך אותו לסיפור, תוכן או קמפיין שאנשים זוכרים",
+        "לעבוד עם יוצרים ועורכים על הדרך שבה מסר ייראה ויישמע",
+        "לכתוב, לצלם או לערוך תוכן שגורם לאנשים להרגיש משהו"
+      ]
     },
     {
       "program_id": "communication_and_management",
@@ -122,9 +196,16 @@
       "program_name_aliases_he": [],
       "program_qualifier_he": null,
       "program_name_en": "Communication and Management",
-      "sources": { "colman": ["colman_communication_management_program_page"], "academy": [] },
+      "sources": {
+        "colman": ["colman_communication_management_program_page"],
+        "academy": []
+      },
       "facts_status": "pending_curation",
-      "work_statements_he": []
+      "work_statements_he": [
+        "לפתוח נתוני קמפיין ולהחליט מה לשנות כדי שהוא יעבוד טוב יותר",
+        "לחבר בין קהל, מסר, ערוצים ומטרות עסקיות",
+        "לבנות תוכנית תקשורת לחברה ולבדוק אם היא באמת מקדמת את היעדים שלה"
+      ]
     },
     {
       "program_id": "law",
@@ -132,9 +213,16 @@
       "program_name_aliases_he": [],
       "program_qualifier_he": null,
       "program_name_en": "Law",
-      "sources": { "colman": ["colman_law_program_page"], "academy": [] },
+      "sources": {
+        "colman": ["colman_law_program_page"],
+        "academy": []
+      },
       "facts_status": "pending_curation",
-      "work_statements_he": []
+      "work_statements_he": [
+        "לקרוא מקרה מורכב, למצוא את הנקודה המשפטית החשובה ולבנות טיעון",
+        "לבדוק מה מותר, מה אסור ואיך אפשר לפתור מחלוקת",
+        "לנסח חוזה או חוות דעת ולחשוב על כל מה שעלול להשתבש"
+      ]
     },
     {
       "program_id": "interior_design",
@@ -147,7 +235,11 @@
         "academy": ["academy_interior_design_page"]
       },
       "facts_status": "pending_curation",
-      "work_statements_he": []
+      "work_statements_he": [
+        "לקחת חלל ריק ולתכנן איך אנשים ינועו, ירגישו וישתמשו בו",
+        "לעבוד עם סקיצות, חומרים, מידות ואנשי ביצוע עד שהחלל עובד באמת",
+        "לבחור צבעים, תאורה וחומרים ולבדוק איך הם משנים את התחושה בחלל"
+      ]
     }
   ]
 }
