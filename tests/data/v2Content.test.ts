@@ -58,7 +58,8 @@ describe("approved question sets", () => {
       "3:L3:focus",
       "4:L5:focus",
       "5:L6:focus",
-      "6:L4:reality_check",
+      "6:L7:focus",
+      "7:L4:reality_check",
     ]);
     expect(shape("interior_design")).toEqual([
       "1:D1:scenario",
@@ -66,13 +67,14 @@ describe("approved question sets", () => {
       "3:D3:focus",
       "4:D5:focus",
       "5:D6:focus",
-      "6:D4:reality_check",
+      "6:D7:focus",
+      "7:D4:reality_check",
     ]);
   });
 
   it("keeps the remaining Q6-Q7 id slots free and never exceeds a cluster's bound (no count is hard-coded)", () => {
     const ids = new Set(V2_CLUSTERS.flatMap((c) => c.questions.map((q) => q.id)));
-    for (const reserved of ["B6", "B7", "P7", "C6", "C7", "L7", "D7"]) expect(ids.has(reserved)).toBe(false);
+    for (const reserved of ["B6", "B7", "P7", "C6", "C7", "L8", "D8"]) expect(ids.has(reserved)).toBe(false);
     for (const id of NON_TECH) expect(cluster(id).questions.length).toBeLessThanOrEqual(cluster(id).maxQuestions);
   });
 
@@ -142,6 +144,9 @@ describe("approved question sets", () => {
       C: [BA],
       neither: [],
     });
+    // L7 / D7: deliberately narrow two-program comparisons (Law vs Business, Interior Design vs Business).
+    expect(targets(question("L7"))).toEqual({ A: ["law"], B: [BA], neither: [] });
+    expect(targets(question("D7"))).toEqual({ A: ["interior_design"], B: [BA], neither: [] });
     expect(targets(question("L6"))).toEqual({ A: ["law"], B: [BA], C: ["communication"], neither: [] });
     expect(targets(question("D6"))).toEqual({ A: ["interior_design"], B: ["communication"], C: [BA], neither: [] });
   });
@@ -214,10 +219,12 @@ describe("neutral-option policy (THI-15 review)", () => {
         "D3",
         "D5",
         "D6",
+        "D7",
         "L2",
         "L3",
         "L5",
         "L6",
+        "L7",
         "P3",
         "P4",
         "P5",

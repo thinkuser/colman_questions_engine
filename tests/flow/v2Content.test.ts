@@ -297,14 +297,69 @@ describe("neutral answers (THI-15 review)", () => {
     expect(answers.filter((a) => a.answerId === "neither").length).toBeGreaterThanOrEqual(3);
   });
 
-  it("documents the one remaining single-project dead end: a lone Business Administration leader in Law / Interior Design", () => {
-    // BA is adjacent there and has no option in L5 / D2, so only four authored questions can test it.
-    const law = playNeutral(["ai_feature_privacy"], { L1: "B" });
-    expect(law.next).toMatchObject({ status: "needs_focus_content", programIds: ["business_administration"] });
-    expect(law.asked).toEqual(["L1", "L2", "L3", "L6"]);
-    const apple = playNeutral(["apple_store_space"], { D1: "C" });
-    expect(apple.next).toMatchObject({ status: "needs_focus_content", programIds: ["business_administration"] });
-    expect(apple.asked).toEqual(["D1", "D3", "D5", "D6"]);
+  describe("lone adjacent Business Administration leader (Law and Interior Design)", () => {
+    // BA has no option in L5 / D2, so L7 and D7 (narrow comparisons with the core program) complete the five questions.
+    const law = [ans("L1", "B"), ans("L2", "neither"), ans("L3", "neither"), ans("L6", "neither")];
+    const apple = [ans("D1", "C"), ans("D3", "neither"), ans("D5", "neither"), ans("D6", "neither")];
+
+    it("AI: L1 = B plus neutral follow-ups asks L7, and a neutral L7 ends in insufficient_positive_evidence", () => {
+      const asked = step(["ai_feature_privacy"], law);
+      expect(askedId(asked)).toBe("L7");
+      expect(reasonOf(asked)).toBe("separates_leaders");
+      expect(asked.state.scoredAnswerCount).toBe(4);
+      const end = step(["ai_feature_privacy"], [...law, ans("L7", "neither")]);
+      expect(end).toMatchObject({
+        status: "complete",
+        outcome: { kind: "insufficient_positive_evidence" },
+        completionReason: "ceiling_insufficient_evidence",
+      });
+      expect(end.state.scoredAnswerCount).toBe(5);
+      expect(end.state.scores).toMatchObject({ business_administration: 3, law: 0 });
+      expect(end.state.support).toMatchObject({ business_administration: 1, law: 0 });
+    });
+
+    it("Apple: D1 = C plus neutral follow-ups asks D7, and a neutral D7 ends in insufficient_positive_evidence", () => {
+      const asked = step(["apple_store_space"], apple);
+      expect(askedId(asked)).toBe("D7");
+      expect(reasonOf(asked)).toBe("separates_leaders");
+      expect(asked.state.scoredAnswerCount).toBe(4);
+      const end = step(["apple_store_space"], [...apple, ans("D7", "neither")]);
+      expect(end).toMatchObject({
+        status: "complete",
+        outcome: { kind: "insufficient_positive_evidence" },
+        completionReason: "ceiling_insufficient_evidence",
+      });
+      expect(end.state.scoredAnswerCount).toBe(5);
+      expect(end.state.scores).toMatchObject({ business_administration: 3, interior_design: 0 });
+    });
+
+    it("L7 Business strengthens BA normally (+4, second support, clear leader at 5 answers)", () => {
+      const done = step(["ai_feature_privacy"], [...law, ans("L7", "B")]);
+      expect(done.state.scores).toMatchObject({ business_administration: 7, law: 0 });
+      expect(done.state.support).toMatchObject({ business_administration: 2 });
+      expect(done.state.resolution).toEqual({ kind: "recommended", programId: "business_administration" });
+    });
+
+    it("L7 Law brings Law into contention normally", () => {
+      const done = step(["ai_feature_privacy"], [...law, ans("L7", "A")]);
+      expect(done.state.scores).toMatchObject({ business_administration: 3, law: 4 });
+      expect(done.state.support).toMatchObject({ law: 1 });
+      expect([...done.state.shortlist].sort()).toEqual(["business_administration", "law"]);
+      expect(done.state.resolution).toMatchObject({ kind: "near_tie" });
+    });
+
+    it("D7 Business strengthens BA normally", () => {
+      const done = step(["apple_store_space"], [...apple, ans("D7", "B")]);
+      expect(done.state.scores).toMatchObject({ business_administration: 7, interior_design: 0 });
+      expect(done.state.resolution).toEqual({ kind: "recommended", programId: "business_administration" });
+    });
+
+    it("D7 Interior Design brings Interior Design into contention normally", () => {
+      const done = step(["apple_store_space"], [...apple, ans("D7", "A")]);
+      expect(done.state.scores).toMatchObject({ business_administration: 3, interior_design: 4 });
+      expect([...done.state.shortlist].sort()).toEqual(["business_administration", "interior_design"]);
+      expect(done.state.resolution).toMatchObject({ kind: "near_tie" });
+    });
   });
 });
 
@@ -411,15 +466,12 @@ describe("every answer path of every non-tech selection (state-memoised walk)", 
     }
   }, 120_000);
 
-  it("never reports needs_focus_content except for the two documented lone-Business-Administration dead ends", () => {
+  it("never reports needs_focus_content on any reachable production path", () => {
     const total = empty();
     const gaps: string[] = [];
     for (const selected of selections) add(total, memoWalk(selected, gaps));
-    expect(gaps.sort()).toEqual([
-      "ai_feature_privacy [business_administration] after L1,L2,L3,L6",
-      "apple_store_space [business_administration] after D1,D3,D5,D6",
-    ]);
-    expect(total.gap).toBe(2);
+    expect(gaps).toEqual([]);
+    expect(total.gap).toBe(0);
     // Results are recommendations, valid near ties, and (now reachable) insufficient positive evidence.
     expect(total.recommended).toBeGreaterThan(0);
     expect(total.near_tie).toBeGreaterThan(0);

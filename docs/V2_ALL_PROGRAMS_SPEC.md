@@ -333,9 +333,9 @@ Implemented as specified in §6–9 and recorded in DEC-030; details and pressur
 
 ### THI-15 (non-tech content)
 Authored as data only; no router, scoring or schema change. Details, the option-by-option QA table and the completeness results are in `docs/V2_QUESTION_BANK.md` ("Shipped content (THI-15)").
-- Five clusters populated: Business (B1-B5), People (P1-P6), Communication (C1-C5), Law (L1-L3, L5, L6), Interior Design (D1-D3, D5, D6), plus six reality checks (Accounting, Psychology, Education, Communication + Management, Law, Interior Design). Three work statements for every one of the 14 programs.
+- Five clusters populated: Business (B1-B5), People (P1-P6), Communication (C1-C5), Law (L1-L3, L5, L6, L7), Interior Design (D1-D3, D5, D6, D7), plus six reality checks (Accounting, Psychology, Education, Communication + Management, Law, Interior Design). Three work statements for every one of the 14 programs.
 - **Neutral-option policy:** project-opening scenarios are forced work choices; every authored follow-up focus question has a shared neutral option (0 points, 0 support, counts toward the 5-answer ceiling). Each cluster has enough authored scored questions to reach five scored answers, so `insufficient_positive_evidence` is production-reachable.
-- Verified by walking every answer path of all 21 non-tech selections (19,373 complete paths). Two remaining content gaps are documented (lone adjacent Business Administration leader in Law / Interior Design).
+- Verified by walking every answer path of all 21 non-tech selections (19,381 complete paths): zero `needs_focus_content`. L7 and D7 are narrow comparisons with Business Administration that close the last two lone-leader gaps.
 
 Not implemented in THI-13, by design:
 - THI-14: `genericScoreState`, `shortlist`, scoring weights, stop rules, `genericHeadToHead` selection, the tech precision handoff (including the Spotify discovery scenario so it is not asked twice).

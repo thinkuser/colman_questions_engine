@@ -287,22 +287,22 @@ Source of truth: `src/data/content/discovery/clusters.json` (questions) and `src
 | Business | B1 (Wolt opener), B2, B3, B4, **B5** | BR1 (Accounting) |
 | People | P1 (TikTok opener), P2 (Duolingo opener), P3, P4, **P5**, **P6** | PR1 (Psychology), PR2 (Education) |
 | Communication | C1 (Nike opener), C2, C3, C4, **C5** | CR1 (Communication + Management) |
-| Law | L1 (AI opener), L2, L3, L5, **L6** | L4 (Law) |
-| Interior Design | D1 (Apple opener), D2, D3, D5, **D6** | D4 (Interior Design) |
+| Law | L1 (AI opener), L2, L3, L5, **L6**, **L7** | L4 (Law) |
+| Interior Design | D1 (Apple opener), D2, D3, D5, **D6**, **D7** | D4 (Interior Design) |
 
 Bold = added in the THI-15 review (see below). L5 and D5 were the extra questions of the first pass.
 
 - **Policy: openers are forced work choices; every later authored focus question has a neutral option.**
   - The project-opening scenarios (B1, P1, P2, C1, L1, D1, and T1 in Tech) have **no** neutral option: the candidate has already chosen that world, and the opener establishes the first work-preference signal. A neutral on two cross-cluster openers could leave four to six programs at 0 / 0 and stop the journey early.
-  - Every other authored scored question (B2-B5, P3-P6, C2-C5, L2/L3/L5/L6, D2/D3/D5/D6) ends with option `neither`, copy "אף אחת מהאפשרויות לא ממש מושכת אותי" (exactly the V1 neutral wording, kept equal by a test).
+  - Every other authored scored question (B2-B5, P3-P6, C2-C5, L2/L3/L5/L6/L7, D2/D3/D5/D6/D7) ends with option `neither`, copy "אף אחת מהאפשרויות לא ממש מושכת אותי" (exactly the V1 neutral wording, kept equal by a test).
   - The neutral option has `program_ids: []` and no reality level. By the engine rules it adds **0 points and 0 support** but **counts as a scored answer** toward the 3-answer minimum and the 5-answer ceiling. Reality checks keep their positive / neutral / negative structure.
-- **Five scored questions per cluster** so a lone supported leader can be tested to the ceiling with authored questions: a single project in Business, Communication, Law and Interior Design has exactly five (opener plus four); People has six because P1 and P2 are each specific to one project, so one project sees six minus one.
-- **Ids and positions.** Scored questions come first, then the reality checks. Business, People and Communication reality checks use `BR1`, `PR1`, `PR2`, `CR1`; Law and Interior Design keep the approved `L4` / `D4`. B6-B7, C6-C7, L7, D7 and P7 stay free. **People's `max_questions` is 8** (six scored plus two reality checks); the others stay at 7. Position, not id, drives order, so nothing hard-codes a count.
+- **Five scored questions per cluster** so a lone supported leader can be tested to the ceiling with authored questions: a single project in Business and Communication has exactly five (opener plus four); Law and Interior Design have six (L7 and D7 exist because Business Administration, adjacent there, has no option in L5 / D2, so only L1/L2/L3/L6 or D1/D3/D5/D6 could test it: four); People has six because P1 and P2 are each specific to one project, so one project sees five.
+- **Ids and positions.** Scored questions come first, then the reality checks. Business, People and Communication reality checks use `BR1`, `PR1`, `PR2`, `CR1`; Law and Interior Design keep the approved `L4` / `D4`. B6-B7, C6-C7 and P7 stay free; Law and Interior Design each use all seven positions (six scored plus the reality check), so their `max_questions` of 7 is full. **People's `max_questions` is 8** (six scored plus two reality checks); the others stay at 7. Position, not id, drives order, so nothing hard-codes a count.
 - **Work statements:** three for each of the 14 programs (42 in total).
 
 ## Deviations from the approved baseline (for review)
 1. **Hebrew polish only.** Plural/inclusive style ("איזה חלק הכי הייתם רוצים לפתור?"), Hebrew quotation marks in P1, and gender-neutral wording for two negative reality options ("הייתי רוצה …" instead of "אני מעדיף …"). The measured distinctions are unchanged.
-2. **Extra authored questions (new copy, need review).** L5 and D5 (first pass, approved), and in the review pass B5, P5, P6, C5, L6, D6 (below). All are focus questions with a neutral option.
+2. **Extra authored questions (new copy, need review).** L5 and D5 (first pass, approved), and in the review pass B5, P5, P6, C5, L6, D6 (below), and L7, D7 (final fix, below). All are focus questions with a neutral option.
 3. **Mappings the approved text left open (approved).**
    - **L1 C** (explain it to users) → Communication **and** Communication + Management. This is the only multi-target option in the content (full weight to each, DEC-030).
    - **L2 C** → Management Information Systems only.
@@ -321,8 +321,12 @@ Bold = added in the THI-15 review (see below). L5 and D5 were the extra question
 | C5 | לחברה יש מוצר חזק, אבל קהלים שונים מבינים אותו אחרת. מה הכי מושך אתכם? | A לכתוב ולעצב את הסיפור כך שכל קהל ירגיש שמדברים אליו → Communication; B לבדוק מי הקהלים, מה כל אחד מהם צריך ואיך נמדוד איזה מסר עובד → Communication + Management; C להחליט אם צריך לשנות את המוצר, המחיר או קהל היעד של העסק → Business Administration; neither |
 | L6 | חברה מגלה בעיה בחוזה עם ספק כמה ימים לפני השקה גדולה. איפה הייתם רוצים להיות? | A בבדיקת החוזה: מה הוא מחייב, מה מותר ומה אפשר לדרוש → Law; B בהחלטה אם לדחות את ההשקה, לשלם יותר או לשנות את התוכנית → Business Administration; C בהסבר ללקוחות ולשותפים מה קרה ומה עושים, כך שיבינו ויסמכו על החברה → Communication; neither |
 | D6 | אותו חלל צריך לעבוד גם ללקוחות שקופצים לרגע, גם לסדנאות ארוכות וגם לאירוע בערב. מה הכי מעניין אתכם? | A לתכנן חלל גמיש שאפשר לשנות בקלות — ריהוט, תאורה ואזורים → Interior Design; B לבנות לכל רגע חוויה ומסרים שמתאימים לו → Communication; C להחליט איך מנצלים את החלל כדי שיתאים לעסק ויניב הכי הרבה → Business Administration; neither |
+| L7 | רגולציה חדשה עומדת לשנות את הדרך שבה חברה גדולה יכולה לפעול. במה הייתם רוצים להתמקד? | A להבין בדיוק מה החוק החדש מחייב, מה מותר לעשות ואיפה נמצאים הסיכונים המשפטיים → Law; B להחליט איך החברה צריכה לשנות את המוצר, המחיר או התוכנית העסקית כדי להמשיך לצמוח → Business Administration; neither |
+| D7 | עסק עובר לחלל קטן יותר, אבל רוצה לשמור על אותה חוויית לקוח. במה הייתם רוצים להתמקד? | A לתכנן מחדש את החלל כך שכל מטר יעבוד טוב ועדיין יהיה נעים וברור לאנשים → Interior Design; B להחליט אילו פעילויות ומוצרים הכי חשוב להשאיר ואיך החלל החדש עדיין יעבוד כלכלית → Business Administration; neither |
 
 Each is a distinct work situation (investment choice, adopting a habit, health-screening uptake, audiences reading one product differently, a contract problem before a launch, one space serving different moments), not a repeat of an existing scenario.
+
+L7 and D7 are deliberately narrow, general (not project-specific) two-program comparisons: Law vs Business Administration and Interior Design vs Business Administration. They add no Communication, MIS or Behavioral Science, so the unresolved set stays at two programs and cannot create the four-contender dead ends that adding a Business option to L5 or D2 would. Neither was added to D2 or L5.
 
 ## Developer QA table (not candidate UI)
 Gloss in English; the Hebrew is in the data. "Signal" says why the option is a useful, work-type signal.
@@ -411,6 +415,10 @@ Gloss in English; the Hebrew is in the data. "Signal" says why the option is a u
 | D6 one space, many moments | A a flexible space: furniture, lighting, zones | Interior Design | Spatial design |
 | | B an experience and messages for each moment | Communication | Experience narrative |
 | | C use the space to fit and grow the business | Business Administration | Business use of space |
+| L7 new regulation | A what the law requires, allows, and the legal risks | Law | Legal analysis |
+| | B change product, price or plan to keep growing | Business Administration | Business adaptation |
+| D7 smaller space, same experience | A redesign so every metre works and still feels clear | Interior Design | Spatial redesign |
+| | B decide what to keep and whether the new space pays | Business Administration | Business trade-off |
 | every focus question except the openers | neither: "none of these really appeals to me" | none | Lets a candidate say a follow-up does not fit, without forcing a program into evidence (0 points, 0 support, still a scored answer) |
 
 | Reality check | Applies to | Warns about | Options (level) |
@@ -448,13 +456,10 @@ Statements stay inside career imagination: no course names, admissions condition
 
 ## Completeness results
 - **State-memoised walk of every answer path** of the 21 non-tech selections (6 single projects and 15 pairs). The next step depends only on the asked questions, scores, support, rankable programs and reality evidence, so the walk visits each reachable engine state once and sums the child tallies, which gives the exact number of complete paths. A literal Cartesian walk on the six single-project selections gives identical totals (tested). It runs in under a second.
-  - **19,373 complete paths:** 4,738 recommended, 14,618 near ties, 15 `insufficient_positive_evidence`, 2 `needs_focus_content`.
+  - **19,381 complete paths:** 4,740 recommended, 14,624 near ties, 17 `insufficient_positive_evidence`, **0 `needs_focus_content`**.
   - **Maximum scored answers: 5** (the generic ceiling). **Maximum candidate answers including reality checks: 7.**
   - Path counts weight every option equally. They say nothing about how often a real candidate takes a path.
 - **`insufficient_positive_evidence` is production-reachable.** The six single-project journeys "opener, then neither for every follow-up" each reach exactly five scored answers and end there: one supported program, once, with no forced second program and no recommendation. Tested for Wolt, TikTok, Duolingo, Nike, AI / Law and Apple / Interior Design.
-- **Two remaining `needs_focus_content` states (single project, adjacent Business Administration):**
-  - AI project: `L1 = B`, then neutral for L2, L3, L6 → lone Business Administration leader after four scored answers.
-  - Apple project: `D1 = C`, then neutral for D3, D5, D6 → same.
-  - Cause: Business Administration is adjacent in those clusters and has no option in L5 / D2, so only four authored questions can test it. Both end after four answers in a content gap instead of the `insufficient_positive_evidence` they should reach. Not fixed here because it needs either a Business option in the approved D2, or an L5 option that was tried and rejected (it introduced two four-contender dead ends across clusters). Cleaner fix, for review: let the router finish a lone supported leader with no remaining authored test as `insufficient_positive_evidence` (an engine change, so a THI-14 follow-up). Both paths are pinned by a test so a fix is noticed.
+- **No `needs_focus_content` on any reachable production path.** The two earlier dead ends (a lone adjacent Business Administration leader in the AI / Law project after `L1 = B` plus neutral, and in the Apple project after `D1 = C` plus neutral) are closed by L7 and D7: the next question is L7 / D7, and a neutral answer ends at five scored answers in `insufficient_positive_evidence`, a Business answer follows the normal clear-leader rule, and a Law / Interior Design answer brings that program into contention. The engine is unchanged; this is content only.
 - **Neutral answers across clusters.** For five two-project combinations, answering neutral everywhere after the openers never produces a gap or a recommendation: the result is a near tie, as two different opener preferences warrant. No early four-to-six-program 0 / 0 dead end appears, because openers stay forced.
 - **Generated focus** still works: a 2-way for all 91 program pairs and a 3-way for all 364 triples, at three indexes.
