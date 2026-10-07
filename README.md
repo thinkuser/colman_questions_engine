@@ -34,6 +34,7 @@ The LLM may explain a result, but the deterministic engine decides the match.
 10. `docs/SCORING.md` — fit formula, V1 pilot thresholds (DEC-018), calibration evidence.
 11. `docs/V2_ALL_PROGRAMS_SPEC.md` — StudyMatch V2 (all programs, career-project discovery) and implementation status.
 12. `docs/V2_QUESTION_BANK.md` — V2 career-imagination question content and its data representation.
+13. `docs/V2_SCORING.md` — V2 routing, generic scoring, precision-module handoff and pressure-test traces.
 
 ## Workflow
 GitHub is the source of truth.

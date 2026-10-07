@@ -37,7 +37,7 @@ export const CatalogProgramSchema = z.strictObject({
   program_name_en: nonEmpty,
   sources: z.strictObject({ colman: z.array(sourceId).min(1), academy: z.array(sourceId) }),
   facts_status: z.enum(FACTS_STATUSES),
-  /** "Day at work" statements for the generic head-to-head (THI-15 content). */
+  /** "Day at work" statements for generated 2-/3-way focus questions (THI-15 content). */
   work_statements_he: z.array(nonEmpty),
 });
 

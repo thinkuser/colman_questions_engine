@@ -4,6 +4,7 @@ import {
   REALITY_LEVELS,
   V2_QUESTION_KINDS,
   type CareerProject,
+  type PrecisionModuleId,
   type ProgramId,
   type V2Cluster,
   type V2Question,
@@ -12,6 +13,7 @@ import { V2_PROGRAM_IDS } from "./catalog";
 import projectsRaw from "./content/discovery/career_projects.json";
 import clustersRaw from "./content/discovery/clusters.json";
 import { PROGRAM_IDS } from "./programs";
+import { getQuestionCopyHe, QUESTION_BANK } from "./questions";
 
 /**
  * V2 discovery data (THI-13): career projects (DEC-027) and question clusters (DEC-028), validated at load.
@@ -27,7 +29,8 @@ const snakeId = z.string().regex(/^[a-z][a-z0-9_]*$/);
 
 export const V2OptionSchema = z.strictObject({
   id,
-  label_he: nonEmpty,
+  /** Candidate copy. Required unless the question reuses a precision-module question (its copy is reused too). */
+  label_he: nonEmpty.optional(),
   /** Program(s) the answer points to; empty for a neutral option or a reality-check option. */
   program_ids: z.array(snakeId),
   /** Required on reality-check options, absent elsewhere. */
@@ -38,7 +41,23 @@ export const V2QuestionSchema = z.strictObject({
   id,
   position: z.number().int().min(1),
   kind: z.enum(V2_QUESTION_KINDS),
-  prompt_he: nonEmpty,
+  /** Candidate copy. Required unless the question reuses a precision-module question (its copy is reused too). */
+  prompt_he: nonEmpty.optional(),
+  /**
+   * Scenario applicability (THI-14): the project(s) whose opening scenario this is. Asked first when one of them is
+   * selected. Absent = a general cluster question, asked only when it helps separate the current leaders.
+   */
+  project_ids: z.array(snakeId).min(1).optional(),
+  /**
+   * The question IS a precision module's own question (same options, same copy), so its answer can be carried into
+   * the module on handoff and the candidate never sees it twice (THI-14). E.g. the Spotify opener reuses V1 Q1.
+   */
+  reuses: z.strictObject({ module: z.enum(PRECISION_MODULE_IDS), question_id: id }).optional(),
+  /**
+   * Reality checks only (required there, forbidden elsewhere): the resolved program(s) this check is about. The router
+   * finds checks by this list across all clusters, so a winner that surfaced from another cluster still gets its check.
+   */
+  reality_for_program_ids: z.array(snakeId).min(1).optional(),
   options: z.array(V2OptionSchema).min(2),
 });
 
@@ -73,15 +92,33 @@ const fail = (scope: string, message: string): never => {
   throw new Error(`Invalid ${scope}: ${message}`);
 };
 
+/** Looks up a precision module's own question: its option ids (in order) and its candidate copy. */
+export type PrecisionQuestionLookup = (
+  moduleId: PrecisionModuleId,
+  questionId: string,
+) => { optionIds: readonly string[]; copy: V2QuestionCopy } | undefined;
+
+/** The V1 tech precision module's questions: the V1 bank and its Hebrew copy. */
+export const v1TechQuestionLookup: PrecisionQuestionLookup = (moduleId, questionId) => {
+  if (moduleId !== "v1_tech") return undefined;
+  const question = QUESTION_BANK.questions.find((candidate) => candidate.id === questionId);
+  if (!question) return undefined;
+  const copy = getQuestionCopyHe(questionId);
+  return { optionIds: question.options.map((option) => option.id), copy };
+};
+
 /**
  * Validate clusters against the program catalog. Exported for tests.
  * There is no fixed question count: positions must run 1..n without gaps, with n <= the cluster's `max_questions`,
  * so Q5-Q7 are added later as data without any schema or code change.
+ * V2 question ids must not collide with precision-module question ids: both kinds of answers share one answer list.
  */
 export function buildClusters(
   input: unknown,
   programIds: readonly ProgramId[] = V2_PROGRAM_IDS,
   pilotProgramIds: readonly ProgramId[] = PROGRAM_IDS,
+  precisionQuestions: PrecisionQuestionLookup = v1TechQuestionLookup,
+  reservedQuestionIds: readonly string[] = QUESTION_BANK.questions.map((question) => question.id),
 ): ClusterData {
   const file = V2ClustersFileSchema.parse(input);
   const bad = (message: string) => fail("clusters", message);
@@ -118,9 +155,46 @@ export function buildClusters(
     const questions: V2Question[] = ordered.map((question) => {
       const at = `${where} question "${question.id}"`;
       if (questionIds.has(question.id)) bad(`duplicate question id "${question.id}"`);
+      if (reservedQuestionIds.includes(question.id)) bad(`${at} collides with a precision-module question id`);
       questionIds.add(question.id);
       const optionIds = question.options.map((option) => option.id);
       if (new Set(optionIds).size !== optionIds.length) bad(`${at} has duplicate option ids`);
+      if (question.project_ids && question.kind !== "scenario") bad(`${at}: only scenario questions name projects`);
+      if (question.kind === "reality_check") {
+        const forPrograms =
+          question.reality_for_program_ids ?? bad(`${at}: a reality check must name the program(s) it is for`);
+        if (new Set(forPrograms).size !== forPrograms.length)
+          bad(`${at}: reality_for_program_ids lists a program twice`);
+        for (const programId of forPrograms) {
+          if (!allowed.has(programId))
+            bad(`${at}: reality check for "${programId}", outside the cluster and its neighbours`);
+        }
+      } else if (question.reality_for_program_ids) {
+        bad(`${at}: only reality checks have reality_for_program_ids`);
+      }
+
+      let copy: V2QuestionCopy;
+      if (question.reuses) {
+        const { module, question_id: reusedId } = question.reuses;
+        if (cluster.precision_module !== module)
+          bad(`${at} reuses a "${module}" question outside that module's cluster`);
+        if (question.kind === "reality_check") bad(`${at}: a reality check cannot reuse a precision question`);
+        if (question.prompt_he || question.options.some((option) => option.label_he)) {
+          bad(`${at} reuses "${reusedId}", so it must not carry its own copy`);
+        }
+        const reused = precisionQuestions(module, reusedId) ?? bad(`${at} reuses unknown question "${reusedId}"`);
+        if (reused.optionIds.join("|") !== optionIds.join("|")) {
+          bad(`${at} must list exactly the options of "${reusedId}" (${reused.optionIds.join(", ")}), in order`);
+        }
+        copy = reused.copy;
+      } else {
+        if (!question.prompt_he) bad(`${at} needs prompt_he`);
+        for (const option of question.options) if (!option.label_he) bad(`${at} option "${option.id}" needs label_he`);
+        copy = {
+          prompt: question.prompt_he!,
+          options: question.options.map((option) => ({ id: option.id, label: option.label_he! })),
+        };
+      }
 
       for (const option of question.options) {
         const opt = `${at} option "${option.id}"`;
@@ -140,14 +214,14 @@ export function buildClusters(
         if (targeted.size < 2) bad(`${at} must distinguish at least two programs`);
       }
 
-      questionCopy.set(question.id, {
-        prompt: question.prompt_he,
-        options: question.options.map((option) => ({ id: option.id, label: option.label_he })),
-      });
+      questionCopy.set(question.id, copy);
       return {
         id: question.id,
         position: question.position,
         kind: question.kind,
+        projectIds: question.project_ids ?? null,
+        reuses: question.reuses ? { moduleId: question.reuses.module, questionId: question.reuses.question_id } : null,
+        realityForProgramIds: question.reality_for_program_ids ?? null,
         options: question.options.map((option) => ({
           id: option.id,
           programIds: option.program_ids,
@@ -262,6 +336,19 @@ export function buildCareerProjects(
         candidateProgramIds: project.candidate_program_ids,
       };
     });
+
+  // Scenario applicability must name projects that open into the question's own cluster.
+  for (const cluster of clusters) {
+    for (const question of cluster.questions) {
+      for (const projectId of question.projectIds ?? []) {
+        const project = projects.find((candidate) => candidate.id === projectId);
+        if (!project) bad(`question "${question.id}" names unknown project "${projectId}"`);
+        if (project!.clusterId !== cluster.id) {
+          bad(`question "${question.id}" in cluster "${cluster.id}" names project "${projectId}" of another cluster`);
+        }
+      }
+    }
+  }
 
   const reachable = new Set(
     projects.filter((project) => project.enabled).flatMap((project) => project.candidateProgramIds),

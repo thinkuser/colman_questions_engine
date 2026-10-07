@@ -10,3 +10,4 @@ export * from "./dimensions";
 export * from "./explain";
 export * from "./scoring";
 export * from "./types";
+export * from "./v2";

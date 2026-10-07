@@ -1,6 +1,6 @@
 {
   "version": "v2",
-  "status_note": "V2 question clusters (THI-13, DEC-028). A cluster groups programs and holds an ordered list of questions addressed by position (1, 2, 3, ...). Clusters ship Q1-Q4 and may later gain Q5-Q7 as data only: the schema has no fixed question count, only each cluster's max_questions. Question content is THI-15 (non-tech clusters) and THI-14 (tech discovery handoff); until then the lists are empty. Options name the program(s) they point to; reality-check options point to none and never rank. Weights and stop rules belong to the THI-14 engine, not to this data.",
+  "status_note": "V2 question clusters (THI-13, DEC-028). A cluster groups programs and holds an ordered list of questions addressed by position (1, 2, 3, ...). Clusters ship Q1-Q4 and may later gain Q5-Q7 as data only: the schema has no fixed question count, only each cluster's max_questions. Question content for the non-tech clusters is THI-15; until then their lists are empty. The tech cluster holds only T1, the Spotify opener, which REUSES V1 Q1 (same options and copy, no copy of its own) so its answer carries into the V1 precision module and is never asked twice (THI-14, DEC-030). Scenario questions name the project(s) they open via project_ids. Options name the program(s) they point to; reality-check options point to none and never rank. Weights and stop rules belong to the THI-14 engine, not to this data.",
   "clusters": [
     {
       "id": "tech",
@@ -8,7 +8,32 @@
       "adjacent_program_ids": [],
       "precision_module": "v1_tech",
       "max_questions": 7,
-      "questions": []
+      "questions": [
+        {
+          "id": "T1",
+          "position": 1,
+          "kind": "scenario",
+          "project_ids": ["spotify_discover_weekly"],
+          "reuses": {
+            "module": "v1_tech",
+            "question_id": "Q1"
+          },
+          "options": [
+            {
+              "id": "A",
+              "program_ids": ["computer_science"]
+            },
+            {
+              "id": "B",
+              "program_ids": ["data_science"]
+            },
+            {
+              "id": "C",
+              "program_ids": ["management_information_systems"]
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "business",

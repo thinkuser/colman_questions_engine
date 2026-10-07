@@ -323,6 +323,14 @@ Do not merge implementation work without review. Preserve V1 behavior with regre
 
 Unchanged: the V1 comparison flow, engine, question bank, result experience, analytics and persistence. V1 still compares exactly CS, DS and MIS.
 
+### THI-14 (routing and scoring)
+Implemented as specified in §6–9 and recorded in DEC-030; details and pressure-test traces in `docs/V2_SCORING.md`.
+- Pure router `nextV2Step` (`src/engine/v2/`) and production wiring `nextDiscoveryStep` (`src/flow/v2Step.ts`).
+- Generic points (0 / +3 / +4 / +5 / 0), support counts, shortlist, clear-leader rule, a 5-answer ceiling with near tie, adjacent programs surfaced only by answers, a generated 2- or 3-way focus question (the head-to-head) over the whole evidence leading set (supported contenders only), and reality checks by explicit `reality_for_program_ids`.
+- `PrecisionModuleAdapter`, with the unchanged V1 engine as `v1_tech`. Spotify alone is exactly V1. The Spotify opener `T1` reuses V1 `Q1` and is carried into V1, so it is never asked twice.
+- Open: a generic "no strong fit" threshold is not defined; the engine reports `insufficient_positive_evidence` instead (DEC-030).
+- Until THI-15 adds content, non-tech projects return `needs_focus_content`.
+
 Not implemented in THI-13, by design:
 - THI-14: `genericScoreState`, `shortlist`, scoring weights, stop rules, `genericHeadToHead` selection, the tech precision handoff (including the Spotify discovery scenario so it is not asked twice).
   - Contract for THI-14: the candidate pool is ordered deterministically (project display order, then each project's program order; click order does not matter). That array position **must not** be used as a hidden ranking or tie-break signal. Ranking comes from scored answers and evidence; a true tie stays a tie or follows an explicit, documented rule.

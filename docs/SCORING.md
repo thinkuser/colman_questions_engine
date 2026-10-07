@@ -1,5 +1,7 @@
 # Scoring Engine V1
 
+> **V1 only.** This is the V1 CS / DS / MIS vector engine. It runs unchanged as the V2 `v1_tech` precision module. Generic V2 points, stop rules and routing are separate: see `docs/V2_SCORING.md` (DEC-030).
+
 The deterministic fit engine, implemented in `src/engine` (THI-7). It decides fit. An LLM may only explain the result (DEC-003). The engine is pure: it receives questions, answers, program vectors and reality-check definitions as input. It never reads admissions (DEC-008), UI state, or the data layer directly.
 
 Status:
