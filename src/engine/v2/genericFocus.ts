@@ -3,7 +3,7 @@ import type { ProgramId } from "../types";
 import type { V2RankedProgram } from "./scoring";
 
 /**
- * Generic focus questions (THI-14, DEC-030). When no authored question separates the unresolved leading programs,
+ * Generic focus questions (THI-14, DEC-030). When no authored question separates the evidence leading set,
  * build a 2- or 3-way "which day sounds most interesting?" question from their curated work statements: one option per
  * program plus a neutral "neither". Deterministic and built from structured data only: nothing is generated at
  * runtime, and no pair- or triple-specific content is authored.
@@ -32,21 +32,28 @@ export const genericFocusId = (programIds: readonly ProgramId[], index: number) 
   `${GENERIC_FOCUS_PREFIX}:${[...programIds].sort().join("|")}:${index}`;
 
 /**
- * The unresolved leading set: the programs a focus question must compare so that no equally ranked contender is left
- * out (DEC-027). Built from shared ranks, never from array position:
- * - two or more programs share the top rank: that whole group;
- * - otherwise: the leader plus EVERY program sharing the next rank;
- * - a single rankable program: just the leader.
+ * The evidence leading set: the programs a focus question must compare. It is NOT the full ranking (which stays
+ * available as a diagnostic); it holds only evidence-based contenders, so that no equally supported contender is left
+ * out (DEC-027) and no untested program is treated as a runner-up (DEC-022). Built from shared ranks, never from array
+ * position:
+ * - Some program has a supporting answer: only supported programs count. Zero-support programs are untested
+ *   alternatives, not runners-up; they stay rankable and join as soon as an answer supports them.
+ *   - two or more supported programs share the top rank: that whole group;
+ *   - otherwise: the leader plus EVERY supported program sharing the next rank;
+ *   - a single supported program: just that leader. This is not a recommendation: the clear-leader rule still applies.
+ * - No program has support yet: the whole top-rank group (all programs with no evidence). No leader is invented.
  * Returned in canonical id order.
  */
-export function unresolvedLeadingSet(ranking: readonly V2RankedProgram[]): ProgramId[] {
-  const leader = ranking[0];
+export function evidenceLeadingSet(ranking: readonly V2RankedProgram[]): ProgramId[] {
+  const supported = ranking.filter((row) => row.support > 0);
+  const contenders = supported.length > 0 ? supported : ranking;
+  const leader = contenders[0];
   if (!leader) return [];
-  const top = ranking.filter((row) => row.rank === leader.rank);
+  const top = contenders.filter((row) => row.rank === leader.rank);
   if (top.length >= 2) return top.map((row) => row.programId).sort();
-  const next = ranking.find((row) => row.rank !== leader.rank);
+  const next = contenders.find((row) => row.rank !== leader.rank);
   if (!next) return [leader.programId];
-  return [leader.programId, ...ranking.filter((row) => row.rank === next.rank).map((row) => row.programId)].sort();
+  return [leader.programId, ...contenders.filter((row) => row.rank === next.rank).map((row) => row.programId)].sort();
 }
 
 /**

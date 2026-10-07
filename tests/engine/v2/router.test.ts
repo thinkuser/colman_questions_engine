@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { evidenceLeadingSet } from "@/engine";
 import { nextComparisonStep } from "@/flow";
 import {
   ACC,
@@ -9,6 +10,7 @@ import {
   CS,
   DS,
   ECON,
+  INT,
   FIXTURE_CLUSTERS,
   FIXTURE_CLUSTERS_WITH_BA_REALITY,
   LAW,
@@ -257,21 +259,29 @@ describe("9. Reality check", () => {
 });
 
 describe("10. Insufficient positive evidence", () => {
+  // A fifth authored general question with a neutral option, so a lone-leader path can reach the ceiling.
+  const clusters = withQuestions(
+    FIXTURE_CLUSTERS,
+    "business",
+    question("B5", 5, "scenario", [option("A", [BA]), option("B", [ECON]), option("C", [ACC]), neither]),
+  );
+  const loneLeader = [answer("B1", "B"), answer("B2", "neither"), answer("B3", "neither"), answer("B4", "neither")];
+
   it("returns an explicit no-positive-evidence state instead of a fake recommendation", () => {
-    const answers = [
-      answer("B1", "B"),
-      answer("B2", "neither"),
-      answer("B3", "neither"),
-      answer("B4", "neither"),
-      answer(FOCUS_ACC_BA_ECON, "neither"),
-    ];
-    const step = route(["wolt_new_city"], answers);
+    // ECON's single supported answer makes it the only evidence-based contender; B5 still tests it against alternatives.
+    expect(askedId(route(["wolt_new_city"], loneLeader, { clusters }))).toBe("B5");
+    const step = route(["wolt_new_city"], [...loneLeader, answer("B5", "neither")], { clusters });
     expect(step).toMatchObject({
       status: "complete",
       outcome: { kind: "insufficient_positive_evidence" },
       completionReason: "ceiling_insufficient_evidence",
     });
     expect(step.state.evidence.filter((e) => e.programIds.length === 0)).toHaveLength(4);
+  });
+
+  it("reports a content gap, not a comparison with untested programs, when no authored question can test a lone leader", () => {
+    const step = route(["wolt_new_city"], loneLeader);
+    expect(step).toMatchObject({ status: "needs_focus_content", programIds: [ECON] });
   });
 });
 
@@ -311,10 +321,10 @@ describe("replay validation and determinism", () => {
 });
 
 /**
- * Review fix 1: focus questions compare the whole unresolved leading set. Program ids may order the options on screen;
+ * Review fix 1: focus questions compare the whole evidence leading set. Program ids may order the options on screen;
  * they never decide which equally ranked contender is left out.
  */
-describe("unresolved leading set: 2-way, 3-way and more than 3", () => {
+describe("evidence leading set: 2-way, 3-way and more than 3", () => {
   // Synthetic business cluster without an authored focus question, so the generated focus question is reachable.
   // B1 D and B3 D are multi-target answers (full weight and one support to each target).
   const businessOptions = () => [option("A", [BA]), option("B", [ECON]), option("C", [ACC])];
@@ -497,5 +507,121 @@ describe("reality-check applicability", () => {
     const both = withQuestions(FIXTURE_CLUSTERS_WITH_BA_REALITY, "law", realityCheck("L5", 5, [BA]));
     expect(askedId(route(["ai_feature_privacy"], baWins, { clusters: both }))).toBe("B5");
     expect(route(["ai_feature_privacy"], [...baWins, answer("B5", "B")], { clusters: both }).status).toBe("complete");
+  });
+});
+
+/**
+ * Final routing correction: focus questions use the EVIDENCE leading set. Once some program has a supporting answer,
+ * programs with no supporting answer are untested alternatives, not runners-up (DEC-022). The full ranking is unchanged.
+ */
+describe("evidence-aware leading set", () => {
+  // Wolt + Nike, both scenario answers for Business Administration.
+  const wolt = "wolt_new_city";
+  const nike = "nike_israel_launch";
+  const baTwice = [answer("B1", "A"), answer("C1", "C")];
+
+  it("Wolt + Nike: BA 6/2 with four 0/0 programs is a one-program evidence set, and an authored question is asked", () => {
+    const step = route([wolt, nike], baTwice);
+    expect(step.state.scoredAnswerCount).toBe(2);
+    // Full diagnostic ranking unchanged: the four zero-evidence programs still share rank 2.
+    expect(step.state.ranking.map((r) => [r.programId, r.score, r.support, r.rank])).toEqual([
+      [BA, 6, 2, 1],
+      [ACC, 0, 0, 2],
+      [COMM, 0, 0, 2],
+      [COMMGMT, 0, 0, 2],
+      [ECON, 0, 0, 2],
+    ]);
+    expect(evidenceLeadingSet(step.state.ranking)).toEqual([BA]);
+    expect(step.state.resolution).toBeNull();
+    expect(step.status).not.toBe("needs_focus_content");
+    expect(step.status === "ask" && step.mode === "generic" && step.reason).toBe("separates_leaders");
+    // B2 offers BA and alternatives (ECON, ACC).
+    expect(askedId(step)).toBe("B2");
+  });
+
+  it("recommends BA when the third answer supports it again", () => {
+    const step = route([wolt, nike], [...baTwice, answer("B2", "A")]);
+    expect(step).toMatchObject({
+      status: "complete",
+      outcome: { kind: "recommended", programId: BA },
+      completionReason: "clear_leader",
+    });
+  });
+
+  it("lets a newly supported program join the evidence set, while zero-support programs still do not", () => {
+    const step = route([wolt, nike], [...baTwice, answer("B2", "B")]);
+    expect(step.state.scores).toMatchObject({ [BA]: 6, [ECON]: 3, [ACC]: 0, [COMM]: 0, [COMMGMT]: 0 });
+    expect(evidenceLeadingSet(step.state.ranking)).toEqual([BA, ECON]);
+    expect(step.state.resolution).toBeNull();
+    // B3 separates BA from ECON; nothing is asked about the untested ACC, COMM or COMMGMT as runners-up.
+    expect(askedId(step)).toBe("B3");
+  });
+
+  it("keeps 3-way focus for one supported leader and two supported tied runners", () => {
+    // Synthetic: B3 D supports BA and ACC together, so ECON 6/2 leads BA 3/1 and ACC 3/1; nothing else is supported.
+    const businessOptions = () => [option("A", [BA]), option("B", [ECON]), option("C", [ACC])];
+    const clusters = withClusterQuestions(FIXTURE_CLUSTERS, "business", [
+      question("B1", 1, "scenario", businessOptions(), ["wolt_new_city"]),
+      question("B2", 2, "scenario", [...businessOptions(), neither]),
+      question("B3", 3, "scenario", [...businessOptions(), option("D", [BA, ACC]), neither]),
+    ]);
+    const single = route([wolt], [answer("B1", "B"), answer("B2", "B"), answer("B3", "D")], { clusters });
+    expect(evidenceLeadingSet(single.state.ranking)).toEqual([ACC, BA, ECON]);
+    expect(askedId(single)).toBe(FOCUS_ACC_BA_ECON);
+  });
+
+  it("returns needs_focus_content for four supported unresolved programs, without trimming by id", () => {
+    const businessOptions = () => [option("A", [BA]), option("B", [ECON]), option("C", [ACC])];
+    const clusters = withClusterQuestions(FIXTURE_CLUSTERS, "business", [
+      question("B1", 1, "scenario", [...businessOptions(), option("D", [BA, ECON, ACC])], ["wolt_new_city"]),
+      question("B2", 2, "scenario", [...businessOptions(), neither]),
+    ]);
+    const step = route([wolt, nike], [answer("B1", "D"), answer("C1", "B")], { clusters });
+    // COMM has no support, so it is not a fifth contender.
+    expect(step).toMatchObject({ status: "needs_focus_content", programIds: [ACC, BA, COMMGMT, ECON] });
+  });
+
+  describe("no evidence at all", () => {
+    // Synthetic: the Wolt opener gets a neutral option, so every program can stay at 0 / 0.
+    const businessOptions = () => [option("A", [BA]), option("B", [ECON]), option("C", [ACC])];
+    const clusters = withClusterQuestions(FIXTURE_CLUSTERS, "business", [
+      question("B1", 1, "scenario", [...businessOptions(), neither], ["wolt_new_city"]),
+      question("B2", 2, "scenario", [...businessOptions(), neither]),
+      question("B3", 3, "scenario", [...businessOptions(), neither]),
+      question("B4", 4, "focus", [...businessOptions(), neither]),
+    ]);
+
+    it("invents no leader and no recommendation while every program is 0 / 0", () => {
+      const step = route([wolt], [answer("B1", "neither")], { clusters });
+      expect(step.state.ranking.every((r) => r.score === 0 && r.support === 0 && r.rank === 1)).toBe(true);
+      expect(step.state.shortlist).toEqual([]);
+      expect(step.state.resolution).toBeNull();
+      expect(evidenceLeadingSet(step.state.ranking)).toEqual([ACC, BA, ECON]);
+      // A broad authored question that separates every program is still asked.
+      expect(askedId(step)).toBe("B2");
+    });
+
+    it("ends a neutral path at the ceiling in insufficient_positive_evidence", () => {
+      const { steps, final } = play([wolt], () => "neither", { clusters });
+      expect(steps.map(askedId).filter(Boolean)).toEqual(["B1", "B2", "B3", "B4", FOCUS_ACC_BA_ECON]);
+      expect(final).toMatchObject({
+        status: "complete",
+        outcome: { kind: "insufficient_positive_evidence" },
+        completionReason: "ceiling_insufficient_evidence",
+      });
+      expect(final.state.scoredAnswerCount).toBe(5);
+    });
+  });
+
+  it("is unaffected by project click order", () => {
+    for (const answers of [baTwice, [...baTwice, answer("B2", "A")], [...baTwice, answer("B2", "B")]]) {
+      expect(route([nike, wolt], answers)).toEqual(route([wolt, nike], answers));
+    }
+  });
+
+  it("does not change an adjacent-program path: Interior Design keeps testing against expressed alternatives", () => {
+    const step = route(["apple_store_space"], [answer("D1", "A")]);
+    expect(evidenceLeadingSet(step.state.ranking)).toEqual([INT]);
+    expect(askedId(step)).toBe("D2");
   });
 });

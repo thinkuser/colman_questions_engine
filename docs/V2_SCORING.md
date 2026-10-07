@@ -9,7 +9,7 @@ career-project selection (1-2, routing only)
   -> project scenario(s)
   -> shortlist
   -> precision module when the shortlist is inside one (today: V1 CS / DS / MIS)
-  -> otherwise focus questions over the unresolved leading set (authored, else generated 2- or 3-way)
+  -> otherwise focus questions over the evidence leading set (authored, else generated 2- or 3-way)
   -> reality check (evidence only)
   -> result: recommended / near tie / insufficient positive evidence, or the module's own result
 ```
@@ -55,26 +55,40 @@ Code: `src/engine/v2/` (pure, framework-free), wired to the real data in `src/fl
 2. **Project scenarios:** each selected project's opening scenario (`project_ids`), in project display order, then by position.
 3. **Resolution:** a clear leader, or the ceiling.
 4. **Reality checks** for the resolved program(s), by explicit applicability (see "Reality checks" below); recorded, never ranked.
-5. **Next focus question** over the **unresolved leading set** (below):
+5. **Next focus question** over the **evidence leading set** (below):
    - an authored general cluster question (no `project_ids`) that **separates every member of the set** (each member has an option that points to it and to no other member), in active-cluster order then position;
    - else a generated **2- or 3-way focus question** from the members' work statements;
    - else an explicit **`needs_focus_content`** step listing the unresolved programs. The engine never guesses, never trims the set, and never falls back to pool order.
 
 Given the same projects, answers and data, the next step is always identical. There is no randomness.
 
-## Unresolved leading set
+## Evidence leading set
 
-Focus questions compare every program that is still genuinely in contention, so no equally ranked contender is silently left out (`unresolvedLeadingSet`, `src/engine/v2/genericFocus.ts`). It is built from shared ranks only:
-- two or more programs share the top rank: **that whole group**;
-- otherwise: the leader plus **every** program sharing the next rank;
-- a single rankable program: the leader alone (an authored question offering it and something else may still be asked; no generated question exists for one program).
+Two different things are kept apart:
+- **Full ranking** (`state.ranking`): every rankable program, including those at 0 points / 0 support, which share a rank. It is a diagnostic and is unchanged.
+- **Evidence leading set** (`evidenceLeadingSet`, `src/engine/v2/genericFocus.ts`): the evidence-based contenders that adaptive question selection compares.
+
+**A program with no supporting answer is not an evidence-based runner-up once another program has positive evidence** (DEC-022: classify only from expressed preferences; the same principle as the shortlist). It stays rankable and eligible for future questions, and becomes a contender, and can enter the shortlist, as soon as an actual answer supports it.
+
+The set is built from shared ranks only, never from array position:
+- **At least one program has support:** only supported programs count.
+  - Two or more supported programs share the top rank: **that whole group**.
+  - Otherwise: the leader plus **every supported** program sharing the next supported rank.
+  - Exactly one supported program: **the leader alone**. This is not a recommendation: the clear-leader rule (3 answers, 2 supports, lead 4) still decides. Until then, an authored question that offers the leader and an alternative is asked; no 1-way question is generated.
+- **No program has support yet:** the whole no-evidence group (every program at 0 / 0, sharing the top rank). No leader is invented; a broad authored question that separates them may be asked; at the ceiling a neutral path ends in `insufficient_positive_evidence`.
+
+**Example (Wolt + Nike):** B1 and C1 both pick Business Administration, so BA is 6/2 and Economics, Accounting, Communication and Communication & Management are 0/0.
+- Before this rule, the four zero-evidence programs shared the next rank, so the set had five programs and the router returned `needs_focus_content` after two answers.
+- Now the set is `[BA]`. With two answers there is no recommendation yet, so the router asks B2, which tests BA against Economics and Accounting.
+  - If the third answer supports BA, BA is the clear leader.
+  - If it supports Economics, Economics joins the set (`[BA, ECON]`) and B3 separates them. The untested programs still do not join.
 
 | Leading set | What is asked |
 |---|---|
-| 1 program | An authored question offering it and an alternative, else `needs_focus_content`. |
+| 1 program | An authored question offering it and an alternative, else `needs_focus_content`. Never a synthetic 1-way question. |
 | **2 programs** | An authored question separating both, else a generated **2-way** focus question. |
 | **3 programs** | An authored question separating all three, else a generated **3-way** focus question. |
-| **More than 3** | An authored question separating all of them, else **`needs_focus_content`** with all their ids. Never a pair or triple chosen by id. |
+| **More than 3** (supported, or all without evidence) | An authored question separating all of them, else **`needs_focus_content`** with all their ids. Never a pair or triple chosen by id. |
 
 Program ids decide only the **display order** of options and the canonical question id, never which contender is compared or omitted.
 
@@ -127,7 +141,7 @@ A cross-cluster Spotify run asks the generic questions before handoff plus V1's 
 | `near_tie` | Two or more programs still close at the ceiling. |
 | `insufficient_positive_evidence` | No defensible leader from expressed preferences (neutral / rejecting answers, or a leader with a single supporting answer). Never turned into a fake recommendation. |
 | `precision` | The module's own result (for `v1_tech`, the V1 `FitResult` with its DEC-018 classes, including V1 no strong fit). |
-| `needs_focus_content` (step, not a result) | Content gap: nothing can separate the unresolved leading set (one program with no authored alternative, more than three programs, or missing work statements). Lists the unresolved ids. Expected for non-tech projects until THI-15. |
+| `needs_focus_content` (step, not a result) | Content gap: nothing can separate the evidence leading set (a lone supported leader with no authored alternative left, more than three contenders, or missing work statements). Lists the contenders' ids. Expected for non-tech projects until THI-15. |
 
 ### Open product decision: a generic "no strong fit" threshold
 V1's normalized-fit thresholds (DEC-018) belong to V1's vector model and are **not** transplanted into V2 points. The accepted V2 docs define no generic no-strong-fit threshold. The generic engine therefore only distinguishes the three states above. For example, it does not treat "a clear leader built only on weak signals" as no fit. **Proposed, pending product review:** decide whether weak-but-positive generic results need their own state, and on what evidence, once THI-15 content and real usage exist.
@@ -150,7 +164,7 @@ Points/support are `score/support`. Generated by `tests/engine/v2/pressure.repor
 | Answer | Points / support | Shortlist | Next step |
 |---|---|---|---|
 | select Wolt | - | - | ask B1 (project_scenario) |
-| B1=B | ECON 3/1 | ECON | ask B2 (separates_leaders). Leading set: ECON plus the tied BA and ACC; B2 separates all three |
+| B1=B | ECON 3/1 | ECON | ask B2 (separates_leaders). Evidence set: [ECON] (BA and ACC are untested at 0/0); B2 tests ECON against them |
 | B2=A | BA 3/1, ECON 3/1 | BA, ECON | ask B3 (separates_leaders) |
 | B3=B | ECON 6/2, BA 3/1 | ECON, BA | ask B4 (separates_leaders). 6 vs 3 is not clear (lead 3 < 4) |
 | B4=A | BA 7/2, ECON 6/2 | BA, ECON | ask focus:business_administration\|economics_and_management:0 (generic_focus) |

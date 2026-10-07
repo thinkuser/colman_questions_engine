@@ -218,7 +218,7 @@ Status: accepted — THI-13 review.
 - Question content is not part of THI-13: non-tech clusters are THI-15 and the tech discovery handoff is THI-14. The shipped lists are empty.
 - Data: `src/data/content/discovery/clusters.json`; types: `V2Cluster` / `V2Question` in `src/engine/discovery.ts`; validation: `buildClusters` in `src/data/discovery.ts`.
 - **Amended in THI-14** (three question fields; nothing removed):
-  - `project_ids`: scenario applicability. The scenario is the opening question of those selected projects. Only scenario questions may name projects, and only projects of the same cluster. Questions without it are general cluster questions, asked only when they separate every program of the unresolved leading set (DEC-030).
+  - `project_ids`: scenario applicability. The scenario is the opening question of those selected projects. Only scenario questions may name projects, and only projects of the same cluster. Questions without it are general cluster questions, asked only when they separate every program of the evidence leading set (DEC-030).
   - `reuses: { module, question_id }`: the question **is** a precision module's own question, with the same option ids and the module's own candidate copy (it must not carry its own). Its answer is carried into the module on handoff. Allowed only inside that module's cluster.
   - `reality_for_program_ids`: the program(s) a reality check is about. **Required** on every `reality_check` (non-empty, no duplicates, each a core or adjacent program of the cluster); **forbidden** on every other kind. Reality-check options still name no programs and carry a `reality_level`; they are worth 0. Applicability is explicit and never inferred from cluster membership or order (DEC-030).
   - V2 question ids must not collide with precision-module question ids, because both share one answer list.
@@ -246,11 +246,16 @@ Full description and pressure-test traces: `docs/V2_SCORING.md`. Code: `src/engi
 - **Adjacent programs** become rankable only after an answer actually points to them (DEC-022).
 - **Clear leader:** evaluated after at least 3 scored answers; needs at least 2 supporting answers **and** a lead of 4 or more points.
 - **Ceiling: 5 scored answers.** Then: a clear leader, a **near tie** (a valid result), or **insufficient positive evidence**. The engine never forces a winner. A true tie stays a tie: equal score and support share a rank.
-- **Routing:** precision handoff, then project scenarios, then resolution, then reality checks, then the next focus question over the **unresolved leading set**.
-  - **Unresolved leading set:** all programs sharing the top rank when two or more do; otherwise the leader plus **every** program sharing the next rank. Built from shared ranks only.
+- **Routing:** precision handoff, then project scenarios, then resolution, then reality checks, then the next focus question over the **evidence leading set**.
+  - **Evidence leading set** (for adaptive question selection; the full ranking stays unchanged as a diagnostic):
+    - When at least one program has a supporting answer, only supported programs are contenders. **A program with no supporting answer is not an evidence-based runner-up once another program has positive evidence** (DEC-022). It stays eligible for future questions and joins, and can enter the shortlist, as soon as an actual answer supports it.
+    - Among supported programs: the whole top group when two or more share it; otherwise the leader plus **every** supported program sharing the next supported rank; a single supported program alone.
+    - With no supporting answer at all: the whole no-evidence group. No leader is invented, and a neutral path still ends in `insufficient_positive_evidence` at the ceiling.
+    - Built from shared ranks only, never from array position.
+  - **1 program:** not a recommendation (the clear-leader rule still applies). An authored question offering the leader and an alternative, else `needs_focus_content`; never a synthetic 1-way question. Example: Wolt + Nike with BA 6/2 and four programs at 0/0 asks B2, instead of reporting a five-program content gap.
   - **2 programs:** an authored question separating both, else a generated 2-way focus question from curated work statements.
   - **3 programs:** an authored question separating all three, else a generated **3-way** focus question (options A/B/C plus "neither"). The chosen program gets +4 and one support; "neither" scores nothing but counts toward the minimum and the ceiling.
-  - **More than 3:** an authored question separating all of them, else an explicit `needs_focus_content` listing all unresolved ids. Missing statements also give `needs_focus_content`.
+  - **More than 3** (supported contenders, or programs with no evidence at all): an authored question separating all of them, else an explicit `needs_focus_content` listing all their ids. Missing statements also give `needs_focus_content`.
   - **Program id decides display order only** (option order, canonical question id), never which equally ranked contender is compared or left out.
   - Deterministic replay; no randomness, no runtime LLM, no N×N authored pairs or triples.
 - **Precision modules:** an adapter interface (eligibility, own questions, next step, own result). Handoff happens when every rankable program belongs to the module, or when, after the project scenarios, the evidence shortlist sits inside it (at least 2 of its programs in play). Only `v1_tech` exists.

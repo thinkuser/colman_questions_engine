@@ -8,7 +8,7 @@ import {
   type V2Question,
 } from "../discovery";
 import type { FitResult, ProgramId, RecordedAnswer } from "../types";
-import { buildGenericFocus, unresolvedLeadingSet, type GenericFocusQuestion } from "./genericFocus";
+import { buildGenericFocus, evidenceLeadingSet, type GenericFocusQuestion } from "./genericFocus";
 import type { PrecisionModuleAdapter } from "./precision";
 import {
   clearLeader,
@@ -40,10 +40,11 @@ import {
  *      or "insufficient positive evidence". Never forced into a winner.
  *   4. Reality checks for the resolved program(s), found by explicit applicability (`realityForProgramIds`) across all
  *      clusters, at most one per resolved program: recorded, never ranked.
- *   5. Otherwise the next focus question over the UNRESOLVED LEADING SET (all programs sharing the top rank, or the
- *      leader plus all programs sharing the next rank): an authored cluster question with a separate option for every
- *      member, else a generated 2- or 3-way focus question from their work statements, else an explicit
- *      `needs_focus_content` step (one program, more than three, or missing statements).
+ *   5. Otherwise the next focus question over the EVIDENCE LEADING SET (see `evidenceLeadingSet`: the supported
+ *      programs still in contention; programs with no supporting answer are not runners-up once another program has
+ *      support): an authored cluster question with a separate option for every member (for a single supported leader:
+ *      an option for it and one for an alternative), else a generated 2- or 3-way focus question from their work
+ *      statements, else an explicit `needs_focus_content` step (one program, more than three, or missing statements).
  *
  * Project selection scores nothing; the candidate-pool order is never a ranking or tie-break (DEC-027). Program ids
  * order options for display only; they never decide which equally ranked contender is left out of a comparison.
@@ -133,8 +134,8 @@ const byPosition = (questions: readonly V2Question[]) => [...questions].sort((a,
 const targets = (option: V2AnswerOption, programId: ProgramId) => option.programIds.includes(programId);
 
 /**
- * Does the question separate EVERY member of the unresolved leading set (an option pointing to that member and to no
- * other member)? With a single rankable program: does it let the candidate choose it or something else?
+ * Does the question separate EVERY member of the evidence leading set (an option pointing to that member and to no
+ * other member)? With a single member: does it let the candidate choose it or something else?
  */
 function separatesAll(question: V2Question, leading: readonly ProgramId[]): boolean {
   if (leading.length === 1) {
@@ -399,8 +400,8 @@ export function nextV2Step(input: V2RouterInput): V2Step {
       };
     }
 
-    // 5. Next focus question over the unresolved leading set (never a subset picked by id order).
-    const leading = unresolvedLeadingSet(ranking);
+    // 5. Next focus question over the evidence leading set (never a subset picked by id order).
+    const leading = evidenceLeadingSet(ranking);
     if (leading.length === 0) fail("no rankable program");
     const authored = clusters
       .flatMap((cluster) => byPosition(cluster.questions).map((question) => ({ cluster, question })))

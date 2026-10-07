@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGenericFocus, genericFocusId, unresolvedLeadingSet, type V2RankedProgram } from "@/engine";
+import { buildGenericFocus, genericFocusId, evidenceLeadingSet, type V2RankedProgram } from "@/engine";
 
 const row = (programId: string, score: number, support: number, rank: number): V2RankedProgram => ({
   programId,
@@ -8,9 +8,9 @@ const row = (programId: string, score: number, support: number, rank: number): V
   rank,
 });
 
-describe("unresolvedLeadingSet", () => {
+describe("evidenceLeadingSet", () => {
   it("is the whole top-rank group when two or more programs share it", () => {
-    expect(unresolvedLeadingSet([row("c", 3, 1, 1), row("a", 3, 1, 1), row("b", 3, 1, 1), row("d", 0, 0, 4)])).toEqual([
+    expect(evidenceLeadingSet([row("c", 3, 1, 1), row("a", 3, 1, 1), row("b", 3, 1, 1), row("d", 0, 0, 4)])).toEqual([
       "a",
       "b",
       "c",
@@ -18,7 +18,7 @@ describe("unresolvedLeadingSet", () => {
   });
 
   it("is the leader plus every program sharing the next rank", () => {
-    expect(unresolvedLeadingSet([row("z", 6, 2, 1), row("y", 3, 1, 2), row("b", 3, 1, 2), row("a", 0, 0, 4)])).toEqual([
+    expect(evidenceLeadingSet([row("z", 6, 2, 1), row("y", 3, 1, 2), row("b", 3, 1, 2), row("a", 0, 0, 4)])).toEqual([
       "b",
       "y",
       "z",
@@ -26,13 +26,30 @@ describe("unresolvedLeadingSet", () => {
   });
 
   it("is the leader alone when it is the only rankable program, and empty when there is none", () => {
-    expect(unresolvedLeadingSet([row("law", 3, 1, 1)])).toEqual(["law"]);
-    expect(unresolvedLeadingSet([])).toEqual([]);
+    expect(evidenceLeadingSet([row("law", 3, 1, 1)])).toEqual(["law"]);
+    expect(evidenceLeadingSet([])).toEqual([]);
+  });
+
+  it("ignores zero-support programs once another program has support, even when they share the next rank", () => {
+    expect(evidenceLeadingSet([row("z", 6, 2, 1), row("a", 0, 0, 2), row("b", 0, 0, 2), row("c", 0, 0, 2)])).toEqual([
+      "z",
+    ]);
+  });
+
+  it("adds supported runners-up but never the zero-support programs behind them", () => {
+    expect(evidenceLeadingSet([row("z", 6, 2, 1), row("y", 3, 1, 2), row("a", 0, 0, 3), row("b", 0, 0, 3)])).toEqual([
+      "y",
+      "z",
+    ]);
+  });
+
+  it("invents no leader when no program has support: the whole no-evidence group", () => {
+    expect(evidenceLeadingSet([row("c", 0, 0, 1), row("a", 0, 0, 1), row("b", 0, 0, 1)])).toEqual(["a", "b", "c"]);
   });
 
   it("does not depend on the order of equally ranked rows", () => {
     const rows = [row("z", 6, 2, 1), row("y", 3, 1, 2), row("b", 3, 1, 2)];
-    expect(unresolvedLeadingSet([rows[0]!, rows[2]!, rows[1]!])).toEqual(unresolvedLeadingSet(rows));
+    expect(evidenceLeadingSet([rows[0]!, rows[2]!, rows[1]!])).toEqual(evidenceLeadingSet(rows));
   });
 });
 
