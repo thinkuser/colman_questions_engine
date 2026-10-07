@@ -1,6 +1,6 @@
 {
   "version": "v2",
-  "status_note": "V2 question clusters (THI-13, DEC-028; content THI-15). A cluster groups programs and holds an ordered list of questions addressed by position (1, 2, 3, ...). Scored questions are Q1-Q4; Q5-Q7 are reserved for future scored precision (BR1/PR1/PR2/CR1 are reality checks placed after the scored questions, so their ids leave B5-B7, P5-P7 and C5-C7 free). The schema has no fixed question count, only each cluster's max_questions. The tech cluster holds only T1, the Spotify opener, which REUSES V1 Q1 (same options and copy, no copy of its own) so its answer carries into the V1 precision module and is never asked twice (THI-14, DEC-030). Scenario questions name the project(s) they open via project_ids. Options name the program(s) they point to; reality-check options point to none, carry a reality_level, and name the program(s) they are about via reality_for_program_ids; they never rank. Company names are hypothetical scenario context, not the measured signal. Weights and stop rules belong to the THI-14 engine, not to this data.",
+  "status_note": "V2 question clusters (THI-13, DEC-028; content THI-15). A cluster groups programs and holds an ordered list of questions addressed by position (1, 2, 3, ...). Scored questions come first (project openers are forced work choices; every later authored focus question carries the shared neutral option (neither), zero points and zero support, which still counts toward the generic ceiling), then the reality checks (BR1/PR1/PR2/CR1/L4/D4). Five scored questions are authored per cluster (People six, because its two openers are project-specific) so a lone supported leader can be tested to the 5-answer ceiling. The schema has no fixed question count, only each cluster's max_questions. The tech cluster holds only T1, the Spotify opener, which REUSES V1 Q1 (same options and copy, no copy of its own) so its answer carries into the V1 precision module and is never asked twice (THI-14, DEC-030). Scenario questions name the project(s) they open via project_ids. Options name the program(s) they point to; reality-check options point to none, carry a reality_level, and name the program(s) they are about via reality_for_program_ids; they never rank. Company names are hypothetical scenario context, not the measured signal. Weights and stop rules belong to the THI-14 engine, not to this data.",
   "clusters": [
     {
       "id": "tech",
@@ -86,6 +86,11 @@
               "id": "C",
               "label_he": "להיכנס למספרים ולראות איפה בדיוק הפעילות מרוויחה או מפסידה",
               "program_ids": ["accounting"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
             }
           ]
         },
@@ -109,6 +114,11 @@
               "id": "C",
               "label_he": "איך הדוחות בנויים ומה באמת עומד מאחורי המספרים",
               "program_ids": ["accounting"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
             }
           ]
         },
@@ -132,12 +142,45 @@
               "id": "C",
               "label_he": "לעבור לעומק על מידע פיננסי ולמצוא מה לא מסתדר",
               "program_ids": ["accounting"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
+            }
+          ]
+        },
+        {
+          "id": "B5",
+          "position": 5,
+          "kind": "focus",
+          "prompt_he": "לחברה יש תקציב רק ליוזמה גדולה אחת בשנה הקרובה, והיא צריכה להחליט איפה להשקיע. מה הייתם רוצים לעשות?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לבנות את היוזמה: מה עושים, מי מוביל ואיך מוציאים אותה לפועל",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "B",
+              "label_he": "להשוות בין האפשרויות לפי מה שקורה בשוק, בביקוש ובתחרות",
+              "program_ids": ["economics_and_management"]
+            },
+            {
+              "id": "C",
+              "label_he": "לבדוק אילו אפשרויות מחזירות את ההשקעה ואיך עוקבים אחרי התוצאות",
+              "program_ids": ["accounting"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
             }
           ]
         },
         {
           "id": "BR1",
-          "position": 5,
+          "position": 6,
           "kind": "reality_check",
           "prompt_he": "גם בעבודה מאוד עסקית, חשבונאות דורשת הרבה דיוק, כללים, בדיקה של פרטים ועבודה מסודרת עם מספרים. איך זה נשמע לכם?",
           "reality_for_program_ids": ["accounting"],
@@ -169,7 +212,7 @@
       "program_ids": ["psychology", "behavioral_science", "education", "economics_and_psychology"],
       "adjacent_program_ids": [],
       "precision_module": null,
-      "max_questions": 7,
+      "max_questions": 8,
       "questions": [
         {
           "id": "P1",
@@ -244,6 +287,11 @@
               "id": "D",
               "label_he": "איך אפשר להדריך ולתמוך באנשים כדי שיעברו את השינוי בצורה טובה יותר",
               "program_ids": ["education"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
             }
           ]
         },
@@ -272,12 +320,83 @@
               "id": "D",
               "label_he": "לנתח ניסוי שבודק איך מחיר, סיכון או דרך הצגת הבחירה משפיעים על החלטות",
               "program_ids": ["economics_and_psychology"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
+            }
+          ]
+        },
+        {
+          "id": "P5",
+          "position": 5,
+          "kind": "focus",
+          "prompt_he": "ארגון רוצה שהעובדים שלו יאמצו הרגל חדש, למשל לעבוד עם כלי חדש בכל יום. במה הייתם רוצים לטפל?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "להבין מה בתוך כל אדם מקשה עליו לשנות הרגל — מוטיבציה, רגשות ועייפות",
+              "program_ids": ["psychology"]
+            },
+            {
+              "id": "B",
+              "label_he": "לבדוק איך הצוות, הנורמות והסביבה בארגון משפיעים על מה שאנשים עושים",
+              "program_ids": ["behavioral_science"]
+            },
+            {
+              "id": "C",
+              "label_he": "לבנות הדרכה או תהליך למידה שעוזרים לאנשים להתרגל בהדרגה",
+              "program_ids": ["education"]
+            },
+            {
+              "id": "D",
+              "label_he": "לתכנן את הבחירה והתמריץ כך שיהיה קל ומשתלם יותר לעשות את הדבר החדש",
+              "program_ids": ["economics_and_psychology"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
+            }
+          ]
+        },
+        {
+          "id": "P6",
+          "position": 6,
+          "kind": "focus",
+          "prompt_he": "שירות בריאות רוצה שיותר אנשים יגיעו לבדיקות מניעה. מה הייתם רוצים לבדוק?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "מה אנשים מרגישים וחוששים, ומה גורם להם לדחות את הבדיקה",
+              "program_ids": ["psychology"]
+            },
+            {
+              "id": "B",
+              "label_he": "איך קהילות, משפחות ותרבויות שונות מתייחסות לבדיקות",
+              "program_ids": ["behavioral_science"]
+            },
+            {
+              "id": "C",
+              "label_he": "איך להסביר ולהדריך כך שאנשים יבינו וירגישו בטוחים להגיע",
+              "program_ids": ["education"]
+            },
+            {
+              "id": "D",
+              "label_he": "אם שינוי בעלות, בתזכורת או באופן שבו מציעים תור משנה החלטות",
+              "program_ids": ["economics_and_psychology"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
             }
           ]
         },
         {
           "id": "PR1",
-          "position": 5,
+          "position": 7,
           "kind": "reality_check",
           "prompt_he": "פסיכולוגיה היא לא רק שיחות עם אנשים — יש גם מחקר, סטטיסטיקה, שיטות מחקר וקריאה של חומר מקצועי. איך זה נשמע לכם?",
           "reality_for_program_ids": ["psychology"],
@@ -304,7 +423,7 @@
         },
         {
           "id": "PR2",
-          "position": 6,
+          "position": 8,
           "kind": "reality_check",
           "prompt_he": "עבודה חינוכית כוללת הרבה תכנון, ניסוי וטעייה, עבודה עם אנשים שונים ושיפור של אותה פעילות שוב ושוב עד שהיא באמת עובדת. איך זה נשמע לכם?",
           "reality_for_program_ids": ["education"],
@@ -382,6 +501,11 @@
               "id": "C",
               "label_he": "האם הבעיה בכלל בקמפיין, או במוצר, במחיר, בהפצה או בהחלטה העסקית",
               "program_ids": ["business_administration"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
             }
           ]
         },
@@ -405,6 +529,11 @@
               "id": "C",
               "label_he": "להחליט איפה החברה צריכה לשחק בשוק ואיך בונים סביב זה עסק שעובד",
               "program_ids": ["business_administration"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
             }
           ]
         },
@@ -428,12 +557,45 @@
               "id": "C",
               "label_he": "ישיבת הנהלה שבה מחליטים על מוצר, שוק חדש או השקעה",
               "program_ids": ["business_administration"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
+            }
+          ]
+        },
+        {
+          "id": "C5",
+          "position": 5,
+          "kind": "focus",
+          "prompt_he": "לחברה יש מוצר חזק, אבל קהלים שונים מבינים אותו אחרת. מה הכי מושך אתכם?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לכתוב ולעצב את הסיפור כך שכל קהל ירגיש שמדברים אליו",
+              "program_ids": ["communication"]
+            },
+            {
+              "id": "B",
+              "label_he": "לבדוק מי הקהלים, מה כל אחד מהם צריך ואיך נמדוד איזה מסר עובד",
+              "program_ids": ["communication_and_management"]
+            },
+            {
+              "id": "C",
+              "label_he": "להחליט אם צריך לשנות את המוצר, המחיר או קהל היעד של העסק",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
             }
           ]
         },
         {
           "id": "CR1",
-          "position": 5,
+          "position": 6,
           "kind": "reality_check",
           "prompt_he": "בעבודה בתקשורת ושיווק צריך לעבוד גם עם יעדים, נתונים ומדידה — לא רק עם רעיונות ותוכן. איך זה נשמע לכם?",
           "reality_for_program_ids": ["communication_and_management"],
@@ -516,6 +678,11 @@
               "id": "C",
               "label_he": "לשנות את המוצר או המערכת כך שהבעיה לא תחזור",
               "program_ids": ["management_information_systems"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
             }
           ]
         },
@@ -539,6 +706,11 @@
               "id": "C",
               "label_he": "לבנות קמפיין או סיפור ציבורי סביב נושא מורכב",
               "program_ids": ["communication"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
             }
           ]
         },
@@ -562,12 +734,45 @@
               "id": "C",
               "label_he": "להחליט לאילו קהלים פונים, באילו ערוצים, ואיך נבדוק אם המסר עבד",
               "program_ids": ["communication_and_management"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
+            }
+          ]
+        },
+        {
+          "id": "L6",
+          "position": 5,
+          "kind": "focus",
+          "prompt_he": "חברה מגלה בעיה בחוזה עם ספק כמה ימים לפני השקה גדולה. איפה הייתם רוצים להיות?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "בבדיקת החוזה: מה הוא מחייב, מה מותר ומה אפשר לדרוש",
+              "program_ids": ["law"]
+            },
+            {
+              "id": "B",
+              "label_he": "בהחלטה אם לדחות את ההשקה, לשלם יותר או לשנות את התוכנית",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "C",
+              "label_he": "בהסבר ללקוחות ולשותפים מה קרה ומה עושים, כך שיבינו ויסמכו על החברה",
+              "program_ids": ["communication"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
             }
           ]
         },
         {
           "id": "L4",
-          "position": 5,
+          "position": 6,
           "kind": "reality_check",
           "prompt_he": "בעבודה משפטית יש הרבה קריאה, כתיבה, פרטים קטנים ומצבים שבהם אין תשובה אחת ברורה. איך זה נשמע לכם?",
           "reality_for_program_ids": ["law"],
@@ -645,6 +850,11 @@
               "id": "C",
               "label_he": "לבדוק איפה אנשים נעצרים ומה הם עושים כדי להבין מה לא עובד",
               "program_ids": ["behavioral_science"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
             }
           ]
         },
@@ -668,6 +878,11 @@
               "id": "C",
               "label_he": "לבנות תוכנית עסקית לפתיחת הסניף",
               "program_ids": ["business_administration"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
             }
           ]
         },
@@ -691,12 +906,45 @@
               "id": "C",
               "label_he": "בתוכנית העסקית — עלויות, תמחור ואיך החנות מגיעה ליעדים",
               "program_ids": ["business_administration"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
+            }
+          ]
+        },
+        {
+          "id": "D6",
+          "position": 5,
+          "kind": "focus",
+          "prompt_he": "אותו חלל צריך לעבוד גם ללקוחות שקופצים לרגע, גם לסדנאות ארוכות וגם לאירוע בערב. מה הכי מעניין אתכם?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לתכנן חלל גמיש שאפשר לשנות בקלות — ריהוט, תאורה ואזורים",
+              "program_ids": ["interior_design"]
+            },
+            {
+              "id": "B",
+              "label_he": "לבנות לכל רגע חוויה ומסרים שמתאימים לו",
+              "program_ids": ["communication"]
+            },
+            {
+              "id": "C",
+              "label_he": "להחליט איך מנצלים את החלל כדי שיתאים לעסק ויניב הכי הרבה",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
             }
           ]
         },
         {
           "id": "D4",
-          "position": 5,
+          "position": 6,
           "kind": "reality_check",
           "prompt_he": "גם בפרויקט מאוד יצירתי צריך לעבוד עם מידות, תוכניות, מגבלות, תקציב ולעשות הרבה תיקונים עד שהחלל באמת עובד. איך זה נשמע לכם?",
           "reality_for_program_ids": ["interior_design"],

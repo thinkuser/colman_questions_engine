@@ -148,10 +148,12 @@ V1's normalized-fit thresholds (DEC-018) belong to V1's vector model and are **n
 
 ## Content availability (THI-15)
 The production content makes the routing rules above concrete:
-- **Lone leader:** a program with the only supported answer is tested by an *authored* general question that offers it and an alternative. Every non-tech cluster has enough of them for a lone leader to be challenged to a clear result or the ceiling; Law (L5) and Interior Design (D5) each carry one extra authored focus question for exactly this.
-- **No production path ends in `needs_focus_content`.** All answer paths of the 6 single-project and 15 two-project non-tech selections were walked (5,665 complete paths): none stops on a content gap. The longest runs 7 answers (5 scored plus up to two reality checks for a near tie).
-- **Outcomes:** only `recommended` and `near_tie`. Every authored option points to a program, so `insufficient_positive_evidence` is unreachable in production non-tech paths (it is still produced by the engine, and covered in the THI-14 fixtures). A candidate who answers the generated questions with "neither" ends in a near tie, never a recommendation.
-- Spotify combined with another project is longer than the 5-7 of a focused run (up to 11 answers measured: T1, the other project's questions, then V1's remaining questions). Accepted in THI-14; THI-16 QA must measure the real journey length.
+- **Openers are forced; follow-ups have a neutral option.** Project-opening scenarios (B1, P1, P2, C1, L1, D1) always name a program, so the first answer is a real work-preference signal. Every later authored focus question includes a neutral "neither" (0 points, 0 support, counts toward the ceiling). A candidate can therefore say a follow-up does not fit them without forcing a program into evidence.
+- **Five authored scored questions per cluster** are available to a single project (People: six, since each of its two openers belongs to one project). A lone supported leader is tested by authored questions that offer it and an alternative until a clear leader or the 5-answer ceiling.
+- **`insufficient_positive_evidence` is production-reachable:** opener plus neutral for every follow-up ends there at five scored answers (one support, once).
+- **Walk of every answer path** of the 6 single-project and 15 two-project non-tech selections (19,373 complete paths): 4,738 recommended, 14,618 near ties, 15 insufficient positive evidence, 2 content gaps. At most 5 scored answers, at most 7 candidate answers including reality checks. The two gaps are single-project paths with a lone adjacent Business Administration leader in Law or Interior Design (see the question bank).
+- **Near ties are frequent by path count** because every non-neutral answer supports some program and a clear leader needs a lead of at least 4. Path counts weight options equally; real frequencies need THI-16 usage data.
+- Spotify combined with another project is longer than the 5-7 of a focused run (up to 11 answers measured). Accepted in THI-14; THI-16 QA must measure the real journey length.
 
 ## Pressure-test traces
 

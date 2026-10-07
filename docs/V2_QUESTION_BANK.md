@@ -1,6 +1,6 @@
 # StudyMatch V2 — Career-Imagination Question Bank
 
-Status: approved content direction, shipped as data in THI-15 (see "Shipped content (THI-15)" at the end). The initial release intentionally uses Q1–Q4 per non-tech cluster and reserves Q5–Q7 for later precision work. The Hebrew in the sections below is the approved *source* wording (singular); the shipped copy is the plural-style polish recorded in the final section.
+Status: approved content direction, shipped as data in THI-15 (see "Shipped content (THI-15)" at the end). The initial release authors the questions below per non-tech cluster (five scored questions available per cluster after the THI-15 review) and keeps the remaining slots free for later precision work. The Hebrew in the sections below is the approved *source* wording (singular); the shipped copy is the plural-style polish recorded in the final section.
 
 The company is always the backdrop. The signal comes from the kind of work the candidate chooses.
 
@@ -282,28 +282,47 @@ Questions are stored as data in `src/data/content/discovery/clusters.json` and v
 Source of truth: `src/data/content/discovery/clusters.json` (questions) and `src/data/content/catalog/programs.json` (work statements). Authored as data only: no router, scoring or schema change. Tests: `tests/data/v2Content.test.ts` (structure, mapping, copy QA) and `tests/flow/v2Content.test.ts` (routing on the real content).
 
 ## What shipped
-| Cluster | Scored questions | Reality checks | Notes |
-|---|---|---|---|
-| Business | B1 (Wolt scenario), B2, B3, B4 | BR1 (Accounting) | 4 scored |
-| People | P1 (TikTok scenario), P2 (Duolingo scenario), P3, P4 | PR1 (Psychology), PR2 (Education) | 4 scored; P3, P4 have four options |
-| Communication | C1 (Nike scenario), C2, C3, C4 | CR1 (Communication + Management) | 4 scored |
-| Law | L1 (AI scenario), L2, L3, **L5** | L4 (Law) | **L5 is an extra question** |
-| Interior Design | D1 (Apple scenario), D2, D3, **D5** | D4 (Interior Design) | **D5 is an extra question** |
+| Cluster | Scored questions | Reality checks |
+|---|---|---|
+| Business | B1 (Wolt opener), B2, B3, B4, **B5** | BR1 (Accounting) |
+| People | P1 (TikTok opener), P2 (Duolingo opener), P3, P4, **P5**, **P6** | PR1 (Psychology), PR2 (Education) |
+| Communication | C1 (Nike opener), C2, C3, C4, **C5** | CR1 (Communication + Management) |
+| Law | L1 (AI opener), L2, L3, L5, **L6** | L4 (Law) |
+| Interior Design | D1 (Apple opener), D2, D3, D5, **D6** | D4 (Interior Design) |
 
-- **Ids and positions.** Scored questions are positions 1-4; reality checks follow. The reality checks of Business, People and Communication use ids `BR1`, `PR1`, `PR2`, `CR1` so that B5-B7, P5-P7 and C5-C7 stay free for future *scored* precision. Law and Interior Design keep the approved ids `L4` / `D4`; their extra scored questions are `L5` / `D5` at position 4, with the reality check moved to position 5. L6-L7 and D6-D7 stay free. Position, not id, drives order, so nothing hard-codes a count.
+Bold = added in the THI-15 review (see below). L5 and D5 were the extra questions of the first pass.
+
+- **Policy: openers are forced work choices; every later authored focus question has a neutral option.**
+  - The project-opening scenarios (B1, P1, P2, C1, L1, D1, and T1 in Tech) have **no** neutral option: the candidate has already chosen that world, and the opener establishes the first work-preference signal. A neutral on two cross-cluster openers could leave four to six programs at 0 / 0 and stop the journey early.
+  - Every other authored scored question (B2-B5, P3-P6, C2-C5, L2/L3/L5/L6, D2/D3/D5/D6) ends with option `neither`, copy "אף אחת מהאפשרויות לא ממש מושכת אותי" (exactly the V1 neutral wording, kept equal by a test).
+  - The neutral option has `program_ids: []` and no reality level. By the engine rules it adds **0 points and 0 support** but **counts as a scored answer** toward the 3-answer minimum and the 5-answer ceiling. Reality checks keep their positive / neutral / negative structure.
+- **Five scored questions per cluster** so a lone supported leader can be tested to the ceiling with authored questions: a single project in Business, Communication, Law and Interior Design has exactly five (opener plus four); People has six because P1 and P2 are each specific to one project, so one project sees six minus one.
+- **Ids and positions.** Scored questions come first, then the reality checks. Business, People and Communication reality checks use `BR1`, `PR1`, `PR2`, `CR1`; Law and Interior Design keep the approved `L4` / `D4`. B6-B7, C6-C7, L7, D7 and P7 stay free. **People's `max_questions` is 8** (six scored plus two reality checks); the others stay at 7. Position, not id, drives order, so nothing hard-codes a count.
 - **Work statements:** three for each of the 14 programs (42 in total).
 
 ## Deviations from the approved baseline (for review)
 1. **Hebrew polish only.** Plural/inclusive style ("איזה חלק הכי הייתם רוצים לפתור?"), Hebrew quotation marks in P1, and gender-neutral wording for two negative reality options ("הייתי רוצה …" instead of "אני מעדיף …"). The measured distinctions are unchanged.
-2. **Extra authored questions L5 and D5** (permitted by the issue to satisfy the lone-leader rule; the copy is new and needs review):
-   - **D5** ("החנות נפתחה, והמנהלת שואלת איפה כדאי להשקיע עוד מאמץ…") offers Interior Design / Communication / Business Administration. Without it, a lone Business Administration leader (D1 = C, D3 = C) could not be tested further, because D2 has no Business option.
-   - **L5** ("חברה צריכה להסביר לציבור החלטה שנויה במחלוקת…") offers Law / Communication / Communication + Management. Without it, the L1 = C tie between Communication and Communication + Management could only be tested by generated focus questions, and an alternating A / B / neither path would run out of work statements after four answers.
-3. **Mappings the approved text left open.**
+2. **Extra authored questions (new copy, need review).** L5 and D5 (first pass, approved), and in the review pass B5, P5, P6, C5, L6, D6 (below). All are focus questions with a neutral option.
+3. **Mappings the approved text left open (approved).**
    - **L1 C** (explain it to users) → Communication **and** Communication + Management. This is the only multi-target option in the content (full weight to each, DEC-030).
-   - **L2 C** (change the product so the problem doesn't return) → Management Information Systems only, not all Tech programs.
-   - **D2 C** (observe where people stop to understand what isn't working) → Behavioral Science only. "Behavior/Data" was not mapped to Data Science, which would add a Tech program to an Apple Store question; hence Data Science was removed from the Interior Design adjacent list.
+   - **L2 C** → Management Information Systems only.
+   - **D2 C** (observe where people stop) → Behavioral Science only; Data Science is no longer an Interior Design adjacent program.
+   - **L6 C** (explain to customers and partners) → Communication only, so L1 stays the only multi-target option.
 4. **The Duolingo project id is `duolingo_persistence`** (not `duolingo_learning`). P2 uses the real id.
-5. **Optional reality checks added:** PR2 (Education, broad: planning, trial and error, working with different people, iteration) and CR1 (Communication + Management: goals, data and measurement alongside ideas). They can be dropped without touching anything else. Business Administration, Economics and Business, Behavioral Science and Economics + Psychology have no check because there was no distinct, useful warning.
+5. **Optional reality checks PR2 (Education) and CR1 (Communication + Management) stay** (approved for now). Business Administration, Economics and Business, Behavioral Science and Economics + Psychology have none.
+6. **People has two extra scored questions (P5 and P6), not one.** P1 and P2 are specific to one project each, so for a single People project P3, P4 and a single fifth question would give only four scored answers. P6 is the sixth; it needed `max_questions: 8` for People (an existing data-test assertion of 7 was relaxed for People only).
+
+### New questions added in the review (Hebrew, as shipped)
+| Id | Prompt | Options → programs |
+|---|---|---|
+| B5 | לחברה יש תקציב רק ליוזמה גדולה אחת בשנה הקרובה, והיא צריכה להחליט איפה להשקיע. מה הייתם רוצים לעשות? | A לבנות את היוזמה: מה עושים, מי מוביל ואיך מוציאים אותה לפועל → Business Administration; B להשוות בין האפשרויות לפי מה שקורה בשוק, בביקוש ובתחרות → Economics; C לבדוק אילו אפשרויות מחזירות את ההשקעה ואיך עוקבים אחרי התוצאות → Accounting; neither |
+| P5 | ארגון רוצה שהעובדים שלו יאמצו הרגל חדש, למשל לעבוד עם כלי חדש בכל יום. במה הייתם רוצים לטפל? | A להבין מה בתוך כל אדם מקשה עליו לשנות הרגל — מוטיבציה, רגשות ועייפות → Psychology; B לבדוק איך הצוות, הנורמות והסביבה בארגון משפיעים על מה שאנשים עושים → Behavioral Science; C לבנות הדרכה או תהליך למידה שעוזרים לאנשים להתרגל בהדרגה → Education; D לתכנן את הבחירה והתמריץ כך שיהיה קל ומשתלם יותר לעשות את הדבר החדש → Economics + Psychology; neither |
+| P6 | שירות בריאות רוצה שיותר אנשים יגיעו לבדיקות מניעה. מה הייתם רוצים לבדוק? | A מה אנשים מרגישים וחוששים, ומה גורם להם לדחות את הבדיקה → Psychology; B איך קהילות, משפחות ותרבויות שונות מתייחסות לבדיקות → Behavioral Science; C איך להסביר ולהדריך כך שאנשים יבינו וירגישו בטוחים להגיע → Education; D אם שינוי בעלות, בתזכורת או באופן שבו מציעים תור משנה החלטות → Economics + Psychology; neither |
+| C5 | לחברה יש מוצר חזק, אבל קהלים שונים מבינים אותו אחרת. מה הכי מושך אתכם? | A לכתוב ולעצב את הסיפור כך שכל קהל ירגיש שמדברים אליו → Communication; B לבדוק מי הקהלים, מה כל אחד מהם צריך ואיך נמדוד איזה מסר עובד → Communication + Management; C להחליט אם צריך לשנות את המוצר, המחיר או קהל היעד של העסק → Business Administration; neither |
+| L6 | חברה מגלה בעיה בחוזה עם ספק כמה ימים לפני השקה גדולה. איפה הייתם רוצים להיות? | A בבדיקת החוזה: מה הוא מחייב, מה מותר ומה אפשר לדרוש → Law; B בהחלטה אם לדחות את ההשקה, לשלם יותר או לשנות את התוכנית → Business Administration; C בהסבר ללקוחות ולשותפים מה קרה ומה עושים, כך שיבינו ויסמכו על החברה → Communication; neither |
+| D6 | אותו חלל צריך לעבוד גם ללקוחות שקופצים לרגע, גם לסדנאות ארוכות וגם לאירוע בערב. מה הכי מעניין אתכם? | A לתכנן חלל גמיש שאפשר לשנות בקלות — ריהוט, תאורה ואזורים → Interior Design; B לבנות לכל רגע חוויה ומסרים שמתאימים לו → Communication; C להחליט איך מנצלים את החלל כדי שיתאים לעסק ויניב הכי הרבה → Business Administration; neither |
+
+Each is a distinct work situation (investment choice, adopting a habit, health-screening uptake, audiences reading one product differently, a contract problem before a launch, one space serving different moments), not a repeat of an existing scenario.
 
 ## Developer QA table (not candidate UI)
 Gloss in English; the Hebrew is in the data. "Signal" says why the option is a useful, work-type signal.
@@ -372,6 +391,27 @@ Gloss in English; the Hebrew is in the data. "Signal" says why the option is a u
 | D5 (extra) where to invest effort | A improve the in-store experience | Interior Design | Spatial experience |
 | | B the story and messages the store sends | Communication | Message |
 | | C the business plan: costs, pricing, targets | Business Administration | Business goal |
+| B5 where to invest | A build the initiative and run it | Business Administration | Strategic execution |
+| | B compare options by market, demand, competition | Economics | Market analysis |
+| | C which options pay back, and how to track | Accounting | Financial viability |
+| P5 adopt a new habit | A what in each person makes change hard | Psychology | Individual mechanism |
+| | B team, norms and environment | Behavioral Science | Group / social environment |
+| | C training or a gradual learning process | Education | Learning intervention |
+| | D design the choice and incentive | Economics + Psychology | Incentive / choice design |
+| P6 health screening uptake | A fears and reasons for delaying | Psychology | Individual mechanism |
+| | B how communities and cultures see screening | Behavioral Science | Group / social environment |
+| | C explain and guide so people feel safe to come | Education | Learning intervention |
+| | D does cost, reminder or how the slot is offered change decisions | Economics + Psychology | Incentive / choice design |
+| C5 audiences read it differently | A write and shape the story per audience | Communication | Story and content |
+| | B who the audiences are, what they need, which message works | Communication + Management | Audience, channel, measurement |
+| | C change the product, price or target market | Business Administration | Broader business decision |
+| L6 contract problem before launch | A check the contract: what it requires and allows | Law | Legal analysis |
+| | B delay, pay more, or change the plan | Business Administration | Business decision |
+| | C explain to customers and partners what is happening | Communication | Public explanation |
+| D6 one space, many moments | A a flexible space: furniture, lighting, zones | Interior Design | Spatial design |
+| | B an experience and messages for each moment | Communication | Experience narrative |
+| | C use the space to fit and grow the business | Business Administration | Business use of space |
+| every focus question except the openers | neither: "none of these really appeals to me" | none | Lets a candidate say a follow-up does not fit, without forcing a program into evidence (0 points, 0 support, still a scored answer) |
 
 | Reality check | Applies to | Warns about | Options (level) |
 |---|---|---|---|
@@ -407,7 +447,14 @@ Three per program, as data (`work_statements_he`). A statement is "a day or task
 Statements stay inside career imagination: no course names, admissions conditions or career guarantees, and none implies that working at a named company is a graduate outcome.
 
 ## Completeness results
-- **Every non-tech selection walked.** All answer paths of the 6 single-project and 15 two-project non-tech selections (5,665 complete paths): no `needs_focus_content`, no repeated question, never the V1 module, result in at most 7 answers (5 scored plus up to two reality checks). Outcomes: 2,657 recommended and 3,008 near ties.
-- **Lone leader.** For every cluster, a first answer that supports exactly one program is followed by an authored question that offers that program and an alternative, until a clear leader (three same-direction answers) or the ceiling. The two clusters that needed an extra question are Law (L5) and Interior Design (D5).
-- **`insufficient_positive_evidence` is not reachable** in production non-tech paths, because the approved options always name a program and there is no neutral authored option. A candidate who rejects generated questions with "neither" ends in a near tie. Whether authored questions should get a neutral "none of these" option is an open product question for THI-16 / review; the engine supports it.
-- **No remaining `needs_focus_content` scenario** in the non-tech production content: the exhaustive walk above found none. The engine can still report it for a program set with more than three supported contenders and no authored question separating them, or with no statement left; no production path reaches either.
+- **State-memoised walk of every answer path** of the 21 non-tech selections (6 single projects and 15 pairs). The next step depends only on the asked questions, scores, support, rankable programs and reality evidence, so the walk visits each reachable engine state once and sums the child tallies, which gives the exact number of complete paths. A literal Cartesian walk on the six single-project selections gives identical totals (tested). It runs in under a second.
+  - **19,373 complete paths:** 4,738 recommended, 14,618 near ties, 15 `insufficient_positive_evidence`, 2 `needs_focus_content`.
+  - **Maximum scored answers: 5** (the generic ceiling). **Maximum candidate answers including reality checks: 7.**
+  - Path counts weight every option equally. They say nothing about how often a real candidate takes a path.
+- **`insufficient_positive_evidence` is production-reachable.** The six single-project journeys "opener, then neither for every follow-up" each reach exactly five scored answers and end there: one supported program, once, with no forced second program and no recommendation. Tested for Wolt, TikTok, Duolingo, Nike, AI / Law and Apple / Interior Design.
+- **Two remaining `needs_focus_content` states (single project, adjacent Business Administration):**
+  - AI project: `L1 = B`, then neutral for L2, L3, L6 → lone Business Administration leader after four scored answers.
+  - Apple project: `D1 = C`, then neutral for D3, D5, D6 → same.
+  - Cause: Business Administration is adjacent in those clusters and has no option in L5 / D2, so only four authored questions can test it. Both end after four answers in a content gap instead of the `insufficient_positive_evidence` they should reach. Not fixed here because it needs either a Business option in the approved D2, or an L5 option that was tried and rejected (it introduced two four-contender dead ends across clusters). Cleaner fix, for review: let the router finish a lone supported leader with no remaining authored test as `insufficient_positive_evidence` (an engine change, so a THI-14 follow-up). Both paths are pinned by a test so a fix is noticed.
+- **Neutral answers across clusters.** For five two-project combinations, answering neutral everywhere after the openers never produces a gap or a recommendation: the result is a near tie, as two different opener preferences warrant. No early four-to-six-program 0 / 0 dead end appears, because openers stay forced.
+- **Generated focus** still works: a 2-way for all 91 program pairs and a 3-way for all 364 triples, at three indexes.

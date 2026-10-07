@@ -211,41 +211,223 @@ describe("generated focus on the real work statements", () => {
   });
 });
 
-describe("every answer path of every non-tech selection (exhaustive)", () => {
+describe("neutral answers (THI-15 review)", () => {
+  /** Answer `neither` wherever it is offered, and the first option otherwise (the project openers). */
+  const playNeutral = (selected: string[], openers: Record<string, string>) => {
+    const answers: RecordedAnswer[] = [];
+    const asked: string[] = [];
+    for (let guard = 0; guard < 20; guard++) {
+      const next = step(selected, answers);
+      if (next.status !== "ask" || next.mode !== "generic") return { next, answers, asked };
+      const q = next.question.question;
+      asked.push(q.id);
+      answers.push(
+        ans(q.id, openers[q.id] ?? (q.options.some((o) => o.id === "neither") ? "neither" : q.options[0]!.id)),
+      );
+    }
+    throw new Error("did not terminate");
+  };
+
+  it.each([
+    ["Wolt / Business Administration", "wolt_new_city", { B1: "A" }, ["B1", "B2", "B3", "B4", "B5"]],
+    ["TikTok / Psychology", "tiktok_endless_scroll", { P1: "A" }, ["P1", "P3", "P4", "P5", "P6"]],
+    ["Duolingo / Education", "duolingo_persistence", { P2: "B" }, ["P2", "P3", "P4", "P5", "P6"]],
+    ["Nike / Communication", "nike_israel_launch", { C1: "A" }, ["C1", "C2", "C3", "C4", "C5"]],
+    ["AI / Law", "ai_feature_privacy", { L1: "A" }, ["L1", "L2", "L3", "L5", "L6"]],
+    ["Apple / Interior Design", "apple_store_space", { D1: "A" }, ["D1", "D2", "D3", "D5", "D6"]],
+  ])(
+    "%s: opener + four neutral follow-ups reaches 5 scored answers and insufficient_positive_evidence",
+    (_n, project, openers, order) => {
+      const { next, asked } = playNeutral([project], openers);
+      expect(asked).toEqual(order);
+      expect(next.status).toBe("complete");
+      expect(next).toMatchObject({
+        outcome: { kind: "insufficient_positive_evidence" },
+        completionReason: "ceiling_insufficient_evidence",
+      });
+      expect(next.state.scoredAnswerCount).toBe(5);
+      // Exactly one program is supported, once; the four neutral answers added nothing and forced no other program in.
+      expect(Object.values(next.state.support).filter((n) => n > 0)).toEqual([1]);
+      expect(next.state.evidence.filter((e) => e.programIds.length === 0)).toHaveLength(4);
+      expect(next.state.realityEvidence).toEqual([]);
+    },
+  );
+
+  it("neutral answers add zero points and zero support but count toward the ceiling", () => {
+    const before = step(["wolt_new_city"], [ans("B1", "B")]);
+    const after = step(["wolt_new_city"], [ans("B1", "B"), ans("B2", "neither")]);
+    expect(after.state.scores).toEqual(before.state.scores);
+    expect(after.state.support).toEqual(before.state.support);
+    expect(after.state.scoredAnswerCount).toBe(2);
+    expect(after.state.evidence.at(-1)).toMatchObject({ questionId: "B2", programIds: [], weight: 4 });
+  });
+
+  it("strong path: the opener plus matching focus answers still recommend normally", () => {
+    const done = step(["wolt_new_city"], [ans("B1", "C"), ans("B2", "neither"), ans("B3", "C")]);
+    expect(done.state.resolution).toEqual({ kind: "recommended", programId: "accounting" });
+    expect(done.state.scoredAnswerCount).toBe(3);
+  });
+
+  it("mixed path: a later answer supports another program, which joins; zero-support programs do not", () => {
+    const next = step(["wolt_new_city"], [ans("B1", "A"), ans("B2", "neither"), ans("B3", "B")]);
+    expect(next.state.support).toMatchObject({
+      business_administration: 1,
+      economics_and_management: 1,
+      accounting: 0,
+    });
+    expect([...next.state.shortlist].sort()).toEqual(["business_administration", "economics_and_management"]);
+    expect(next.state.shortlist).not.toContain("accounting");
+    expect(next.state.resolution).toBeNull();
+    expect(askedId(next)).toBe("B4");
+  });
+
+  it.each([
+    ["wolt_new_city", "nike_israel_launch"],
+    ["tiktok_endless_scroll", "nike_israel_launch"],
+    ["wolt_new_city", "ai_feature_privacy"],
+    ["nike_israel_launch", "apple_store_space"],
+    ["apple_store_space", "ai_feature_privacy"],
+  ])("two projects (%s + %s): neutral follow-ups never reach a content gap or a recommendation", (first, second) => {
+    // Openers keep their positive signal (first option); every later authored or generated question answers neutrally.
+    const { next, answers } = playNeutral([first, second], {});
+    expect(next.status).toBe("complete");
+    expect(next.state.scoredAnswerCount).toBe(5);
+    // Two openers express two different preferences, so a near tie is the correct result, never a forced winner.
+    expect(next.status === "complete" && next.outcome.kind).toBe("near_tie");
+    expect(answers.filter((a) => a.answerId === "neither").length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("documents the one remaining single-project dead end: a lone Business Administration leader in Law / Interior Design", () => {
+    // BA is adjacent there and has no option in L5 / D2, so only four authored questions can test it.
+    const law = playNeutral(["ai_feature_privacy"], { L1: "B" });
+    expect(law.next).toMatchObject({ status: "needs_focus_content", programIds: ["business_administration"] });
+    expect(law.asked).toEqual(["L1", "L2", "L3", "L6"]);
+    const apple = playNeutral(["apple_store_space"], { D1: "C" });
+    expect(apple.next).toMatchObject({ status: "needs_focus_content", programIds: ["business_administration"] });
+    expect(apple.asked).toEqual(["D1", "D3", "D5", "D6"]);
+  });
+});
+
+describe("every answer path of every non-tech selection (state-memoised walk)", () => {
   const selections: string[][] = [
     ...NON_TECH.map((id) => [id]),
     ...NON_TECH.flatMap((a, i) => NON_TECH.slice(i + 1).map((b) => [a, b])),
   ];
 
-  it("never reports needs_focus_content, never repeats a question, and ends in a result within 7 answers", () => {
-    const outcomes = new Map<string, number>();
-    let paths = 0;
-    let longest = 0;
-    for (const selected of selections) {
-      const walk = (answers: RecordedAnswer[]): void => {
-        const next = step(selected, answers);
-        if (next.status === "needs_focus_content") {
-          throw new Error(`content gap for ${selected.join("+")} after ${answers.map((a) => a.questionId).join(",")}`);
-        }
-        if (next.status === "complete") {
-          paths++;
-          longest = Math.max(longest, answers.length);
-          outcomes.set(next.outcome.kind, (outcomes.get(next.outcome.kind) ?? 0) + 1);
-          const ids = answers.map((a) => a.questionId);
-          expect(new Set(ids).size).toBe(ids.length);
-          return;
-        }
-        if (next.mode === "precision") throw new Error("non-tech selections never reach the V1 module");
-        for (const option of next.question.question.options)
-          walk([...answers, ans(next.question.question.id, option.id)]);
-      };
-      walk([]);
+  interface Tally {
+    paths: number;
+    recommended: number;
+    near_tie: number;
+    insufficient: number;
+    gap: number;
+    maxScored: number;
+    maxAnswers: number;
+  }
+  const empty = (): Tally => ({
+    paths: 0,
+    recommended: 0,
+    near_tie: 0,
+    insufficient: 0,
+    gap: 0,
+    maxScored: 0,
+    maxAnswers: 0,
+  });
+  const add = (into: Tally, from: Tally) => {
+    for (const k of ["paths", "recommended", "near_tie", "insufficient", "gap"] as const) into[k] += from[k];
+    into.maxScored = Math.max(into.maxScored, from.maxScored);
+    into.maxAnswers = Math.max(into.maxAnswers, from.maxAnswers);
+  };
+  const leaf = (s: V2Step, answers: number, gaps: string[], selected: string[], trail: RecordedAnswer[]): Tally => {
+    const t = empty();
+    t.paths = 1;
+    t.maxScored = s.state.scoredAnswerCount;
+    t.maxAnswers = answers;
+    if (s.status === "needs_focus_content") {
+      t.gap = 1;
+      gaps.push(`${selected.join("+")} [${s.programIds.join(",")}] after ${trail.map((a) => a.questionId).join(",")}`);
+    } else if (s.status === "complete") {
+      if (s.outcome.kind === "recommended") t.recommended = 1;
+      else if (s.outcome.kind === "near_tie") t.near_tie = 1;
+      else if (s.outcome.kind === "insufficient_positive_evidence") t.insufficient = 1;
+      else throw new Error("non-tech selections never reach the V1 module");
     }
-    expect(paths).toBeGreaterThan(5000);
-    // 5 scored answers plus at most two reality checks (a near tie checks each of its two programs).
-    expect(longest).toBeLessThanOrEqual(7);
-    // Every authored option points to a program, so these clusters cannot reach "insufficient positive evidence".
-    expect([...outcomes.keys()].sort()).toEqual(["near_tie", "recommended"]);
+    return t;
+  };
+  const optionsOf = (s: Extract<V2Step, { status: "ask" }>) => {
+    if (s.mode === "precision") throw new Error("non-tech selections never reach the V1 module");
+    return { id: s.question.question.id, options: s.question.question.options.map((o) => o.id) };
+  };
+
+  /**
+   * Walks every reachable engine state once. The next step depends only on the asked questions, the scores and support,
+   * the rankable programs and the reality evidence, so two paths with the same key have identical futures; the tally of a
+   * state is the sum of its children's, which gives the exact number of complete paths without enumerating them.
+   */
+  function memoWalk(selected: string[], gaps: string[]): Tally {
+    const memo = new Map<string, Tally>();
+    const walk = (answers: RecordedAnswer[]): Tally => {
+      const s = step(selected, answers);
+      const key = JSON.stringify([
+        [...s.state.askedQuestionIds].sort(),
+        s.state.scores,
+        s.state.support,
+        s.state.rankableProgramIds,
+        s.state.realityEvidence.map((r) => r.questionId),
+      ]);
+      const hit = memo.get(key);
+      if (hit) {
+        if (hit.gap > 0) gaps.push(`${selected.join("+")} (repeat state)`);
+        return hit;
+      }
+      let tally: Tally;
+      if (s.status !== "ask") tally = leaf(s, answers.length, gaps, selected, answers);
+      else {
+        tally = empty();
+        const { id, options } = optionsOf(s);
+        for (const option of options) add(tally, walk([...answers, ans(id, option)]));
+      }
+      memo.set(key, tally);
+      return tally;
+    };
+    return walk([]);
+  }
+
+  /** The literal Cartesian walk, used on the six single-project selections to prove the memoised one is exact. */
+  function literalWalk(selected: string[]): Tally {
+    const tally = empty();
+    const walk = (answers: RecordedAnswer[]): void => {
+      const s = step(selected, answers);
+      if (s.status !== "ask") return add(tally, leaf(s, answers.length, [], selected, answers));
+      const { id, options } = optionsOf(s);
+      for (const option of options) walk([...answers, ans(id, option)]);
+    };
+    walk([]);
+    return tally;
+  }
+
+  it("matches the literal walk on every single-project selection", () => {
+    for (const project of NON_TECH) {
+      expect(memoWalk([project], []), project).toEqual(literalWalk([project]));
+    }
+  }, 120_000);
+
+  it("never reports needs_focus_content except for the two documented lone-Business-Administration dead ends", () => {
+    const total = empty();
+    const gaps: string[] = [];
+    for (const selected of selections) add(total, memoWalk(selected, gaps));
+    expect(gaps.sort()).toEqual([
+      "ai_feature_privacy [business_administration] after L1,L2,L3,L6",
+      "apple_store_space [business_administration] after D1,D3,D5,D6",
+    ]);
+    expect(total.gap).toBe(2);
+    // Results are recommendations, valid near ties, and (now reachable) insufficient positive evidence.
+    expect(total.recommended).toBeGreaterThan(0);
+    expect(total.near_tie).toBeGreaterThan(0);
+    expect(total.insufficient).toBeGreaterThan(0);
+    expect(total.recommended + total.near_tie + total.insufficient + total.gap).toBe(total.paths);
+    // The generic ceiling holds: at most 5 scored answers, plus at most two reality checks for a near tie.
+    expect(total.maxScored).toBeLessThanOrEqual(5);
+    expect(total.maxAnswers).toBeLessThanOrEqual(7);
   }, 120_000);
 });
 

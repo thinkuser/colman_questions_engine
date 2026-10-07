@@ -8,6 +8,7 @@ import {
   V2_PROGRAM_IDS,
 } from "@/data";
 import clustersRaw from "@/data/content/discovery/clusters.json";
+import neutralCopy from "@/data/content/question_copy_he.json";
 import type { V2Question } from "@/engine";
 
 /** THI-15: the shipped non-tech V2 question content and per-program work statements (structure, mapping, copy QA). */
@@ -19,6 +20,9 @@ const cluster = (id: string) => getV2Cluster(id)!;
 const question = (id: string) => V2_CLUSTERS.flatMap((c) => c.questions).find((q) => q.id === id)!;
 const shape = (id: string) => cluster(id).questions.map((q) => `${q.position}:${q.id}:${q.kind}`);
 const targets = (q: V2Question) => Object.fromEntries(q.options.map((o) => [o.id, o.programIds]));
+/** Program targets of the options that name a program (the shared neutral option is covered by its own tests). */
+const scoredTargets = (q: V2Question) =>
+  Object.fromEntries(q.options.filter((o) => o.id !== "neither").map((o) => [o.id, o.programIds]));
 
 describe("approved question sets", () => {
   it("ships exactly the approved questions per cluster, in position order", () => {
@@ -27,39 +31,49 @@ describe("approved question sets", () => {
       "2:B2:focus",
       "3:B3:focus",
       "4:B4:focus",
-      "5:BR1:reality_check",
+      "5:B5:focus",
+      "6:BR1:reality_check",
     ]);
     expect(shape("people")).toEqual([
       "1:P1:scenario",
       "2:P2:scenario",
       "3:P3:focus",
       "4:P4:focus",
-      "5:PR1:reality_check",
-      "6:PR2:reality_check",
+      "5:P5:focus",
+      "6:P6:focus",
+      "7:PR1:reality_check",
+      "8:PR2:reality_check",
     ]);
     expect(shape("communication")).toEqual([
       "1:C1:scenario",
       "2:C2:focus",
       "3:C3:focus",
       "4:C4:focus",
-      "5:CR1:reality_check",
+      "5:C5:focus",
+      "6:CR1:reality_check",
     ]);
-    expect(shape("law")).toEqual(["1:L1:scenario", "2:L2:focus", "3:L3:focus", "4:L5:focus", "5:L4:reality_check"]);
+    expect(shape("law")).toEqual([
+      "1:L1:scenario",
+      "2:L2:focus",
+      "3:L3:focus",
+      "4:L5:focus",
+      "5:L6:focus",
+      "6:L4:reality_check",
+    ]);
     expect(shape("interior_design")).toEqual([
       "1:D1:scenario",
       "2:D2:focus",
       "3:D3:focus",
       "4:D5:focus",
-      "5:D4:reality_check",
+      "5:D6:focus",
+      "6:D4:reality_check",
     ]);
   });
 
-  it("keeps the reserved Q5-Q7 id slots free and the cluster bound at 7 (no count is hard-coded)", () => {
+  it("keeps the remaining Q6-Q7 id slots free and never exceeds a cluster's bound (no count is hard-coded)", () => {
     const ids = new Set(V2_CLUSTERS.flatMap((c) => c.questions.map((q) => q.id)));
-    for (const reserved of ["B5", "B6", "B7", "P5", "P6", "P7", "C5", "C6", "C7", "L6", "L7", "D6", "D7"]) {
-      expect(ids.has(reserved)).toBe(false);
-    }
-    for (const id of NON_TECH) expect(cluster(id).questions.length).toBeLessThan(cluster(id).maxQuestions);
+    for (const reserved of ["B6", "B7", "P7", "C6", "C7", "L7", "D7"]) expect(ids.has(reserved)).toBe(false);
+    for (const id of NON_TECH) expect(cluster(id).questions.length).toBeLessThanOrEqual(cluster(id).maxQuestions);
   });
 
   it("opens each project with its own scenario and no other question names a project", () => {
@@ -83,31 +97,53 @@ describe("approved question sets", () => {
   it("maps the approved options to the approved programs", () => {
     const BA = "business_administration";
     expect(targets(question("B1"))).toEqual({ A: [BA], B: ["economics_and_management"], C: ["accounting"] });
-    expect(targets(question("P3"))).toEqual({
+    expect(scoredTargets(question("P3"))).toEqual({
       A: ["psychology"],
       B: ["behavioral_science"],
       C: ["economics_and_psychology"],
       D: ["education"],
     });
-    expect(targets(question("P4"))).toEqual({
+    expect(scoredTargets(question("P4"))).toEqual({
       A: ["psychology"],
       B: ["behavioral_science"],
       C: ["education"],
       D: ["economics_and_psychology"],
     });
     expect(targets(question("C1"))).toEqual({ A: ["communication"], B: ["communication_and_management"], C: [BA] });
-    expect(targets(question("L2"))).toEqual({ A: ["law"], B: [BA], C: ["management_information_systems"] });
-    expect(targets(question("D2"))).toEqual({
+    expect(scoredTargets(question("L2"))).toEqual({ A: ["law"], B: [BA], C: ["management_information_systems"] });
+    expect(scoredTargets(question("D2"))).toEqual({
       A: ["interior_design"],
       B: ["communication"],
       C: ["behavioral_science"],
     });
-    expect(targets(question("L5"))).toEqual({
+    expect(scoredTargets(question("L5"))).toEqual({
       A: ["law"],
       B: ["communication"],
       C: ["communication_and_management"],
     });
-    expect(targets(question("D5"))).toEqual({ A: ["interior_design"], B: ["communication"], C: [BA] });
+    expect(targets(question("D5"))).toEqual({ A: ["interior_design"], B: ["communication"], C: [BA], neither: [] });
+    expect(targets(question("B5"))).toEqual({
+      A: [BA],
+      B: ["economics_and_management"],
+      C: ["accounting"],
+      neither: [],
+    });
+    expect(targets(question("P5"))).toEqual({
+      A: ["psychology"],
+      B: ["behavioral_science"],
+      C: ["education"],
+      D: ["economics_and_psychology"],
+      neither: [],
+    });
+    expect(targets(question("P6"))).toEqual(targets(question("P5")));
+    expect(targets(question("C5"))).toEqual({
+      A: ["communication"],
+      B: ["communication_and_management"],
+      C: [BA],
+      neither: [],
+    });
+    expect(targets(question("L6"))).toEqual({ A: ["law"], B: [BA], C: ["communication"], neither: [] });
+    expect(targets(question("D6"))).toEqual({ A: ["interior_design"], B: ["communication"], C: [BA], neither: [] });
   });
 
   it("uses one intentional multi-target option: Law L1 C points to Communication and Communication + Management", () => {
@@ -118,10 +154,11 @@ describe("approved question sets", () => {
     expect(targets(question("L1")).C).toEqual(["communication", "communication_and_management"]);
   });
 
-  it("points every scored option to a real program, never to an abstract signal", () => {
+  it("points every scored option to a real program (or is the shared neutral option), never to an abstract signal", () => {
     for (const c of V2_CLUSTERS) {
       for (const q of c.questions.filter((x) => x.kind !== "reality_check")) {
         for (const o of q.options) {
+          if (o.id === "neither") continue;
           expect(o.programIds.length, `${q.id}.${o.id}`).toBeGreaterThan(0);
           for (const programId of o.programIds) expect(V2_PROGRAM_IDS).toContain(programId);
         }
@@ -139,6 +176,98 @@ describe("approved question sets", () => {
 
   it("carries no weight, point or score field in the data (weights are engine-owned)", () => {
     expect(JSON.stringify(clustersRaw)).not.toMatch(/"(weight|weights|points|score|scores)"/);
+  });
+});
+
+describe("neutral-option policy (THI-15 review)", () => {
+  const scoredOf = (id: string) => cluster(id).questions.filter((q) => q.kind !== "reality_check");
+  const openers = V2_CLUSTERS.flatMap((c) => c.questions).filter((q) => q.projectIds !== null);
+  const followUps = NON_TECH.flatMap((id) => scoredOf(id)).filter((q) => q.projectIds === null);
+
+  it("gives no opening project scenario a neutral option: they are forced work choices", () => {
+    expect(openers.map((q) => q.id).sort()).toEqual(["B1", "C1", "D1", "L1", "P1", "P2", "T1"]);
+    for (const q of openers) {
+      expect(q.kind, q.id).toBe("scenario");
+      expect(
+        q.options.some((o) => o.programIds.length === 0),
+        q.id,
+      ).toBe(false);
+      expect(
+        q.options.some((o) => o.id === "neither"),
+        q.id,
+      ).toBe(false);
+    }
+  });
+
+  it("gives every authored follow-up focus question exactly one neutral option, last, with the shared copy", () => {
+    expect(followUps.map((q) => q.id).sort()).toEqual(
+      [
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "D2",
+        "D3",
+        "D5",
+        "D6",
+        "L2",
+        "L3",
+        "L5",
+        "L6",
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+      ].sort(),
+    );
+    for (const q of followUps) {
+      expect(q.kind, q.id).toBe("focus");
+      const neutral = q.options.filter((o) => o.programIds.length === 0);
+      expect(
+        neutral.map((o) => o.id),
+        q.id,
+      ).toEqual(["neither"]);
+      expect(q.options.at(-1)!.id, q.id).toBe("neither");
+      expect(getV2QuestionCopy(q.id)!.options.at(-1)!.label, q.id).toBe(neutralCopy.neutral_option);
+    }
+  });
+
+  it("makes the neutral option signal-free: no program, no reality level, no score field", () => {
+    for (const q of followUps) {
+      const neutral = q.options.find((o) => o.id === "neither")!;
+      expect(neutral).toEqual({ id: "neither", programIds: [], realityLevel: null });
+    }
+    const raw = (clustersRaw.clusters as Array<{ questions: Array<{ options: Array<{ id: string }> }> }>).flatMap((c) =>
+      c.questions.flatMap((q) => q.options),
+    );
+    for (const o of raw.filter((x) => x.id === "neither"))
+      expect(Object.keys(o).sort()).toEqual(["id", "label_he", "program_ids"]);
+  });
+
+  it("uses exactly the shared V1 neutral wording, which is not negative or judgemental", () => {
+    expect(neutralCopy.neutral_option).toBe("אף אחת מהאפשרויות לא ממש מושכת אותי");
+    expect(neutralCopy.neutral_option).not.toMatch(/לא יודע|לא מתאים לי|אף אחד/);
+  });
+
+  it("leaves reality checks with their positive / neutral / negative structure and no 'neither'", () => {
+    for (const q of V2_CLUSTERS.flatMap((c) => c.questions).filter((x) => x.kind === "reality_check")) {
+      expect(q.options.map((o) => o.realityLevel)).toEqual(["positive", "neutral", "negative"]);
+      expect(q.options.some((o) => o.id === "neither")).toBe(false);
+    }
+  });
+
+  it("has at least five scored questions available for every single non-tech project (reality checks excluded)", () => {
+    for (const project of CAREER_PROJECTS.filter((p) => p.clusterId !== "tech")) {
+      const available = scoredOf(project.clusterId).filter(
+        (q) => q.projectIds === null || q.projectIds.includes(project.id),
+      );
+      expect(available.length, project.id).toBeGreaterThanOrEqual(5);
+    }
+    for (const id of NON_TECH) expect(scoredOf(id).length, id).toBeGreaterThanOrEqual(5);
   });
 });
 

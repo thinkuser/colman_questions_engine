@@ -199,7 +199,8 @@ describe("question clusters", () => {
     ]);
     for (const cluster of V2_CLUSTERS) {
       for (const id of [...cluster.programIds, ...cluster.adjacentProgramIds]) expect(V2_PROGRAM_IDS).toContain(id);
-      expect(cluster.maxQuestions).toBe(7);
+      // 7 everywhere except People (8): six scored questions plus two reality checks (THI-15).
+      expect(cluster.maxQuestions).toBe(cluster.id === "people" ? 8 : 7);
     }
   });
 
