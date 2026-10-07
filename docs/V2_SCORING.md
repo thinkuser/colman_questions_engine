@@ -100,7 +100,7 @@ When no authored question separates the leading set, the engine builds `focus:<a
 - "neither" adds no points or support but counts toward the 3-answer minimum and the 5-answer ceiling;
 - `i` is the number of generated focus questions already asked for exactly that program set.
 
-The statements are curated data (`work_statements_he` in the catalog; THI-15 content). Nothing is generated at runtime, and no N×N pair or triple content is authored. If any member lacks a statement at index `i`, the step is `needs_focus_content`.
+The statements are curated data (`work_statements_he` in the catalog; three per program, authored in THI-15). Nothing is generated at runtime, and no N×N pair or triple content is authored. If any member lacks a statement at index `i`, the step is `needs_focus_content`; with three statements per program this cannot happen before the ceiling in any production path except a program set that is asked about three times in a row (see "Content availability").
 
 ## Reality checks
 
@@ -141,10 +141,19 @@ A cross-cluster Spotify run asks the generic questions before handoff plus V1's 
 | `near_tie` | Two or more programs still close at the ceiling. |
 | `insufficient_positive_evidence` | No defensible leader from expressed preferences (neutral / rejecting answers, or a leader with a single supporting answer). Never turned into a fake recommendation. |
 | `precision` | The module's own result (for `v1_tech`, the V1 `FitResult` with its DEC-018 classes, including V1 no strong fit). |
-| `needs_focus_content` (step, not a result) | Content gap: nothing can separate the evidence leading set (a lone supported leader with no authored alternative left, more than three contenders, or missing work statements). Lists the contenders' ids. Expected for non-tech projects until THI-15. |
+| `needs_focus_content` (step, not a result) | Content gap: nothing can separate the evidence leading set (a lone supported leader with no authored alternative left, more than three contenders, or missing work statements). Lists the contenders' ids. Not reached by any production non-tech selection (see "Content availability"). |
 
 ### Open product decision: a generic "no strong fit" threshold
 V1's normalized-fit thresholds (DEC-018) belong to V1's vector model and are **not** transplanted into V2 points. The accepted V2 docs define no generic no-strong-fit threshold. The generic engine therefore only distinguishes the three states above. For example, it does not treat "a clear leader built only on weak signals" as no fit. **Proposed, pending product review:** decide whether weak-but-positive generic results need their own state, and on what evidence, once THI-15 content and real usage exist.
+
+## Content availability (THI-15)
+The production content makes the routing rules above concrete:
+- **Openers are forced; follow-ups have a neutral option.** Project-opening scenarios (B1, P1, P2, C1, L1, D1) always name a program, so the first answer is a real work-preference signal. Every later authored focus question includes a neutral "neither" (0 points, 0 support, counts toward the ceiling). A candidate can therefore say a follow-up does not fit them without forcing a program into evidence.
+- **At least five authored scored questions** are available to every single project (Law and Interior Design six, People five per project from six in the cluster). A lone supported leader is tested by authored questions that offer it and an alternative until a clear leader or the 5-answer ceiling.
+- **`insufficient_positive_evidence` is production-reachable:** opener plus neutral for every follow-up ends there at five scored answers (one support, once).
+- **Walk of every answer path** of the 6 single-project and 15 two-project non-tech selections (19,381 complete paths): 4,740 recommended, 14,624 near ties, 17 insufficient positive evidence, **0 content gaps**. At most 5 scored answers, at most 7 candidate answers including reality checks. Law and Interior Design carry L7 / D7 (narrow comparisons with Business Administration) so a lone adjacent Business leader can always be tested to the ceiling with authored content.
+- **Near ties are frequent by path count** because every non-neutral answer supports some program and a clear leader needs a lead of at least 4. Path counts weight options equally; real frequencies need THI-16 usage data.
+- Spotify combined with another project is longer than the 5-7 of a focused run (up to 11 answers measured). Accepted in THI-14; THI-16 QA must measure the real journey length.
 
 ## Pressure-test traces
 

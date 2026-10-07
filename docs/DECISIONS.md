@@ -215,14 +215,14 @@ Status: accepted — THI-13 review.
 - Question kinds: `scenario`, `focus`, `tiebreaker`, `reality_check`. The data carries **no weights**; what each kind is worth is the THI-14 engine's decision.
 - An answer points to one or more programs (a shared signal such as "Communication / Communication + Management" lists both) or to none (a neutral option). Targets must be the cluster's core or adjacent programs. **Reality-check answers point to no program and never rank** (DEC-009); they carry a `reality_level`.
 - The `tech` cluster uses the preserved V1 CS / DS / MIS engine as its precision module (`v1_tech`), which must cover exactly the V1 pilot programs. `PrecisionModuleAdapter` is an interface only until THI-14. No N×N pair structure exists in the V2 data.
-- Question content is not part of THI-13: non-tech clusters are THI-15 and the tech discovery handoff is THI-14. The shipped lists are empty.
+- Question content was not part of THI-13: the tech discovery handoff is THI-14 and the non-tech question content and work statements are THI-15 (shipped; see `docs/V2_QUESTION_BANK.md`).
 - Data: `src/data/content/discovery/clusters.json`; types: `V2Cluster` / `V2Question` in `src/engine/discovery.ts`; validation: `buildClusters` in `src/data/discovery.ts`.
 - **Amended in THI-14** (three question fields; nothing removed):
   - `project_ids`: scenario applicability. The scenario is the opening question of those selected projects. Only scenario questions may name projects, and only projects of the same cluster. Questions without it are general cluster questions, asked only when they separate every program of the evidence leading set (DEC-030).
   - `reuses: { module, question_id }`: the question **is** a precision module's own question, with the same option ids and the module's own candidate copy (it must not carry its own). Its answer is carried into the module on handoff. Allowed only inside that module's cluster.
   - `reality_for_program_ids`: the program(s) a reality check is about. **Required** on every `reality_check` (non-empty, no duplicates, each a core or adjacent program of the cluster); **forbidden** on every other kind. Reality-check options still name no programs and carry a `reality_level`; they are worth 0. Applicability is explicit and never inferred from cluster membership or order (DEC-030).
   - V2 question ids must not collide with precision-module question ids, because both share one answer list.
-  - The tech cluster now holds `T1` (Spotify opener) reusing V1 `Q1`. Non-tech content is still THI-15.
+  - The tech cluster now holds `T1` (Spotify opener) reusing V1 `Q1`. Non-tech content shipped in THI-15 with no schema change.
 
 ## DEC-029 — V2 program catalog layer
 Status: accepted — THI-13 review.

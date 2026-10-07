@@ -5,7 +5,7 @@ import { nextDiscoveryStep, V1_TECH_PRECISION_MODULE } from "@/flow";
 import { ALL_PILOT, runFlow } from "../engine/fixtures";
 import { SANITY_CASES } from "../engine/sanityCases";
 
-/** V2 routing on the real production data (tech cluster + V1 module; non-tech content is THI-15). */
+/** V2 routing on the real production data (tech cluster + V1 module; non-tech content is covered in v2Content.test.ts). */
 
 function playSpotifyOnly(policy: (question: Extract<V2Step, { mode: "precision" }>["question"]) => string) {
   const answers: RecordedAnswer[] = [];
@@ -54,10 +54,28 @@ describe("Spotify + another project on production data", () => {
     const first = nextDiscoveryStep({ selectedProjectIds: ["wolt_new_city", "spotify_discover_weekly"], answers: [] });
     expect(first.status === "ask" && first.mode === "generic" && first.question.question.id).toBe("T1");
 
-    // Wolt has no question content yet (THI-15), so the only evidence is tech: the shortlist is tech-only.
+    // Wolt's own scenario (B1) is asked after T1. A Business Administration answer leaves Data Science and Business
+    // Administration tied, so a generated focus question settles them; choosing Data Science hands off to V1.
+    const selected = ["wolt_new_city", "spotify_discover_weekly"];
+    const afterT1 = nextDiscoveryStep({ selectedProjectIds: selected, answers: [{ questionId: "T1", answerId: "B" }] });
+    expect(afterT1.status === "ask" && afterT1.mode === "generic" && afterT1.question.question.id).toBe("B1");
+    const generated = nextDiscoveryStep({
+      selectedProjectIds: selected,
+      answers: [
+        { questionId: "T1", answerId: "B" },
+        { questionId: "B1", answerId: "A" },
+      ],
+    });
+    expect(generated.status === "ask" && generated.mode === "generic" && generated.question.question.id).toBe(
+      "focus:business_administration|data_science:0",
+    );
     const next = nextDiscoveryStep({
-      selectedProjectIds: ["wolt_new_city", "spotify_discover_weekly"],
-      answers: [{ questionId: "T1", answerId: "B" }],
+      selectedProjectIds: selected,
+      answers: [
+        { questionId: "T1", answerId: "B" },
+        { questionId: "B1", answerId: "A" },
+        { questionId: "focus:business_administration|data_science:0", answerId: "B" },
+      ],
     });
     if (next.status !== "ask" || next.mode !== "precision") throw new Error("expected handoff");
     expect(next.question.id).toBe("Q2");
@@ -66,10 +84,10 @@ describe("Spotify + another project on production data", () => {
   });
 });
 
-describe("non-tech projects before THI-15 content", () => {
-  it("reports needs_focus_content explicitly rather than guessing", () => {
+describe("non-tech projects with THI-15 content", () => {
+  it("opens with the project scenario instead of reporting a content gap", () => {
     const step = nextDiscoveryStep({ selectedProjectIds: ["wolt_new_city"], answers: [] });
-    expect(step.status).toBe("needs_focus_content");
+    expect(step.status === "ask" && step.mode === "generic" && step.question.question.id).toBe("B1");
     expect(step.state.scoredAnswerCount).toBe(0);
   });
 });
