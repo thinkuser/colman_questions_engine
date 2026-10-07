@@ -53,6 +53,11 @@ export const V2QuestionSchema = z.strictObject({
    * the module on handoff and the candidate never sees it twice (THI-14). E.g. the Spotify opener reuses V1 Q1.
    */
   reuses: z.strictObject({ module: z.enum(PRECISION_MODULE_IDS), question_id: id }).optional(),
+  /**
+   * Reality checks only (required there, forbidden elsewhere): the resolved program(s) this check is about. The router
+   * finds checks by this list across all clusters, so a winner that surfaced from another cluster still gets its check.
+   */
+  reality_for_program_ids: z.array(snakeId).min(1).optional(),
   options: z.array(V2OptionSchema).min(2),
 });
 
@@ -155,6 +160,18 @@ export function buildClusters(
       const optionIds = question.options.map((option) => option.id);
       if (new Set(optionIds).size !== optionIds.length) bad(`${at} has duplicate option ids`);
       if (question.project_ids && question.kind !== "scenario") bad(`${at}: only scenario questions name projects`);
+      if (question.kind === "reality_check") {
+        const forPrograms =
+          question.reality_for_program_ids ?? bad(`${at}: a reality check must name the program(s) it is for`);
+        if (new Set(forPrograms).size !== forPrograms.length)
+          bad(`${at}: reality_for_program_ids lists a program twice`);
+        for (const programId of forPrograms) {
+          if (!allowed.has(programId))
+            bad(`${at}: reality check for "${programId}", outside the cluster and its neighbours`);
+        }
+      } else if (question.reality_for_program_ids) {
+        bad(`${at}: only reality checks have reality_for_program_ids`);
+      }
 
       let copy: V2QuestionCopy;
       if (question.reuses) {
@@ -204,6 +221,7 @@ export function buildClusters(
         kind: question.kind,
         projectIds: question.project_ids ?? null,
         reuses: question.reuses ? { moduleId: question.reuses.module, questionId: question.reuses.question_id } : null,
+        realityForProgramIds: question.reality_for_program_ids ?? null,
         options: question.options.map((option) => ({
           id: option.id,
           programIds: option.program_ids,

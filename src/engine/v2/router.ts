@@ -8,7 +8,7 @@ import {
   type V2Question,
 } from "../discovery";
 import type { FitResult, ProgramId, RecordedAnswer } from "../types";
-import { buildHeadToHead, type HeadToHeadQuestion } from "./headToHead";
+import { buildGenericFocus, unresolvedLeadingSet, type GenericFocusQuestion } from "./genericFocus";
 import type { PrecisionModuleAdapter } from "./precision";
 import {
   clearLeader,
@@ -38,18 +38,21 @@ import {
  *   2. Project scenarios: the opening scenario of each selected project (project display order, then position).
  *   3. Resolution: a clear leader (>= 3 scored answers, >= 2 supporting, lead >= 4), or at 5 scored answers a near tie
  *      or "insufficient positive evidence". Never forced into a winner.
- *   4. Reality checks for the resolved program(s): recorded, never ranked.
- *   5. Otherwise the next focus question: an authored cluster question that separates the two leaders, else a
- *      generated head-to-head from their work statements, else an explicit `needs_focus_content` step.
+ *   4. Reality checks for the resolved program(s), found by explicit applicability (`realityForProgramIds`) across all
+ *      clusters, at most one per resolved program: recorded, never ranked.
+ *   5. Otherwise the next focus question over the UNRESOLVED LEADING SET (all programs sharing the top rank, or the
+ *      leader plus all programs sharing the next rank): an authored cluster question with a separate option for every
+ *      member, else a generated 2- or 3-way focus question from their work statements, else an explicit
+ *      `needs_focus_content` step (one program, more than three, or missing statements).
  *
- * Project selection scores nothing; the candidate-pool order is never a ranking or tie-break (DEC-027). The array
- * order of tied programs (by id) only makes question choice deterministic and is documented as such.
+ * Project selection scores nothing; the candidate-pool order is never a ranking or tie-break (DEC-027). Program ids
+ * order options for display only; they never decide which equally ranked contender is left out of a comparison.
  */
 
 export interface V2RouterInput {
   projects: readonly CareerProject[];
   clusters: readonly V2Cluster[];
-  /** Per-program "day at work" statements for the generic head-to-head (THI-15 content). */
+  /** Per-program "day at work" statements for generated focus questions (THI-15 content). */
   workStatements: Readonly<Record<ProgramId, readonly string[]>>;
   precisionModules: readonly PrecisionModuleAdapter[];
   selectedProjectIds: readonly string[];
@@ -59,10 +62,10 @@ export interface V2RouterInput {
 
 export type V2AskedQuestion =
   | { source: "cluster"; clusterId: string; question: V2Question }
-  | { source: "head_to_head"; question: HeadToHeadQuestion };
+  | { source: "generic_focus"; question: GenericFocusQuestion };
 
 /** Why a generic question was chosen (developer trace; not candidate copy). */
-export type V2AskReason = "project_scenario" | "separates_leaders" | "head_to_head" | "reality_check";
+export type V2AskReason = "project_scenario" | "separates_leaders" | "generic_focus" | "reality_check";
 
 export interface V2PrecisionState {
   moduleId: PrecisionModuleId;
@@ -129,17 +132,23 @@ const MAX_STEPS = 100;
 const byPosition = (questions: readonly V2Question[]) => [...questions].sort((a, b) => a.position - b.position);
 const targets = (option: V2AnswerOption, programId: ProgramId) => option.programIds.includes(programId);
 
-/** Does the question let the candidate choose between the leader and the runner-up (or, alone, leave the leader)? */
-function separatesLeaders(question: V2Question, leader: ProgramId, runnerUp: ProgramId | undefined): boolean {
-  if (runnerUp === undefined) {
+/**
+ * Does the question separate EVERY member of the unresolved leading set (an option pointing to that member and to no
+ * other member)? With a single rankable program: does it let the candidate choose it or something else?
+ */
+function separatesAll(question: V2Question, leading: readonly ProgramId[]): boolean {
+  if (leading.length === 1) {
+    const only = leading[0]!;
     return (
-      question.options.some((option) => targets(option, leader)) &&
-      question.options.some((option) => option.programIds.some((programId) => programId !== leader))
+      question.options.some((option) => targets(option, only)) &&
+      question.options.some((option) => option.programIds.some((programId) => programId !== only))
     );
   }
-  const forLeader = question.options.find((option) => targets(option, leader) && !targets(option, runnerUp));
-  const forRunnerUp = question.options.find((option) => targets(option, runnerUp) && !targets(option, leader));
-  return Boolean(forLeader && forRunnerUp && forLeader !== forRunnerUp);
+  return leading.every((member) =>
+    question.options.some(
+      (option) => targets(option, member) && !leading.some((other) => other !== member && targets(option, other)),
+    ),
+  );
 }
 
 export function nextV2Step(input: V2RouterInput): V2Step {
@@ -156,6 +165,25 @@ export function nextV2Step(input: V2RouterInput): V2Step {
   let cursor = 0;
   let resolution: V2GenericOutcome | null = null;
   let completionReason: V2CompletionReason | null = null;
+
+  /**
+   * The next reality check for the resolved program(s): searched across ALL clusters by explicit applicability, so a
+   * program that surfaced from another cluster still gets its check. At most one per resolved program; among checks
+   * that genuinely apply, the lowest question id goes first. Cluster membership and order play no part.
+   */
+  const nextRealityCheck = (resolved: readonly ProgramId[]): { cluster: V2Cluster; question: V2Question } | null => {
+    const covered = new Set(realityEvidence.flatMap((answer) => answer.forProgramIds));
+    const checks = input.clusters
+      .flatMap((cluster) => cluster.questions.map((question) => ({ cluster, question })))
+      .filter(({ question }) => question.kind === "reality_check" && !asked.includes(question.id))
+      .sort((a, b) => (a.question.id < b.question.id ? -1 : a.question.id > b.question.id ? 1 : 0));
+    for (const programId of resolved) {
+      if (covered.has(programId)) continue;
+      const check = checks.find(({ question }) => question.realityForProgramIds?.includes(programId));
+      if (check) return check;
+    }
+    return null;
+  };
 
   const state = (precision: V2PrecisionState | null = null): V2State => {
     const counts = tally(rankable, evidence);
@@ -341,14 +369,7 @@ export function nextV2Step(input: V2RouterInput): V2Step {
           : resolution.kind === "near_tie"
             ? resolution.programIds
             : [];
-      const reality = clusters
-        .flatMap((cluster) => byPosition(cluster.questions).map((question) => ({ cluster, question })))
-        .find(
-          ({ cluster, question }) =>
-            question.kind === "reality_check" &&
-            !asked.includes(question.id) &&
-            cluster.programIds.some((programId) => resolved.includes(programId)),
-        );
+      const reality = nextRealityCheck(resolved);
       if (reality) {
         const option = take(reality.question.id, reality.question.options);
         if (!option) {
@@ -363,6 +384,7 @@ export function nextV2Step(input: V2RouterInput): V2Step {
           questionId: reality.question.id,
           answerId: option.id,
           clusterId: reality.cluster.id,
+          forProgramIds: reality.question.realityForProgramIds ?? [],
           realityLevel: option.realityLevel!,
         });
         continue;
@@ -377,10 +399,9 @@ export function nextV2Step(input: V2RouterInput): V2Step {
       };
     }
 
-    // 5. Next focus question.
-    const leader = ranking[0]?.programId;
-    const runnerUp = ranking[1]?.programId;
-    if (leader === undefined) fail("no rankable program");
+    // 5. Next focus question over the unresolved leading set (never a subset picked by id order).
+    const leading = unresolvedLeadingSet(ranking);
+    if (leading.length === 0) fail("no rankable program");
     const authored = clusters
       .flatMap((cluster) => byPosition(cluster.questions).map((question) => ({ cluster, question })))
       .find(
@@ -390,7 +411,7 @@ export function nextV2Step(input: V2RouterInput): V2Step {
           question.projectIds === null &&
           question.reuses === null &&
           (question.kind !== "tiebreaker" || evidence.length >= V2_MIN_SCORED_ANSWERS_FOR_CLEAR) &&
-          separatesLeaders(question, leader!, runnerUp),
+          separatesAll(question, leading),
       );
     if (authored) {
       const option = take(authored.question.id, authored.question.options);
@@ -410,24 +431,23 @@ export function nextV2Step(input: V2RouterInput): V2Step {
       continue;
     }
 
-    const headToHead =
-      runnerUp === undefined ? null : buildHeadToHead([leader!, runnerUp], asked, input.workStatements);
-    if (!headToHead) {
+    // 2-3 programs: a generated focus question. 1 or more than 3 (or missing statements): an explicit content gap.
+    const focus = buildGenericFocus(leading, asked, input.workStatements);
+    if (!focus) {
       noMoreAnswers();
-      const programIds = runnerUp === undefined ? [leader!] : [...[leader!, runnerUp]].sort();
-      return { status: "needs_focus_content", mode: "generic", programIds, state: state() };
+      return { status: "needs_focus_content", mode: "generic", programIds: leading, state: state() };
     }
-    const option = take(headToHead.id, headToHead.options);
+    const option = take(focus.id, focus.options);
     if (!option) {
       return {
         status: "ask",
         mode: "generic",
-        reason: "head_to_head",
-        question: { source: "head_to_head", question: headToHead },
+        reason: "generic_focus",
+        question: { source: "generic_focus", question: focus },
         state: state(),
       };
     }
-    score(headToHead.id, option, "focus", { type: "head_to_head", programIds: headToHead.programIds });
+    score(focus.id, option, "focus", { type: "generic_focus", programIds: focus.programIds });
   }
   return fail("the V2 flow did not terminate");
 }

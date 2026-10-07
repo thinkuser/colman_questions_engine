@@ -217,9 +217,10 @@ Status: accepted — THI-13 review.
 - The `tech` cluster uses the preserved V1 CS / DS / MIS engine as its precision module (`v1_tech`), which must cover exactly the V1 pilot programs. `PrecisionModuleAdapter` is an interface only until THI-14. No N×N pair structure exists in the V2 data.
 - Question content is not part of THI-13: non-tech clusters are THI-15 and the tech discovery handoff is THI-14. The shipped lists are empty.
 - Data: `src/data/content/discovery/clusters.json`; types: `V2Cluster` / `V2Question` in `src/engine/discovery.ts`; validation: `buildClusters` in `src/data/discovery.ts`.
-- **Amended in THI-14** (two optional fields; nothing removed):
-  - `project_ids`: scenario applicability. The scenario is the opening question of those selected projects. Only scenario questions may name projects, and only projects of the same cluster. Questions without it are general cluster questions, asked only when they separate the current leaders (DEC-030).
+- **Amended in THI-14** (three question fields; nothing removed):
+  - `project_ids`: scenario applicability. The scenario is the opening question of those selected projects. Only scenario questions may name projects, and only projects of the same cluster. Questions without it are general cluster questions, asked only when they separate every program of the unresolved leading set (DEC-030).
   - `reuses: { module, question_id }`: the question **is** a precision module's own question, with the same option ids and the module's own candidate copy (it must not carry its own). Its answer is carried into the module on handoff. Allowed only inside that module's cluster.
+  - `reality_for_program_ids`: the program(s) a reality check is about. **Required** on every `reality_check` (non-empty, no duplicates, each a core or adjacent program of the cluster); **forbidden** on every other kind. Reality-check options still name no programs and carry a `reality_level`; they are worth 0. Applicability is explicit and never inferred from cluster membership or order (DEC-030).
   - V2 question ids must not collide with precision-module question ids, because both share one answer list.
   - The tech cluster now holds `T1` (Spotify opener) reusing V1 `Q1`. Non-tech content is still THI-15.
 
@@ -238,20 +239,28 @@ Status: accepted — V2 product direction (`docs/V2_ALL_PROGRAMS_SPEC.md` §7–
 
 Full description and pressure-test traces: `docs/V2_SCORING.md`. Code: `src/engine/v2/`, wired in `src/flow/v2Step.ts`.
 
-- **Points (generic V2 only; calibration seeds, never shown):** project selection **0**; scenario **+3**; focus / head-to-head **+4**; curated tiebreaker **+5**; reality check **0**.
+- **Points (generic V2 only; calibration seeds, never shown):** project selection **0**; scenario **+3**; focus (authored or generated 2-/3-way) **+4**; curated tiebreaker **+5**; reality check **0**.
   - A multi-target answer gives the full weight and one support to **each** target.
   - Neutral answers add nothing.
 - **Support** counts only scored answers that pointed to a program. Project membership, candidate-pool order, catalogue order and cluster order are never evidence and never break ties (DEC-027).
 - **Adjacent programs** become rankable only after an answer actually points to them (DEC-022).
 - **Clear leader:** evaluated after at least 3 scored answers; needs at least 2 supporting answers **and** a lead of 4 or more points.
 - **Ceiling: 5 scored answers.** Then: a clear leader, a **near tie** (a valid result), or **insufficient positive evidence**. The engine never forces a winner. A true tie stays a tie: equal score and support share a rank.
-- **Routing:** precision handoff, then project scenarios, then resolution, then reality checks, then the next focus question:
-  - an authored question that separates the two leaders,
-  - else a generated head-to-head from curated work statements,
-  - else an explicit `needs_focus_content`.
-  - Deterministic replay; no randomness, no runtime LLM, no N×N authored pairs.
+- **Routing:** precision handoff, then project scenarios, then resolution, then reality checks, then the next focus question over the **unresolved leading set**.
+  - **Unresolved leading set:** all programs sharing the top rank when two or more do; otherwise the leader plus **every** program sharing the next rank. Built from shared ranks only.
+  - **2 programs:** an authored question separating both, else a generated 2-way focus question from curated work statements.
+  - **3 programs:** an authored question separating all three, else a generated **3-way** focus question (options A/B/C plus "neither"). The chosen program gets +4 and one support; "neither" scores nothing but counts toward the minimum and the ceiling.
+  - **More than 3:** an authored question separating all of them, else an explicit `needs_focus_content` listing all unresolved ids. Missing statements also give `needs_focus_content`.
+  - **Program id decides display order only** (option order, canonical question id), never which equally ranked contender is compared or left out.
+  - Deterministic replay; no randomness, no runtime LLM, no N×N authored pairs or triples.
 - **Precision modules:** an adapter interface (eligibility, own questions, next step, own result). Handoff happens when every rankable program belongs to the module, or when, after the project scenarios, the evidence shortlist sits inside it (at least 2 of its programs in play). Only `v1_tech` exists.
 - **V1 tech stays separate and unchanged.** The `v1_tech` module is the V1 adaptive engine with its own scoring (DEC-018 to DEC-021) and behaviour. V2 points are never applied inside it. Spotify alone is exactly the V1 flow.
 - **No duplicate Spotify question.** The Spotify opener `T1` reuses V1 `Q1` (same options and copy). In a cross-cluster run its answer is carried into V1 as `Q1`, and V1 continues at Q2.
-- **Reality checks** are asked after the ranking is resolved, for the clusters of the resolved program(s). They are recorded as evidence and never change the ranking.
+- **Reality checks** are asked after the ranking is resolved, by **explicit applicability** (`reality_for_program_ids`, DEC-028):
+  - the router searches all clusters for unanswered checks whose applicability includes a resolved program, so an adjacent winner (e.g. Business Administration inside the Law cluster) gets its own check and never borrows the Law check;
+  - at most one check per resolved program; a near tie may record a check for each of its programs, in ranked order;
+  - ordering only among genuinely applicable checks (lowest question id); no cluster-order or position inference;
+  - no applicable check: the flow completes cleanly;
+  - recorded as evidence with `forProgramIds`; never changes scores, support, ranking or the answer count.
 - **Open, proposed, pending product review:** a generic **"no strong fit" threshold**. V1's normalized-fit thresholds are not transplanted into V2 points, and the accepted V2 docs define none. Until decided, the generic engine reports only `recommended`, `near_tie` or `insufficient_positive_evidence`.
+- **Accepted product decisions (THI-14 review):** a cross-cluster Spotify journey may exceed 5–7 questions (generic questions before handoff plus V1's remaining ones); THI-16 QA must measure it. V1 `Q1` stays the Spotify question (no duplicate Discover Weekly question).

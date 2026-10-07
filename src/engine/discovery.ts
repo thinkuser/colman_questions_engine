@@ -143,6 +143,12 @@ export interface V2Question {
    * the candidate never answers the same question twice (THI-14).
    */
   reuses: { moduleId: PrecisionModuleId; questionId: string } | null;
+  /**
+   * Reality checks only: the resolved program(s) this check is about. Applicability is explicit, never inferred from
+   * cluster membership or order, so a check also reaches a program that surfaced from another cluster (THI-14).
+   * Null for every other kind.
+   */
+  realityForProgramIds: readonly ProgramId[] | null;
   options: readonly V2AnswerOption[];
 }
 

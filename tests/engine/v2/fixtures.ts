@@ -31,25 +31,47 @@ export const COMMGMT = "communication_and_management";
 export const LAW = "law";
 export const INT = "interior_design";
 
-const option = (id: string, programIds: ProgramId[] = []): V2AnswerOption => ({ id, programIds, realityLevel: null });
-const neither = option("neither");
+export const option = (id: string, programIds: ProgramId[] = []): V2AnswerOption => ({
+  id,
+  programIds,
+  realityLevel: null,
+});
+export const neither = option("neither");
 const reality = (id: string, level: "positive" | "neutral" | "negative"): V2AnswerOption => ({
   id,
   programIds: [],
   realityLevel: level,
 });
 
-function question(
+export function question(
   id: string,
   position: number,
   kind: V2Question["kind"],
   options: V2AnswerOption[],
   projectIds: string[] | null = null,
 ): V2Question {
-  return { id, position, kind, projectIds, reuses: null, options };
+  return { id, position, kind, projectIds, reuses: null, realityForProgramIds: null, options };
 }
 
-function cluster(id: string, programIds: ProgramId[], adjacent: ProgramId[], questions: V2Question[]): V2Cluster {
+/** A reality check about `forProgramIds` (explicit applicability, THI-14). Options score nothing. */
+export function realityCheck(id: string, position: number, forProgramIds: ProgramId[]): V2Question {
+  return {
+    id,
+    position,
+    kind: "reality_check",
+    projectIds: null,
+    reuses: null,
+    realityForProgramIds: forProgramIds,
+    options: [reality("A", "positive"), reality("B", "neutral"), reality("C", "negative")],
+  };
+}
+
+export function cluster(
+  id: string,
+  programIds: ProgramId[],
+  adjacent: ProgramId[],
+  questions: V2Question[],
+): V2Cluster {
   return { id, programIds, adjacentProgramIds: adjacent, precisionModule: null, maxQuestions: 7, questions };
 }
 
@@ -117,7 +139,7 @@ export const FIXTURE_CLUSTERS: readonly V2Cluster[] = [
       ),
       question("L2", 2, "scenario", [option("A", [LAW]), option("B", [BA]), option("C", [MIS])]),
       question("L3", 3, "focus", [option("A", [LAW]), option("B", [BA]), option("C", [COMM])]),
-      question("L4", 4, "reality_check", [reality("A", "positive"), reality("B", "neutral"), reality("C", "negative")]),
+      realityCheck("L4", 4, [LAW]),
     ],
   ),
   cluster(
@@ -134,10 +156,40 @@ export const FIXTURE_CLUSTERS: readonly V2Cluster[] = [
       ),
       question("D2", 2, "scenario", [option("A", [INT]), option("B", [COMM]), option("C", [BEH, DS])]),
       question("D3", 3, "focus", [option("A", [INT]), option("B", [COMM]), option("C", [BA])]),
-      question("D4", 4, "reality_check", [reality("A", "positive"), reality("B", "neutral"), reality("C", "negative")]),
+      realityCheck("D4", 4, [INT]),
     ],
   ),
 ];
+
+/**
+ * FIXTURE_CLUSTERS plus a synthetic Business Administration reality check (B5) in the business cluster, so tests can
+ * show that a check reaches an adjacent program that won inside another cluster (e.g. Law -> BA).
+ */
+export const FIXTURE_CLUSTERS_WITH_BA_REALITY = withQuestions(
+  FIXTURE_CLUSTERS,
+  "business",
+  realityCheck("B5", 5, [BA]),
+);
+
+/** A copy of `clusters` with `questions` appended to one cluster. */
+export function withQuestions(
+  clusters: readonly V2Cluster[],
+  clusterId: string,
+  ...questions: V2Question[]
+): readonly V2Cluster[] {
+  return clusters.map((candidate) =>
+    candidate.id === clusterId ? { ...candidate, questions: [...candidate.questions, ...questions] } : candidate,
+  );
+}
+
+/** A copy of `clusters` with one cluster's questions replaced. */
+export function withClusterQuestions(
+  clusters: readonly V2Cluster[],
+  clusterId: string,
+  questions: V2Question[],
+): readonly V2Cluster[] {
+  return clusters.map((candidate) => (candidate.id === clusterId ? { ...candidate, questions } : candidate));
+}
 
 /** Two fixture "day at work" statements per program (real statements are THI-15 content). */
 export const FIXTURE_STATEMENTS: Readonly<Record<ProgramId, readonly string[]>> = Object.fromEntries(

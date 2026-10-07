@@ -70,12 +70,12 @@ const PERSONAS = {
     answer("B2", "A"),
     answer("B3", "B"),
     answer("B4", "A"),
-    answer("h2h:business_administration|economics_and_management:0", "B"),
+    answer("focus:business_administration|economics_and_management:0", "B"),
   ]),
   "C. TikTok + Nike (Behavioral Science vs Communication & Management)": trace(
     (answers) => route(["tiktok_endless_scroll", "nike_israel_launch"], answers),
     "TikTok + Nike",
-    [answer("P1", "B"), answer("C1", "B"), answer("h2h:behavioral_science|communication_and_management:0", "B")],
+    [answer("P1", "B"), answer("C1", "B"), answer("focus:behavioral_science|communication_and_management:0", "B")],
   ),
 };
 
@@ -97,17 +97,17 @@ describe("V2 pressure-test traces (answer -> points/support -> shortlist -> next
       "B1=B | ECON 3/1 | ECON | ask B2 (separates_leaders)",
       "B2=A | BA 3/1, ECON 3/1 | BA, ECON | ask B3 (separates_leaders)",
       "B3=B | ECON 6/2, BA 3/1 | ECON, BA | ask B4 (separates_leaders)",
-      "B4=A | BA 7/2, ECON 6/2 | BA, ECON | ask h2h:business_administration|economics_and_management:0 (head_to_head)",
-      "h2h:business_administration|economics_and_management:0=B | ECON 10/3, BA 7/2 | ECON, BA | complete: near tie ECON/BA (ceiling_near_tie)",
+      "B4=A | BA 7/2, ECON 6/2 | BA, ECON | ask focus:business_administration|economics_and_management:0 (generic_focus)",
+      "focus:business_administration|economics_and_management:0=B | ECON 10/3, BA 7/2 | ECON, BA | complete: near tie ECON/BA (ceiling_near_tie)",
     ]);
   });
 
-  it("C. TikTok + Nike: a generic head-to-head decides, with no authored pair", () => {
+  it("C. TikTok + Nike: a generic focus question decides, with no authored pair", () => {
     expect(PERSONAS["C. TikTok + Nike (Behavioral Science vs Communication & Management)"]).toEqual([
       "select TikTok + Nike | - | - | ask P1 (project_scenario)",
       "P1=B | BEH 3/1 | BEH | ask C1 (project_scenario)",
-      "C1=B | BEH 3/1, COMMGMT 3/1 | BEH, COMMGMT | ask h2h:behavioral_science|communication_and_management:0 (head_to_head)",
-      "h2h:behavioral_science|communication_and_management:0=B | COMMGMT 7/2, BEH 3/1 | COMMGMT | complete: COMMGMT (clear_leader)",
+      "C1=B | BEH 3/1, COMMGMT 3/1 | BEH, COMMGMT | ask focus:behavioral_science|communication_and_management:0 (generic_focus)",
+      "focus:behavioral_science|communication_and_management:0=B | COMMGMT 7/2, BEH 3/1 | COMMGMT | complete: COMMGMT (clear_leader)",
     ]);
   });
 

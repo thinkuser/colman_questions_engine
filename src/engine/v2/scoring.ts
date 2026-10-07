@@ -25,9 +25,11 @@ export const V2_MAX_GENERIC_SCORED_ANSWERS = 5;
 
 export type V2WeightClass = Exclude<V2QuestionKind, "reality_check">;
 
-/** Where a scored question came from: an authored cluster question or a generated head-to-head. */
+/** Where a scored question came from: an authored cluster question or a generated focus question. */
 export type V2QuestionSource =
-  { type: "cluster"; clusterId: string } | { type: "head_to_head"; programIds: readonly [ProgramId, ProgramId] };
+  | { type: "cluster"; clusterId: string }
+  /** A generated 2- or 3-way focus question over these programs (canonical order). */
+  | { type: "generic_focus"; programIds: readonly ProgramId[] };
 
 /** Provenance of one scored answer, kept from the start so results can later explain themselves. */
 export interface V2ScoredAnswer {
@@ -46,6 +48,8 @@ export interface V2RealityAnswer {
   questionId: string;
   answerId: string;
   clusterId: string;
+  /** The resolved program(s) this check applies to (`reality_for_program_ids`). */
+  forProgramIds: readonly ProgramId[];
   realityLevel: RealityLevel;
 }
 

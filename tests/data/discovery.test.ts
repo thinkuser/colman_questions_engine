@@ -32,6 +32,7 @@ interface FixtureQuestion {
   prompt_he?: string;
   project_ids?: string[];
   reuses?: { module: string; question_id: string };
+  reality_for_program_ids?: string[];
   options: FixtureOption[];
 }
 type ClustersFile = Omit<typeof clustersRaw, "clusters"> & {
@@ -281,6 +282,7 @@ function lawClusterFixture(): ClustersFile {
       position: 4,
       kind: "reality_check",
       prompt_he: "בעבודה משפטית יש הרבה קריאה, כתיבה ופרטים קטנים. איך זה נשמע לך?",
+      reality_for_program_ids: ["law"],
       options: [
         { id: "A", label_he: "דווקא החלק הזה מושך אותי", program_ids: [], reality_level: "positive" },
         { id: "B", label_he: "בסדר מבחינתי אם הנושא מעניין", program_ids: [], reality_level: "neutral" },
@@ -475,5 +477,59 @@ describe("THI-14 schema additions: project applicability and reused precision qu
     expect(() => buildCareerProjects(projectsRaw, buildClusters(unknown).clusters, V2_PROGRAM_IDS)).toThrow(
       /unknown project "zara_launch"/,
     );
+  });
+});
+
+describe("THI-14 schema additions: reality-check applicability", () => {
+  const lawOf = (file: ClustersFile) => file.clusters.find((cluster) => cluster.id === "law")!;
+  const realityOf = (file: ClustersFile) => lawOf(file).questions[3]!;
+
+  it("carries explicit applicability on reality checks and null on every other kind", () => {
+    const law = buildClusters(lawClusterFixture()).clusters.find((cluster) => cluster.id === "law")!;
+    expect(law.questions[3]!.realityForProgramIds).toEqual(["law"]);
+    expect(law.questions.slice(0, 3).every((question) => question.realityForProgramIds === null)).toBe(true);
+  });
+
+  it("allows a reality check for an adjacent program of its cluster", () => {
+    const file = lawClusterFixture();
+    realityOf(file).reality_for_program_ids = ["business_administration"];
+    const law = buildClusters(file).clusters.find((cluster) => cluster.id === "law")!;
+    expect(law.questions[3]!.realityForProgramIds).toEqual(["business_administration"]);
+  });
+
+  it("requires a non-empty, duplicate-free applicability list on every reality check", () => {
+    const missing = lawClusterFixture();
+    delete realityOf(missing).reality_for_program_ids;
+    expect(() => buildClusters(missing)).toThrow(/must name the program\(s\) it is for/);
+
+    const empty = lawClusterFixture();
+    realityOf(empty).reality_for_program_ids = [];
+    expect(() => buildClusters(empty)).toThrow();
+
+    const twice = lawClusterFixture();
+    realityOf(twice).reality_for_program_ids = ["law", "law"];
+    expect(() => buildClusters(twice)).toThrow(/lists a program twice/);
+  });
+
+  it("rejects applicability to unknown programs or programs outside the cluster and its neighbours", () => {
+    const unknown = lawClusterFixture();
+    realityOf(unknown).reality_for_program_ids = ["astrology"];
+    expect(() => buildClusters(unknown)).toThrow(/outside the cluster and its neighbours/);
+
+    const outside = lawClusterFixture();
+    realityOf(outside).reality_for_program_ids = ["psychology"];
+    expect(() => buildClusters(outside)).toThrow(/reality check for "psychology", outside the cluster/);
+  });
+
+  it("forbids applicability on non-reality questions", () => {
+    const file = lawClusterFixture();
+    lawOf(file).questions[2]!.reality_for_program_ids = ["law"];
+    expect(() => buildClusters(file)).toThrow(/only reality checks have reality_for_program_ids/);
+  });
+
+  it("keeps reality-check options at zero program ids with a reality level", () => {
+    const file = lawClusterFixture();
+    realityOf(file).options[1]!.program_ids = ["business_administration"];
+    expect(() => buildClusters(file)).toThrow(/reality-check answers never point to a program/);
   });
 });
