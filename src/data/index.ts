@@ -10,3 +10,4 @@ export * from "./questions";
 export * from "./resultCopy";
 export * from "./schema";
 export * from "./sources";
+export * from "./v2ResultCopy";

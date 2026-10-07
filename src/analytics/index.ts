@@ -1,4 +1,5 @@
 export * from "./context";
+export * from "./discoveryTracker";
 export * from "./events";
 export * from "./funnelTracker";
 export * from "./track";

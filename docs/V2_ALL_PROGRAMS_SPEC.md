@@ -337,6 +337,13 @@ Authored as data only; no router, scoring or schema change. Details, the option-
 - **Neutral-option policy:** project-opening scenarios are forced work choices; every authored follow-up focus question has a shared neutral option (0 points, 0 support, counts toward the 5-answer ceiling). Each cluster has enough authored scored questions to reach five scored answers, so `insufficient_positive_evidence` is production-reachable.
 - Verified by walking every answer path of all 21 non-tech selections (19,381 complete paths): zero `needs_focus_content`. L7 and D7 are narrow comparisons with Business Administration that close the last two lone-leader gaps.
 
+### THI-16 (experience, result, analytics, acceptance QA)
+The integrated V2 product at `/v2` (V1 stays at `/`); details in `docs/V2_EXPERIENCE.md`, analytics in `docs/ANALYTICS.md`, the launch-switch decision in DEC-031.
+- Career-project cards, 1-2 selection, one reusable question card for authored, generated and V1 precision questions, indeterminate progress, replay-based Back, refresh and restart (only projects, phase and answers are persisted).
+- Pure result builders (`src/flow/v2ResultView.ts`): recommended, near tie (symmetric), insufficient positive evidence, and the unchanged V1 result for Tech. Reality checks as calm notes; no facts invented for programs pending curation.
+- V2 analytics (`DiscoveryTracker`), additive to V1.
+- Acceptance: twelve personas shared by an engine test and the browser suite, layout at 320 / 390 / desktop, journey-length measurement (only Tech cross-cluster journeys exceed 8 answers; worst case 11).
+
 Not implemented in THI-13, by design:
 - THI-14: `genericScoreState`, `shortlist`, scoring weights, stop rules, `genericHeadToHead` selection, the tech precision handoff (including the Spotify discovery scenario so it is not asked twice).
   - Contract for THI-14: the candidate pool is ordered deterministically (project display order, then each project's program order; click order does not matter). That array position **must not** be used as a hidden ranking or tie-break signal. Ranking comes from scored answers and evidence; a true tie stays a tie or follows an explicit, documented rule.

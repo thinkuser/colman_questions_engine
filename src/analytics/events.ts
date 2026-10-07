@@ -25,6 +25,15 @@ export const ANALYTICS_EVENTS = [
   "whatsapp_click",
   "lead_submit",
   "comparison_share",
+  // V2 career-project discovery (THI-16). Additive: V1 events above are unchanged.
+  "career_project_discovery_view",
+  "career_project_selected",
+  "career_project_deselected",
+  "career_project_selection_completed",
+  "precision_module_handoff",
+  "studymatch_result_view",
+  "official_program_click",
+  "discovery_back",
 ] as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[number];
@@ -56,6 +65,25 @@ export const ANALYTICS_PARAMS = [
   "utm_campaign",
   "utm_content",
   "utm_term",
+  // V2 (THI-16)
+  "flow_version",
+  "project_id",
+  "project_ids",
+  "project_count_available",
+  "selected_project_count",
+  "selection_count",
+  "selection_position",
+  "question_mode",
+  "question_kind",
+  "is_generated_focus",
+  "focus_program_count",
+  "is_neutral",
+  "module_id",
+  "seeded_answer_count",
+  "alternative_programs",
+  "scored_answer_count",
+  "total_answer_count",
+  "link_role",
 ] as const;
 
 export type AnalyticsParamName = (typeof ANALYTICS_PARAMS)[number];

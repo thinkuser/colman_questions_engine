@@ -269,3 +269,12 @@ Full description and pressure-test traces: `docs/V2_SCORING.md`. Code: `src/engi
   - recorded as evidence with `forProgramIds`; never changes scores, support, ranking or the answer count.
 - **Open, proposed, pending product review:** a generic **"no strong fit" threshold**. V1's normalized-fit thresholds are not transplanted into V2 points, and the accepted V2 docs define none. Until decided, the generic engine reports only `recommended`, `near_tie` or `insufficient_positive_evidence`.
 - **Accepted product decisions (THI-14 review):** a cross-cluster Spotify journey may exceed 5–7 questions (generic questions before handoff plus V1's remaining ones); THI-16 QA must measure it. V1 `Q1` stays the Spotify question (no duplicate Discover Weekly question).
+
+## DEC-031 — V2 experience: routes, launch switch and persistence
+Status: accepted for review — THI-16.
+
+- V2 lives at `/v2`, `/v2/questions`, `/v2/result`. **V1 stays at `/` until a deliberate launch switch** (redirecting `/` to `/v2`, a one-line change) that is not part of the THI-16 change. This keeps the live V1 experience untouched while V2 is reviewed.
+- The durable V2 journey is only `{ version, flow: "v2", phase, selectedProjectIds, answers }` under its own key. Everything derived is recomputed; invalid or stale state is cleared. The V1 key is never read or written.
+- Unlike V1, a refresh on the first question stays on it (V2 persists whether the candidate started).
+- A near tie is shown symmetrically (catalog order, no winner wording), insufficient positive evidence is a supportive valid outcome with no recommendation, and a reality check is a note that never changes who is shown.
+- Analytics is additive: new events and parameters, no V1 name changed, no text or scores sent.
