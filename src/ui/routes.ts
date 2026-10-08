@@ -23,3 +23,14 @@ export const V3_PATHS: Record<V3Route, string> = {
   questions: "/v3/questions",
   result: "/v3/result",
 };
+
+/** V4 (dual-entry experiment) lives under /v4: the candidate chooses worlds or projects; V1, V2 and V3 are untouched. */
+export const V4_PATHS = {
+  landing: "/v4",
+  start: "/v4/start",
+  worlds: "/v4/worlds",
+  projects: "/v4/projects",
+  ready: "/v4/ready",
+  questions: "/v4/questions",
+  result: "/v4/result",
+} as const;

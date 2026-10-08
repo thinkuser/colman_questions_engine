@@ -1,5 +1,4 @@
 import { getCareerProjectCopy, getWorld, V3_COPY } from "@/data";
-import { toneStyle } from "@/ui/discovery/projectBrand";
 
 /**
  * Discovery cards for the V3 experience, one per discovery strategy. The card shell (button, selection state,
@@ -63,7 +62,10 @@ export function WorldCard({
   );
 }
 
-/** A V2 brand project, for running this experience brand-led (not used by V3's world-led configuration). */
+/**
+ * A V2 brand project in the redesigned UX (V4 project mode; V3 never renders it). Text-first: company name as plain text
+ * in one consistent COLMAN typography (no logos, icons or brand colours), then the project title and description.
+ */
 export function BrandProjectCard({
   projectId,
   selected,
@@ -83,13 +85,12 @@ export function BrandProjectCard({
       data-project-id={projectId}
       aria-pressed={selected}
       onClick={() => onPress(projectId)}
-      style={toneStyle(projectId)}
       className={cardShell(selected)}
     >
       <span className="flex min-h-7 items-center justify-between gap-3">
         <span
           data-company-label
-          className="text-base font-bold tracking-wide text-(--tone) [direction:ltr] [unicode-bidi:plaintext]"
+          className="text-sm leading-snug font-semibold text-colman-purple-ink [direction:ltr] [unicode-bidi:plaintext]"
         >
           {company}
         </span>

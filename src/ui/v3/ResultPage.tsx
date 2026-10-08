@@ -141,10 +141,13 @@ export function ResultPage({
   view,
   handlers,
   leadForm,
+  flow = "v3",
 }: {
   view: V3ResultView;
   handlers: V3ResultHandlers;
   leadForm: ReactNode;
+  /** Which experience renders the result (marker only; the layout is the same). */
+  flow?: "v3" | "v4";
 }) {
   const [primary, second] = view.programs;
   const leadRef = useRef<HTMLDivElement>(null);
@@ -176,7 +179,7 @@ export function ResultPage({
   const colmanPrograms = view.kind === "recommended" ? [view.programs[0]!] : view.programs;
 
   return (
-    <div className="space-y-6" data-result-flow="v3" data-result-kind={view.kind} data-result-source={view.source}>
+    <div className="space-y-6" data-result-flow={flow} data-result-kind={view.kind} data-result-source={view.source}>
       {/* 1. Hero: the result */}
       <header className="colman-wash space-y-3 rounded-3xl border border-colman-border p-6" data-testid="result-hero">
         {view.kind === "recommended" && primary && (

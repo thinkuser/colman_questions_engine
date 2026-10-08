@@ -3,9 +3,7 @@
 import { useEffect, useId } from "react";
 import { useRouter } from "next/navigation";
 import { V3_COPY } from "@/data";
-import { useV3Analytics } from "@/ui/analytics/v3Analytics";
-import { V3_PATHS } from "@/ui/routes";
-import { useV3, v3Target } from "@/ui/state/V3Provider";
+import { useV3 } from "@/ui/state/V3Provider";
 import { LogoMark, v3Primary } from "./shared";
 
 /**
@@ -15,9 +13,8 @@ import { LogoMark, v3Primary } from "./shared";
  */
 export function LandingStep() {
   const copy = V3_COPY.landing;
-  const { strategy, state, dispatch, hydrated, introSeen, arrivedAtLanding } = useV3();
+  const { state, dispatch, hydrated, arrivedAtLanding, analytics, pathFor, landingNext } = useV3();
   const router = useRouter();
-  const analytics = useV3Analytics();
   const viewToken = useId();
   // The landing page is where an intentional "restart" ends up: from here the guards apply again.
   useEffect(() => {
@@ -31,8 +28,7 @@ export function LandingStep() {
 
   function handleStart() {
     analytics.started();
-    const target = v3Target(strategy, state, introSeen);
-    router.push(V3_PATHS[target === "landing" ? "discover" : target]);
+    router.push(pathFor(landingNext(inProgress)));
   }
 
   return (

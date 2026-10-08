@@ -1,16 +1,8 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useReducer,
-  useRef,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { V3_COPY } from "@/data";
 import {
   initialJourneyState,
   journeyReducer,
@@ -22,7 +14,14 @@ import {
   type JourneyAction,
   type JourneyState,
 } from "@/flow";
-import { getV3Tracker } from "@/ui/analytics/v3Analytics";
+import { getV3Tracker, useV3Analytics } from "@/ui/analytics/v3Analytics";
+import {
+  ExperienceContext,
+  useExperience,
+  useExperienceGuard,
+  type ExperienceDispatch,
+  type ExperienceValue,
+} from "@/ui/experience/ExperienceContext";
 import { V3_PATHS, type V3Route } from "@/ui/routes";
 import { V3_STRATEGY } from "@/ui/v3/config";
 
@@ -30,26 +29,10 @@ import { V3_STRATEGY } from "@/ui/v3/config";
  * Thin React binding over the pure, strategy-driven journey reducer, with its own storage key and analytics tracker,
  * so V3 and V2 never share or overwrite each other's state. No business rules live here. The transition screen is a
  * pure UI step: `introSeen` is in memory only (a refresh before the first answer simply shows it again).
+ * It supplies the shared experience context (V3: world-led, fixed strategy, V3 routes and analytics).
  */
 
-export type V3Dispatch = (action: JourneyAction, options?: { silent?: boolean }) => void;
-
-interface V3ContextValue {
-  strategy: DiscoveryStrategy;
-  state: JourneyState;
-  dispatch: V3Dispatch;
-  hydrated: boolean;
-  introSeen: boolean;
-  markIntroSeen: () => void;
-  /** Restart the journey and go to the landing page (the guard must not bounce the URL elsewhere). */
-  restartToLanding: () => void;
-  /** True while an intentional navigation to the landing is in flight (the guards stand down). */
-  isLeavingToLanding: () => boolean;
-  /** Called by the landing page once it is shown: the guards apply again. */
-  arrivedAtLanding: () => void;
-}
-
-const V3Context = createContext<V3ContextValue | null>(null);
+export type V3Dispatch = ExperienceDispatch;
 
 interface Shell {
   state: JourneyState;
@@ -145,30 +128,53 @@ export function V3Provider({ children }: { children: ReactNode }) {
     if (hydrated) save(strategy, state);
   }, [strategy, state, hydrated]);
 
-  return (
-    <V3Context.Provider
-      value={{
-        strategy,
-        state,
-        dispatch,
-        hydrated,
-        introSeen,
-        markIntroSeen,
-        restartToLanding,
-        isLeavingToLanding,
-        arrivedAtLanding,
-      }}
-    >
-      {children}
-    </V3Context.Provider>
+  const analytics = useV3Analytics();
+  const value = useMemo<ExperienceValue>(
+    () => ({
+      flowVersion: "v3",
+      strategy,
+      entryMode: "worlds",
+      state,
+      dispatch,
+      hydrated,
+      introSeen,
+      markIntroSeen,
+      restartToLanding,
+      isLeavingToLanding,
+      arrivedAtLanding,
+      analytics,
+      pathFor: (route) => (route === "start" ? V3_PATHS.landing : V3_PATHS[route]),
+      target: () => v3Target(strategy, state, introSeen),
+      // Unchanged V3 rule: the discovery screen is always reachable from the landing.
+      allows: (route, target) => route === target || (route === "discover" && target === "landing"),
+      landingNext: () => {
+        const target = v3Target(strategy, state, introSeen);
+        return target === "landing" ? "discover" : target;
+      },
+      projectsCopy: { headline: V3_COPY.discovery.headline, support: V3_COPY.discovery.support },
+      hasEntryChoice: false,
+      ensureEntryMode: () => true,
+      selectEntryMode: () => {},
+    }),
+    [
+      strategy,
+      state,
+      dispatch,
+      hydrated,
+      introSeen,
+      markIntroSeen,
+      restartToLanding,
+      isLeavingToLanding,
+      arrivedAtLanding,
+      analytics,
+    ],
   );
+
+  return <ExperienceContext.Provider value={value}>{children}</ExperienceContext.Provider>;
 }
 
-export function useV3(): V3ContextValue {
-  const context = useContext(V3Context);
-  if (!context) throw new Error("useV3 must be used inside <V3Provider>");
-  return context;
-}
+/** V3's hook name, kept for the existing imports: the shared experience context. */
+export const useV3 = useExperience;
 
 /** The V3 screen this state belongs on. A journey with nothing chosen yet belongs on the landing page. */
 export function v3Target(strategy: DiscoveryStrategy, state: JourneyState, introSeen: boolean): V3Route {
@@ -181,14 +187,6 @@ export function v3Target(strategy: DiscoveryStrategy, state: JourneyState, intro
 /**
  * Redirects to the screen the journey allows. The discovery screen is always reachable from the landing (an empty
  * selection is a valid place to be); any other deep link without a journey goes to the landing. True when renderable.
+ * (The rule itself is the `allows` / `target` pair the provider supplies.)
  */
-export function useV3Guard(route: Exclude<V3Route, "landing">): boolean {
-  const { strategy, state, hydrated, introSeen, isLeavingToLanding } = useV3();
-  const router = useRouter();
-  const target = v3Target(strategy, state, introSeen);
-  const allowed = route === target || (route === "discover" && target === "landing");
-  useEffect(() => {
-    if (hydrated && !allowed && !isLeavingToLanding()) router.replace(V3_PATHS[target]);
-  }, [hydrated, allowed, router, target, isLeavingToLanding]);
-  return hydrated && allowed;
-}
+export const useV3Guard = useExperienceGuard;

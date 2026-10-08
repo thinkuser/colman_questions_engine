@@ -14,3 +14,4 @@ export * from "./v2LeadCopy";
 export * from "./v2ResultCopy";
 export * from "./v3Copy";
 export * from "./v3Worlds";
+export * from "./v4Copy";

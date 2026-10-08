@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { V3_COPY } from "@/data";
 import { buildV3QuestionView, journeyStep, type V2QuestionView } from "@/flow";
-import { useV3Analytics } from "@/ui/analytics/v3Analytics";
 import { useV3, useV3Guard } from "@/ui/state/V3Provider";
 import { ProgressHeader, StickyBar, v3Primary } from "./shared";
 
@@ -111,9 +110,8 @@ function QuestionPanel({
 }
 
 export function QuestionStep() {
-  const { strategy, state, dispatch, restartToLanding } = useV3();
+  const { strategy, state, dispatch, restartToLanding, analytics } = useV3();
   const allowed = useV3Guard("questions");
-  const analytics = useV3Analytics();
 
   const step = useMemo(() => (allowed ? journeyStep(strategy, state) : null), [allowed, strategy, state]);
   const view = useMemo(() => (step?.status === "ask" ? buildV3QuestionView(step) : null), [step]);

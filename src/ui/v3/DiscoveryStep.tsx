@@ -2,10 +2,9 @@
 
 import { useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DISCOVERY_OPENING, V3_COPY, V3_WORLD_OPENING } from "@/data";
+import { DISCOVERY_OPENING, V3_COPY, V3_WORLD_OPENING, V4_COPY } from "@/data";
 import { canStartJourney } from "@/flow";
-import { useV3Analytics } from "@/ui/analytics/v3Analytics";
-import { V3_PATHS } from "@/ui/routes";
+import type { EntryMode } from "@/ui/experience/ExperienceContext";
 import { useV3, useV3Guard } from "@/ui/state/V3Provider";
 import { BrandProjectCard, WorldCard } from "./DiscoveryCards";
 import { ProgressHeader, StickyBar, v3Primary } from "./shared";
@@ -15,17 +14,32 @@ import { ProgressHeader, StickyBar, v3Primary } from "./shared";
  * brand-led if the strategy is switched. The choice only routes (candidate pool + first scenarios) and scores nothing.
  * At the limit a card stays usable: pressing it explains instead of silently doing nothing; the maximum stays 2.
  */
-export function DiscoveryStep() {
-  const { strategy, state, dispatch } = useV3();
+export function DiscoveryStep({ mode }: { mode?: EntryMode } = {}) {
+  const {
+    strategy,
+    state,
+    dispatch,
+    analytics,
+    pathFor,
+    projectsCopy,
+    hasEntryChoice,
+    entryMode,
+    ensureEntryMode,
+    hydrated,
+  } = useV3();
   const router = useRouter();
-  const allowed = useV3Guard("discover");
-  const analytics = useV3Analytics();
+  const guardAllowed = useV3Guard("discover");
+  // V4 discovery pages (/v4/worlds, /v4/projects) carry their own mode; V3's page carries none.
+  useEffect(() => {
+    if (mode && hydrated) ensureEntryMode(mode);
+  }, [mode, hydrated, ensureEntryMode]);
+  const allowed = guardAllowed && (!mode || entryMode === mode);
   const viewToken = useId();
   const [limitShown, setLimitShown] = useState(false);
   const worlds = strategy.id === "worlds";
   const copy = {
-    headline: worlds ? V3_WORLD_OPENING.prompt : V3_COPY.discovery.headline,
-    support: worlds ? V3_WORLD_OPENING.helper : V3_COPY.discovery.support,
+    headline: worlds ? V3_WORLD_OPENING.prompt : projectsCopy.headline,
+    support: worlds ? V3_WORLD_OPENING.helper : projectsCopy.support,
     entriesLabel: worlds ? V3_COPY.worlds.entriesLabel : V3_COPY.discovery.projectsLabel,
     limit: worlds ? V3_COPY.worlds.limit : V3_COPY.discovery.limit,
   };
@@ -50,7 +64,7 @@ export function DiscoveryStep() {
 
   function handleContinue() {
     dispatch({ type: "start" });
-    router.push(V3_PATHS.ready);
+    router.push(pathFor("ready"));
   }
 
   return (
@@ -74,6 +88,17 @@ export function DiscoveryStep() {
       </ul>
 
       {!worlds && <p className="text-sm leading-snug text-slate-500">{DISCOVERY_OPENING.brandDisclaimer}</p>}
+
+      {hasEntryChoice && (
+        <button
+          type="button"
+          data-testid="back-to-method"
+          className="min-h-11 rounded-lg px-3 text-colman-blue underline"
+          onClick={() => router.push(pathFor("start"))}
+        >
+          {V4_COPY.discovery.backToMethod}
+        </button>
+      )}
 
       <StickyBar>
         <p

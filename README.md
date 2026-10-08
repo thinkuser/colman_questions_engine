@@ -22,6 +22,9 @@ V2 lets a candidate pick one or two career projects (Spotify, Wolt, TikTok, Duol
 ## V3 (UX redesign)
 `/v3` is the redesigned experience (landing page, explicit Continue, a simplified result, a COLMAN-branded section) and tests WORLD-LED discovery (working worlds instead of V2's brand projects) on the same engine. It runs next to the frozen V2 baseline at `/v2` (tag `studymatch-v2-ui-baseline`) with its own storage and analytics version. See `docs/V3_EXPERIENCE.md`.
 
+## V4 (dual-entry experiment)
+`/v4` uses the redesigned UX and lets the candidate choose how to discover: working worlds (V3 content) or brand projects (V2 content), on the same engine. `/v4/worlds` and `/v4/projects` are direct experiment URLs. V2 (brand-only) and V3 (world-only) remain the production baselines; the final direction is not chosen yet. See `docs/V4_EXPERIENCE.md`.
+
 ## Product architecture
 `Program data → Question bank → Adaptive selector → Candidate vector → Deterministic fit engine → Explanation/result experience → Analytics/lead handoff`
 

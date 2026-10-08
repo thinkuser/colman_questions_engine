@@ -270,6 +270,16 @@ Full description and pressure-test traces: `docs/V2_SCORING.md`. Code: `src/engi
 - **Open, proposed, pending product review:** a generic **"no strong fit" threshold**. V1's normalized-fit thresholds are not transplanted into V2 points, and the accepted V2 docs define none. Until decided, the generic engine reports only `recommended`, `near_tie` or `insufficient_positive_evidence`.
 - **Accepted product decisions (THI-14 review):** a cross-cluster Spotify journey may exceed 5–7 questions (generic questions before handoff plus V1's remaining ones); THI-16 QA must measure it. V1 `Q1` stays the Spotify question (no duplicate Discover Weekly question).
 
+## DEC-035 — Three preserved experiments: V2 brand-only, V3 world-only, V4 dual entry
+Status: accepted for review — V4 PR.
+
+- **V2 = brand-only baseline** (`/v2`, existing V2 UX). **V3 = world-only baseline** (`/v3`, redesigned UX; tag `studymatch-v3-worlds-baseline` = `aedfc75`). **V4 = dual-entry experiment** (`/v4`, redesigned UX): the candidate chooses "working worlds" or "projects" on a method screen. None replaces another; **the final production direction is NOT chosen yet.**
+- The method choice is not a question: 0 points, 0 support, not evidence. It only selects the discovery strategy (`WORLD_STRATEGY` / `BRAND_STRATEGY`). Same engine downstream; no scoring change. Project mode keeps V2 routing semantics (display-order openers, Spotify → V1 Q1); world mode keeps V3's (selection-order openers, WT1 → V1 Q1 carry).
+- `/v4/worlds` and `/v4/projects` are direct experiment URLs (no query parameter) so traffic can be assigned externally.
+- V4 has its own persistence key (`colman-studymatch:v4:journey`) and analytics trackers; every V4 event carries `flow_version: "v4"` and `entry_mode`.
+- Leads keep `/api/v2/lead`; V4 adds `entry_mode` and both id lists (exactly one populated). The lead sheet gains `entry_mode`, and `source` now follows the version.
+- **The `DiscoveryStrategy` seam is intentionally preserved** so production can later be brand only, worlds only, candidate choice, or an externally assigned A/B strategy without rewriting the engine. The redesigned screens are shared through an experience context (V3 and V4 providers), not forked.
+
 ## DEC-034 — V2 is the brand-led baseline, V3 the world-led experiment
 Status: accepted for review — THI-17.
 
