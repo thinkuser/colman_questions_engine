@@ -270,6 +270,17 @@ Full description and pressure-test traces: `docs/V2_SCORING.md`. Code: `src/engi
 - **Open, proposed, pending product review:** a generic **"no strong fit" threshold**. V1's normalized-fit thresholds are not transplanted into V2 points, and the accepted V2 docs define none. Until decided, the generic engine reports only `recommended`, `near_tie` or `insufficient_positive_evidence`.
 - **Accepted product decisions (THI-14 review):** a cross-cluster Spotify journey may exceed 5–7 questions (generic questions before handoff plus V1's remaining ones); THI-16 QA must measure it. V1 `Q1` stays the Spotify question (no duplicate Discover Weekly question).
 
+## DEC-033 — V3 UX redesign shipped side by side with a frozen V2
+Status: accepted for review — V3 PR.
+
+- **V2 is frozen** at commit `9a25113` (tag `studymatch-v2-ui-baseline`) and stays at `/v2`; V1 stays at `/`. The redesign lives at `/v3` in the same application so it can be compared side by side and removed without touching V2.
+- V3 is a presentation/interaction layer over the **same** engine, scoring, routing, question/program data and lead backend. Its result is built from `buildV2ResultView`, so the outcome is identical by construction; this is tested per persona in the browser.
+- V3 has its **own persistence key** (`colman-studymatch:v3:journey`, `flow:"v3"`) and analytics session; the two versions reject each other's payloads and never overwrite each other's state.
+- V3 uses explicit select-then-Continue; V2 keeps tap-to-advance. The answer and its analytics event happen only on commit.
+- The lead endpoint is shared (`/api/v2/lead`); V3 sends `flow_version: "v3"`. No new webhook, no n8n change.
+- V3 result copy is deterministic curated copy (`PROGRAM_MEANING`, `PAIR_CONTENT`), interest-level, with no program claims; the official College logo is stored locally.
+- Not decided here: which version `/` serves (DEC-031), and legal approval of the consent wording (DEC-032).
+
 ## DEC-032 — V2 lead capture and COLMAN visual system
 Status: accepted for review — THI-16 review pass.
 

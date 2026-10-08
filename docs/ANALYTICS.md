@@ -159,6 +159,22 @@ New parameter names: `error_type` and `flow_version`, `project_id`, `project_ids
 
 Analysis hints: group V2 runs by `comparison_id` and `flow_version`; demand by `project_ids`; neutral rate by question with `is_neutral`; how often generated focus appears with `is_generated_focus`; the journey length distribution with `total_answer_count` on `studymatch_result_view`; handoff rate with `precision_module_handoff`.
 
+## V3 events (UX redesign)
+V3 (`/v3`) reuses the V2 tracker and the same whitelist; it reports `flow_version: "v3"` on **every** event (V2 stays `"v2"`) and keeps its own sessionStorage context (`colman-studymatch:analytics-v3`), so the two versions can be compared by `flow_version` and never share a journey id. No V2 event or parameter is renamed or changed.
+
+| Event | Fired when | Notable parameters |
+|---|---|---|
+| `studymatch_landing_view` | The landing page is shown (once per mounted view) | `flow_version` |
+| `studymatch_start` | The landing CTA is pressed | `flow_version` |
+| `question_continue` | Continue is pressed on the displayed question (just before the answer is committed) | `question_id`, `question_index`, `question_mode`, `question_kind`, `is_generated_focus` |
+| `question_answer` | Reused: fires **only on commit**, never on selection changes | as V2 |
+| `result_program_click` | An official program link is opened from the V3 result | `program_id`, `link_role` (primary / alternative / peer), `cta_position` (hero / colman_section / secondary / weak_direction) |
+| `result_contact_click` | A "דברו איתנו על המסלול" button is pressed (scrolls to the form) | `cta_position` (hero / colman_section / sticky) |
+| `result_all_programs_click` | "לכל תוכניות הלימוד במכללה" is opened | result parameters |
+| `result_detail_expand` | A collapsed result section is opened (not on close) | `detail_section` (why_result / more_to_know) |
+
+New parameter names: `cta_position`, `detail_section`. The lead events (`lead_form_*`) are reused and carry the V3 version too. All V3 events keep the V2 result parameters and the same PII boundary (no names, phone, answers or free text).
+
 ## Known gaps and notes
 - `reality_check_view` carries `program_id` but not a check id. Current data has one check per program, so this is sufficient; add a `check_id` parameter if a program ever has several.
 - Consent management and production GTM container configuration are out of scope here; events are pushed to the dataLayer and GTM decides what to forward.

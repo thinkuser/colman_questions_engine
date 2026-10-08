@@ -12,3 +12,14 @@ export const V2_PATHS: Record<DiscoveryRoute, string> = {
   questions: "/v2/questions",
   result: "/v2/result",
 };
+
+/** V3 (UX redesign) lives under /v3, fully separate from V1 (/) and the frozen V2 baseline (/v2). */
+export type V3Route = "landing" | "projects" | "ready" | "questions" | "result";
+
+export const V3_PATHS: Record<V3Route, string> = {
+  landing: "/v3",
+  projects: "/v3/projects",
+  ready: "/v3/ready",
+  questions: "/v3/questions",
+  result: "/v3/result",
+};

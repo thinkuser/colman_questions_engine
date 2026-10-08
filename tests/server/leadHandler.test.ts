@@ -215,3 +215,26 @@ describe("lead API: webhook configuration and failures", () => {
     expect(text).not.toContain(PII.phoneLocal);
   });
 });
+
+describe("lead API: flow version", () => {
+  it("forwards a V3 lead as flow_version v3, a V2 or untagged lead as v2, and rejects unknown versions", async () => {
+    const forwarded = async (overrides: Record<string, unknown>) => {
+      const { fetchMock, deps } = setup();
+      const response = await handleLeadRequest(post(body("accounting", overrides)), deps);
+      return { response, payload: response.status === 200 ? sentPayload(fetchMock) : null };
+    };
+    expect((await forwarded({ flow_version: "v3" })).payload?.flow_version).toBe("v3");
+    expect((await forwarded({ flow_version: "v2" })).payload?.flow_version).toBe("v2");
+    expect((await forwarded({})).payload?.flow_version).toBe("v2");
+    expect((await forwarded({ flow_version: "v9" })).response.status).toBe(400);
+  });
+
+  it("keeps the webhook contract identical apart from flow_version", async () => {
+    const keys = async (overrides: Record<string, unknown>) => {
+      const { fetchMock, deps } = setup();
+      await handleLeadRequest(post(body("business_vs_economics", overrides)), deps);
+      return Object.keys(sentPayload(fetchMock)).sort();
+    };
+    expect(await keys({ flow_version: "v3" })).toEqual(await keys({ flow_version: "v2" }));
+  });
+});

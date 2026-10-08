@@ -10,3 +10,6 @@ export * from "./discoveryPersistence";
 export * from "./v2QuestionView";
 export * from "./v2ResultView";
 export * from "./lead";
+export * from "./v3Persistence";
+export * from "./v3Progress";
+export * from "./v3ResultView";
