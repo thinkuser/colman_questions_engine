@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import type { ExperienceCopy, LeadCopy } from "@/data";
+import type { ResultFeedbackAnswers, UiClickParams } from "@/analytics";
+import type { ExperienceCopy, LeadCopy, ResultFeedbackCopy } from "@/data";
 import type { DiscoveryStrategy, JourneyAction, JourneyState } from "@/flow";
 import type { useV3Analytics } from "@/ui/analytics/v3Analytics";
 
@@ -25,6 +26,13 @@ export type ExperienceAnalytics = ReturnType<typeof useV3Analytics> & {
   /** V4 only: the entry-method screen was shown / a method was chosen. */
   methodViewed?: (token: string) => void;
   methodSelected?: (mode: EntryMode) => void;
+  /**
+   * V5 pilot measurement (DEC-038): the generic UX click event and the pilot feedback events. Absent for V3/V4, so the
+   * shared screens emit nothing new there (they call these with optional chaining).
+   */
+  uiClick?: (params: UiClickParams) => void;
+  feedbackViewed?: () => void;
+  feedbackSubmitted?: (answers: ResultFeedbackAnswers) => void;
 };
 
 export type ExperienceDispatch = (action: JourneyAction, options?: { silent?: boolean }) => void;
@@ -75,6 +83,13 @@ export interface ExperienceValue {
    * after choosing). Absent: V4's pages. V5 supplies its own.
    */
   discoverPathFor?: (mode: EntryMode) => string;
+  /**
+   * V5 (DEC-038): rewrites an outbound http(s) link (official program pages, all programs) with the fixed StudyMatch
+   * outbound UTMs. Absent (V3/V4): links are rendered exactly as before.
+   */
+  outboundUrl?: (url: string) => string;
+  /** V5 (DEC-038): the pilot result feedback block. Absent (V3/V4): no block. */
+  resultFeedbackCopy?: ResultFeedbackCopy;
 }
 
 export const ExperienceContext = createContext<ExperienceValue | null>(null);

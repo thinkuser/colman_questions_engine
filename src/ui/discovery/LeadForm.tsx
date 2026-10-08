@@ -16,6 +16,8 @@ import { submitLead as defaultSubmitLead, type LeadSubmitResult } from "./submit
 export interface LeadFormAnalytics {
   onView: () => void;
   onSubmit: () => void;
+  /** Optional (V5 pilot measurement): every press of the submit button, valid or not. Never a field value. */
+  onSubmitClick?: () => void;
   onSuccess: () => void;
   onError: (errorType: "validation" | "server" | "network") => void;
 }
@@ -314,6 +316,7 @@ export function LeadForm({
               <button
                 type="submit"
                 disabled={submitting}
+                onClick={() => analytics.onSubmitClick?.()}
                 className="flex min-h-12 w-full items-center justify-center rounded-xl bg-colman-blue px-4 py-3 text-center font-semibold text-white transition-colors hover:bg-colman-blue-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-colman-blue disabled:cursor-wait disabled:opacity-70"
               >
                 {submitting ? copy.submitting : copy.submit}

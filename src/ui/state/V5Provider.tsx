@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { V5_COPY, V5_LEAD_COPY, V5_UI_COPY, v5Text } from "@/data";
+import { withStudyMatchOutboundUtm } from "@/analytics";
+import { V5_COPY, V5_FEEDBACK_COPY, V5_LEAD_COPY, V5_UI_COPY, v5Text } from "@/data";
 import {
   initialJourneyState,
   journeyReducer,
@@ -15,7 +16,7 @@ import {
   type V5EntryMode,
   type V5Journey,
 } from "@/flow";
-import { getV5Tracker, useV5Analytics } from "@/ui/analytics/v5Analytics";
+import { getV5Tracker, rememberV5EntrySearch, useV5Analytics, v5EntrySearch } from "@/ui/analytics/v5Analytics";
 import {
   ExperienceContext,
   type ExperienceDispatch,
@@ -116,7 +117,7 @@ export function V5Provider({ children }: { children: ReactNode }) {
     if (modeRef.current === mode) return;
     modeRef.current = mode;
     // A new method starts a fresh journey: resync that mode's tracker (emits nothing).
-    getV5Tracker(mode)?.hydrate(initialJourneyState, window.location.search);
+    getV5Tracker(mode)?.hydrate(initialJourneyState, v5EntrySearch(window.location.search));
     rawDispatch({ type: "set_mode", mode });
   }, []);
 
@@ -136,7 +137,12 @@ export function V5Provider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const restored = load();
     modeRef.current = restored?.entryMode ?? null;
-    getV5Tracker(restored?.entryMode ?? null)?.hydrate(restored?.journey ?? null, window.location.search);
+    // Inbound UTMs of the entry page are kept for the whole visit (the method screen's URL has no query).
+    rememberV5EntrySearch(window.location.search);
+    getV5Tracker(restored?.entryMode ?? null)?.hydrate(
+      restored?.journey ?? null,
+      v5EntrySearch(window.location.search),
+    );
     rawDispatch({ type: "restored", restored });
   }, []);
 
@@ -205,6 +211,9 @@ export function V5Provider({ children }: { children: ReactNode }) {
       ensureEntryMode,
       selectEntryMode: setMode,
       discoverPathFor,
+      // Pilot measurement (DEC-038): fixed outbound UTMs and the result feedback block, V5 only.
+      outboundUrl: withStudyMatchOutboundUtm,
+      resultFeedbackCopy: V5_FEEDBACK_COPY,
     }),
     [
       strategy,

@@ -55,6 +55,10 @@ export const ANALYTICS_EVENTS = [
   // V4 dual-entry discovery (DEC-035). Every V4 event also carries flow_version "v4" and entry_mode.
   "discovery_method_view",
   "discovery_method_selected",
+  // V5 pilot measurement (DEC-038). Additive: semantic events above stay the KPI source of truth.
+  "ui_click",
+  "result_feedback_view",
+  "result_feedback_submit",
 ] as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[number];
@@ -113,6 +117,14 @@ export const ANALYTICS_PARAMS = [
   "selected_world_count",
   "world_count_available",
   "entry_mode",
+  // V5 pilot measurement (DEC-038): stable ids / canonical values only, never display copy.
+  "element_id",
+  "element_type",
+  "screen_id",
+  "destination_type",
+  "feedback_fit",
+  "feedback_helpfulness",
+  "feedback_version",
 ] as const;
 
 export type AnalyticsParamName = (typeof ANALYTICS_PARAMS)[number];

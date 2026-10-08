@@ -12,8 +12,15 @@ export interface V3ResultHandlers {
   onAllProgramsClick: () => void;
   onDetailExpanded: (section: string) => void;
   onSecondaryView: () => void;
-  onRestart: () => void;
+  /** `position`: which "try again" control (hero / not_right). */
+  onRestart: (position?: string) => void;
+  /** Any click on a collapsed-detail toggle (open or close). Optional: V5 reports it as ui_click. */
+  onDetailToggle?: (section: string) => void;
+  /** A reality-check note became visible (once per note). Optional: wired by V5 only (reality_check_view). */
+  onRealityView?: (programId: string) => void;
 }
+
+const asIs = (url: string) => url;
 
 type ResultCopy = ExperienceCopy["result"];
 const LEAD_ID = "v3-lead";
@@ -25,6 +32,7 @@ function ProgramLink({
   className,
   label,
   onClick,
+  outboundUrl,
 }: {
   program: V3Program;
   role: "primary" | "alternative" | "peer";
@@ -32,11 +40,12 @@ function ProgramLink({
   className: string;
   label: string;
   onClick: V3ResultHandlers["onProgramClick"];
+  outboundUrl: (url: string) => string;
 }) {
   if (!program.programUrl) return null;
   return (
     <a
-      href={program.programUrl}
+      href={outboundUrl(program.programUrl)}
       target="_blank"
       rel="noopener noreferrer"
       className={className}
@@ -54,11 +63,13 @@ function Detail({
   id,
   title,
   onOpen,
+  onToggleClick,
   children,
 }: {
   id: string;
   title: string;
   onOpen: (id: string) => void;
+  onToggleClick?: (id: string) => void;
   children: ReactNode;
 }) {
   return (
@@ -69,7 +80,10 @@ function Detail({
         if (event.currentTarget.open) onOpen(id);
       }}
     >
-      <summary className="flex min-h-12 cursor-pointer items-center px-4 py-3 font-semibold text-colman-blue-dark">
+      <summary
+        className="flex min-h-12 cursor-pointer items-center px-4 py-3 font-semibold text-colman-blue-dark"
+        onClick={() => onToggleClick?.(id)}
+      >
         {title}
       </summary>
       <div className="space-y-3 px-4 pb-4">{children}</div>
@@ -77,9 +91,28 @@ function Detail({
   );
 }
 
-function Note({ note }: { note: V3Note }) {
+function Note({ note, onView }: { note: V3Note; onView?: (programId: string) => void }) {
+  const ref = useRef<HTMLElement>(null);
+  // Reported when the note is actually visible (a note inside a closed detail is not, until it is opened).
+  useEffect(() => {
+    const el = ref.current;
+    const programId = note.programId;
+    if (!el || !onView || !programId || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          onView(programId);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [note.programId, onView]);
   return (
     <section
+      ref={ref}
       aria-label={note.headingHe}
       data-reality-level={note.level}
       data-program-id={note.programId ?? undefined}
@@ -144,10 +177,16 @@ export function ResultPage({
   leadForm,
   flow = "v3",
   copy = V3_COPY.result,
+  outboundUrl = asIs,
+  feedback,
 }: {
   view: V3ResultView;
   handlers: V3ResultHandlers;
   leadForm: ReactNode;
+  /** Rewrites outbound http(s) links (V5: fixed StudyMatch UTMs). Default: links as they are (V3/V4). */
+  outboundUrl?: (url: string) => string;
+  /** V5 pilot feedback block, placed after the COLMAN section and before the optional details. */
+  feedback?: ReactNode;
   /** Which experience renders the result (marker only; the layout is the same). */
   flow?: ExperienceFlowVersion;
   /** The experience's result copy (V3 by default; V4 passes its gender-inclusive wording). */
@@ -227,6 +266,7 @@ export function ResultPage({
             className={v3Primary}
             label={copy.programCta}
             onClick={handlers.onProgramClick}
+            outboundUrl={outboundUrl}
           />
         )}
         {view.kind === "near_tie" &&
@@ -239,10 +279,16 @@ export function ResultPage({
               className={v3Primary}
               label={copy.programCtaFor(program.displayNameHe)}
               onClick={handlers.onProgramClick}
+              outboundUrl={outboundUrl}
             />
           ))}
         {view.kind === "insufficient_positive_evidence" && (
-          <button type="button" className={v3Primary} data-testid="hero-try-again" onClick={handlers.onRestart}>
+          <button
+            type="button"
+            className={v3Primary}
+            data-testid="hero-try-again"
+            onClick={() => handlers.onRestart("hero")}
+          >
             {copy.tryAgain}
           </button>
         )}
@@ -283,7 +329,7 @@ export function ResultPage({
 
       {/* An important warning is never collapsed (calm, never disqualifying) */}
       {importantNotes.map((note, index) => (
-        <Note key={`${note.programId}-${index}`} note={note} />
+        <Note key={`${note.programId}-${index}`} note={note} onView={handlers.onRealityView} />
       ))}
 
       {/* 4. Comparison / secondary */}
@@ -307,6 +353,7 @@ export function ResultPage({
             className="inline-flex min-h-11 items-center font-semibold text-colman-blue underline"
             label={copy.programCtaFor(second.displayNameHe)}
             onClick={handlers.onProgramClick}
+            outboundUrl={outboundUrl}
           />
         </section>
       )}
@@ -327,6 +374,7 @@ export function ResultPage({
             className="inline-flex min-h-11 items-center font-semibold text-colman-blue underline"
             label={copy.programCtaFor(primary.displayNameHe)}
             onClick={handlers.onProgramClick}
+            outboundUrl={outboundUrl}
           />
         </section>
       )}
@@ -368,6 +416,7 @@ export function ResultPage({
                   className="flex min-h-12 w-full items-center justify-center rounded-xl bg-white px-5 py-3 text-center font-semibold text-colman-blue-dark transition-colors hover:bg-colman-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   label={view.kind === "near_tie" ? copy.programCtaFor(program.displayNameHe) : copy.programCta}
                   onClick={handlers.onProgramClick}
+                  outboundUrl={outboundUrl}
                 />
               ))}
               <button
@@ -383,11 +432,19 @@ export function ResultPage({
         </section>
       )}
 
+      {/* 5b. Pilot feedback (V5 only): after enough context to judge the result, before the optional depth */}
+      {feedback}
+
       {/* 6. Optional detail, collapsed */}
       {(view.chosenHe.length > 0 || moreNotes.length > 0) && (
         <div className="space-y-3" data-testid="details">
           {view.chosenHe.length > 0 && (
-            <Detail id="why_result" title={copy.detailChosenTitle} onOpen={handlers.onDetailExpanded}>
+            <Detail
+              id="why_result"
+              title={copy.detailChosenTitle}
+              onOpen={handlers.onDetailExpanded}
+              onToggleClick={handlers.onDetailToggle}
+            >
               <p className="text-sm font-semibold text-slate-600">{copy.detailChosenLead}</p>
               <ul className="space-y-2">
                 {view.chosenHe.map((text) => (
@@ -399,9 +456,14 @@ export function ResultPage({
             </Detail>
           )}
           {moreNotes.length > 0 && (
-            <Detail id="more_to_know" title={copy.detailMoreTitle} onOpen={handlers.onDetailExpanded}>
+            <Detail
+              id="more_to_know"
+              title={copy.detailMoreTitle}
+              onOpen={handlers.onDetailExpanded}
+              onToggleClick={handlers.onDetailToggle}
+            >
               {moreNotes.map((note, index) => (
-                <Note key={`${note.programId}-${index}`} note={note} />
+                <Note key={`${note.programId}-${index}`} note={note} onView={handlers.onRealityView} />
               ))}
             </Detail>
           )}
@@ -420,7 +482,7 @@ export function ResultPage({
           type="button"
           className="min-h-11 rounded-lg px-1 font-semibold text-colman-blue underline"
           data-testid="try-again"
-          onClick={handlers.onRestart}
+          onClick={() => handlers.onRestart("not_right")}
         >
           {copy.tryAgain}
         </button>
@@ -434,7 +496,7 @@ export function ResultPage({
       {/* 9. All programs, then the brand disclaimer */}
       {view.allProgramsUrl && (
         <a
-          href={view.allProgramsUrl}
+          href={outboundUrl(view.allProgramsUrl)}
           target="_blank"
           rel="noopener noreferrer"
           data-testid="all-programs"

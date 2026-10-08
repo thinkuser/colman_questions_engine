@@ -29,6 +29,13 @@ export function EntryMethodStep() {
   if (!allowed || !hydrated) return null;
 
   function choose(mode: EntryMode) {
+    analytics.uiClick?.({
+      element_id: mode === "projects" ? "method_projects" : "method_worlds",
+      element_type: "card",
+      screen_id: "method",
+      destination_type: "discovery",
+      entry_mode: mode,
+    });
     analytics.methodSelected?.(mode);
     selectEntryMode(mode);
     router.push((discoverPathFor ?? v4DiscoverPath)(mode));
@@ -79,7 +86,15 @@ export function EntryMethodStep() {
       <button
         type="button"
         className="min-h-11 rounded-lg px-3 text-colman-blue underline"
-        onClick={() => router.push(pathFor("landing"))}
+        onClick={() => {
+          analytics.uiClick?.({
+            element_id: "method_back",
+            element_type: "button",
+            screen_id: "method",
+            destination_type: "internal",
+          });
+          router.push(pathFor("landing"));
+        }}
       >
         {copy.back}
       </button>

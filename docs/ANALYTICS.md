@@ -159,6 +159,18 @@ New parameter names: `error_type` and `flow_version`, `project_id`, `project_ids
 
 Analysis hints: group V2 runs by `comparison_id` and `flow_version`; demand by `project_ids`; neutral rate by question with `is_neutral`; how often generated focus appears with `is_generated_focus`; the journey length distribution with `total_answer_count` on `studymatch_result_view`; handoff rate with `precision_module_handoff`.
 
+## V5 pilot measurement (DEC-038)
+Full contract: `docs/V5_PILOT_MEASUREMENT.md` (events, parameters, KPIs, cohorts, dashboard, QA), `docs/analytics/v5_event_matrix.json` (machine-readable), `docs/GTM_V5_IMPLEMENTATION.md`, `docs/V5_PILOT_KPI_QUERIES.md`.
+
+| New in V5 | Notes |
+|---|---|
+| `ui_click` | Every candidate control, in addition to its semantic event: `element_id`, `element_type`, `screen_id`, `destination_type` + contextual ids. UX evidence only. |
+| `result_feedback_view`, `result_feedback_submit` | Pilot feedback: `feedback_fit`, `feedback_helpfulness`, `feedback_version` + result context. |
+| `reality_check_view` | Now emitted by the V5 result when a reality-check note is visible. |
+| New parameters | `element_id`, `element_type`, `screen_id`, `destination_type`, `feedback_fit`, `feedback_helpfulness`, `feedback_version` |
+
+Inbound `utm_*` on events = how the candidate reached StudyMatch (V5 keeps the entry query for the visit). The fixed outbound `utm_source=study_match / utm_medium=questionaire / utm_campaign=ai_tools` live only on the outbound links. V2/V3/V4 analytics are unchanged.
+
 ## V5 balanced project-led discovery events (DEC-037)
 V5 (`/v5`) uses the same events and parameters as V4, with its own trackers (`colman-studymatch:analytics-v5:<mode>`). **Every V5 event carries `flow_version: "v5"`; every journey event also carries `entry_mode`.** V2/V3/V4 analytics are unchanged.
 

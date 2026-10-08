@@ -1,0 +1,602 @@
+{
+  "version": "v5-pilot-1",
+  "flow_version": "v5",
+  "notes": [
+    "Source of truth for the V5 pilot measurement contract (DEC-038). Human-readable companion: docs/V5_PILOT_MEASUREMENT.md.",
+    "Transport: trackEvent() -> window.dataLayer.push({ event, ...params }). Only parameters listed in src/analytics/events.ts ANALYTICS_PARAMS can be sent (structural privacy guard). Non-applicable parameters are omitted, never sent as empty strings.",
+    "journey_context = flow_version, entry_mode, comparison_id (once the journey started), selected_project_count + project_ids (project mode) OR selected_world_count + world_ids (world mode), and inbound utm_* when the visit had them.",
+    "result_context = journey_context + result_kind, recommended_program (if any), alternative_programs (if any), scored_answer_count, total_answer_count.",
+    "question_context = journey_context + question_id, question_index, question_mode, question_kind (generic questions), is_generated_focus, focus_program_count (generated focus only).",
+    "Semantic events are the KPI source of truth. ui_click is UX evidence only and fires IN ADDITION to them.",
+    "tests/analytics/pilotMeasurement.test.ts checks that every event and parameter named here is part of the analytics vocabulary."
+  ],
+  "context_groups": {
+    "journey_context": [
+      "flow_version",
+      "entry_mode",
+      "comparison_id",
+      "selected_project_count",
+      "project_ids",
+      "selected_world_count",
+      "world_ids",
+      "utm_source",
+      "utm_medium",
+      "utm_campaign",
+      "utm_content",
+      "utm_term"
+    ],
+    "result_context": [
+      "result_kind",
+      "recommended_program",
+      "alternative_programs",
+      "scored_answer_count",
+      "total_answer_count"
+    ],
+    "question_context": [
+      "question_id",
+      "question_index",
+      "question_mode",
+      "question_kind",
+      "is_generated_focus",
+      "focus_program_count"
+    ]
+  },
+  "events": [
+    {
+      "event_name": "studymatch_landing_view",
+      "category": "funnel",
+      "trigger_description": "The /v5 landing is shown (once per mounted view).",
+      "required_params": ["flow_version"],
+      "optional_params": ["entry_mode", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"],
+      "primary_kpi_use": "Landing -> Start Rate (denominator)",
+      "ga4_recommended": true,
+      "notes": "Pre-journey: no comparison_id. entry_mode only for a returning candidate."
+    },
+    {
+      "event_name": "studymatch_start",
+      "category": "funnel",
+      "trigger_description": "The landing CTA is pressed.",
+      "required_params": ["flow_version"],
+      "optional_params": ["entry_mode", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"],
+      "primary_kpi_use": "Landing -> Start Rate (numerator); Starts",
+      "ga4_recommended": true,
+      "notes": "Pre-journey."
+    },
+    {
+      "event_name": "discovery_method_view",
+      "category": "funnel",
+      "trigger_description": "The /v5/start method screen is shown (once per mounted view).",
+      "required_params": ["flow_version"],
+      "optional_params": ["entry_mode", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"],
+      "primary_kpi_use": "Method choice rate (denominator)",
+      "ga4_recommended": true,
+      "notes": "Absent for externally assigned traffic (direct /v5/worlds or /v5/projects)."
+    },
+    {
+      "event_name": "discovery_method_selected",
+      "category": "funnel",
+      "trigger_description": "The candidate chooses Worlds or Projects on /v5/start.",
+      "required_params": ["flow_version", "entry_mode"],
+      "optional_params": ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"],
+      "primary_kpi_use": "Self-selected share Worlds vs Projects; cohort flag (self-selected)",
+      "ga4_recommended": true,
+      "notes": "Never fabricated for direct /v5/worlds or /v5/projects visits (externally assigned)."
+    },
+    {
+      "event_name": "career_project_discovery_view",
+      "category": "discovery",
+      "trigger_description": "The V5 projects screen is shown (project mode).",
+      "required_params": ["flow_version", "entry_mode", "project_count_available"],
+      "optional_params": ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"],
+      "primary_kpi_use": "Discovery Completion Rate (denominator, project mode)",
+      "ga4_recommended": true,
+      "notes": "project_count_available = 10 in V5."
+    },
+    {
+      "event_name": "career_project_selected",
+      "category": "discovery",
+      "trigger_description": "A project card is selected (a refused third selection emits nothing).",
+      "required_params": ["flow_version", "entry_mode", "project_id", "selected_project_count", "selection_position"],
+      "optional_params": ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"],
+      "primary_kpi_use": "Selection count / share per project; pair order (selection_position)",
+      "ga4_recommended": true,
+      "notes": "V5 project ids: spotify_discovery, wolt_city_expansion, tiktok_behavior, duolingo_persistence, people_retention, people_change, ai_legal_case, accounting_gap, nike_launch, apple_store_space."
+    },
+    {
+      "event_name": "career_project_deselected",
+      "category": "discovery",
+      "trigger_description": "A selected project card is deselected.",
+      "required_params": ["flow_version", "entry_mode", "project_id", "selected_project_count"],
+      "optional_params": ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"],
+      "primary_kpi_use": "Discovery friction (diagnostic)",
+      "ga4_recommended": true,
+      "notes": ""
+    },
+    {
+      "event_name": "career_project_selection_completed",
+      "category": "discovery",
+      "trigger_description": "Continue on the projects screen with a valid selection (the journey starts).",
+      "required_params": [
+        "flow_version",
+        "entry_mode",
+        "comparison_id",
+        "selected_project_count",
+        "project_ids",
+        "selection_count"
+      ],
+      "optional_params": ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"],
+      "primary_kpi_use": "Discovery Completion Rate (numerator, project mode); pair-selection share",
+      "ga4_recommended": true,
+      "notes": "project_ids is canonical (sorted, pipe-joined); the order is on career_project_selected.selection_position."
+    },
+    {
+      "event_name": "career_world_discovery_view",
+      "category": "discovery",
+      "trigger_description": "The V5 worlds screen is shown (world mode).",
+      "required_params": ["flow_version", "entry_mode", "world_count_available"],
+      "optional_params": ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"],
+      "primary_kpi_use": "Discovery Completion Rate (denominator, world mode)",
+      "ga4_recommended": true,
+      "notes": "world_count_available = 9."
+    },
+    {
+      "event_name": "career_world_selected",
+      "category": "discovery",
+      "trigger_description": "A world card is selected (a refused third selection emits nothing).",
+      "required_params": ["flow_version", "entry_mode", "world_id", "selected_world_count", "selection_position"],
+      "optional_params": ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"],
+      "primary_kpi_use": "Selection count / share per world",
+      "ga4_recommended": true,
+      "notes": ""
+    },
+    {
+      "event_name": "career_world_deselected",
+      "category": "discovery",
+      "trigger_description": "A selected world card is deselected.",
+      "required_params": ["flow_version", "entry_mode", "world_id", "selected_world_count"],
+      "optional_params": ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"],
+      "primary_kpi_use": "Discovery friction (diagnostic)",
+      "ga4_recommended": true,
+      "notes": ""
+    },
+    {
+      "event_name": "career_world_selection_completed",
+      "category": "discovery",
+      "trigger_description": "Continue on the worlds screen with a valid selection (the journey starts).",
+      "required_params": [
+        "flow_version",
+        "entry_mode",
+        "comparison_id",
+        "selected_world_count",
+        "world_ids",
+        "selection_count"
+      ],
+      "optional_params": ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"],
+      "primary_kpi_use": "Discovery Completion Rate (numerator, world mode)",
+      "ga4_recommended": true,
+      "notes": ""
+    },
+    {
+      "event_name": "comparison_started",
+      "category": "funnel",
+      "trigger_description": "The journey starts (right after *_selection_completed).",
+      "required_params": ["flow_version", "entry_mode", "comparison_id"],
+      "optional_params": [
+        "selected_project_count",
+        "project_ids",
+        "selected_world_count",
+        "world_ids",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_content",
+        "utm_term"
+      ],
+      "primary_kpi_use": "Questionnaire Completion Rate (denominator)",
+      "ga4_recommended": true,
+      "notes": ""
+    },
+    {
+      "event_name": "precision_module_handoff",
+      "category": "engine",
+      "trigger_description": "The journey hands off to the V1 Tech precision module.",
+      "required_params": ["flow_version", "entry_mode", "comparison_id", "module_id", "seeded_answer_count"],
+      "optional_params": ["selected_project_count", "project_ids", "selected_world_count", "world_ids"],
+      "primary_kpi_use": "Spotify / Technology precision handoff rate",
+      "ga4_recommended": true,
+      "notes": "seeded_answer_count = 1 when the Spotify opener or WT1 was carried in as V1 Q1."
+    },
+    {
+      "event_name": "question_view",
+      "category": "questions",
+      "trigger_description": "A question is shown (deduplicated per journey position).",
+      "required_params": [
+        "flow_version",
+        "entry_mode",
+        "comparison_id",
+        "question_id",
+        "question_index",
+        "question_mode"
+      ],
+      "optional_params": [
+        "question_kind",
+        "is_generated_focus",
+        "focus_program_count",
+        "selected_project_count",
+        "project_ids",
+        "selected_world_count",
+        "world_ids"
+      ],
+      "primary_kpi_use": "Question drop-off (by question_index / question_id)",
+      "ga4_recommended": true,
+      "notes": ""
+    },
+    {
+      "event_name": "question_continue",
+      "category": "questions",
+      "trigger_description": "Continue pressed on a question (before the answer is committed).",
+      "required_params": [
+        "flow_version",
+        "entry_mode",
+        "comparison_id",
+        "question_id",
+        "question_index",
+        "question_mode"
+      ],
+      "optional_params": ["question_kind", "is_generated_focus", "focus_program_count", "project_ids", "world_ids"],
+      "primary_kpi_use": "Question friction (diagnostic)",
+      "ga4_recommended": true,
+      "notes": ""
+    },
+    {
+      "event_name": "question_answer",
+      "category": "questions",
+      "trigger_description": "An answer is committed (only on Continue, never on selection changes).",
+      "required_params": [
+        "flow_version",
+        "entry_mode",
+        "comparison_id",
+        "question_id",
+        "question_index",
+        "question_mode",
+        "answer_id",
+        "is_neutral"
+      ],
+      "optional_params": ["question_kind", "is_generated_focus", "focus_program_count", "project_ids", "world_ids"],
+      "primary_kpi_use": "Answer distribution per question; neutral rate",
+      "ga4_recommended": true,
+      "notes": "answer_id is an option id (A/B/C/neither...), never the answer text."
+    },
+    {
+      "event_name": "discovery_back",
+      "category": "questions",
+      "trigger_description": "Back from a question (to the previous answer or, from the first question, to discovery).",
+      "required_params": ["flow_version", "entry_mode", "questions_answered"],
+      "optional_params": [
+        "comparison_id",
+        "project_ids",
+        "world_ids",
+        "selected_project_count",
+        "selected_world_count"
+      ],
+      "primary_kpi_use": "Back usage (diagnostic)",
+      "ga4_recommended": true,
+      "notes": ""
+    },
+    {
+      "event_name": "comparison_completed",
+      "category": "result",
+      "trigger_description": "The last answer completes the journey (a result exists).",
+      "required_params": [
+        "flow_version",
+        "entry_mode",
+        "comparison_id",
+        "result_kind",
+        "scored_answer_count",
+        "total_answer_count",
+        "questions_answered"
+      ],
+      "optional_params": ["recommended_program", "alternative_programs", "project_ids", "world_ids"],
+      "primary_kpi_use": "Completion (alternative numerator); engine outcome per completed run",
+      "ga4_recommended": true,
+      "notes": ""
+    },
+    {
+      "event_name": "recommended_program",
+      "category": "result",
+      "trigger_description": "Same moment as comparison_completed, only when a program is recommended.",
+      "required_params": [
+        "flow_version",
+        "entry_mode",
+        "comparison_id",
+        "result_kind",
+        "recommended_program",
+        "scored_answer_count",
+        "total_answer_count"
+      ],
+      "optional_params": ["alternative_programs", "project_ids", "world_ids"],
+      "primary_kpi_use": "Recommendation distribution; Business Administration share",
+      "ga4_recommended": true,
+      "notes": "Event name equals a parameter name (historical V1 vocabulary); do not rename."
+    },
+    {
+      "event_name": "studymatch_result_view",
+      "category": "result",
+      "trigger_description": "The result page is shown (once per result state).",
+      "required_params": [
+        "flow_version",
+        "entry_mode",
+        "comparison_id",
+        "result_kind",
+        "scored_answer_count",
+        "total_answer_count"
+      ],
+      "optional_params": [
+        "recommended_program",
+        "alternative_programs",
+        "project_ids",
+        "world_ids",
+        "selected_project_count",
+        "selected_world_count"
+      ],
+      "primary_kpi_use": "Results; Questionnaire Completion Rate (numerator); result-kind rates; questions to result",
+      "ga4_recommended": true,
+      "notes": "result_kind: recommended | near_tie | insufficient_positive_evidence | v1_precision_result."
+    },
+    {
+      "event_name": "result_program_click",
+      "category": "conversion",
+      "trigger_description": "An official program link is opened from the result (opens in a new tab, with the outbound UTMs).",
+      "required_params": [
+        "flow_version",
+        "entry_mode",
+        "comparison_id",
+        "result_kind",
+        "program_id",
+        "link_role",
+        "cta_position"
+      ],
+      "optional_params": [
+        "recommended_program",
+        "alternative_programs",
+        "scored_answer_count",
+        "total_answer_count",
+        "project_ids",
+        "world_ids"
+      ],
+      "primary_kpi_use": "Program Click Rate; CTA performance",
+      "ga4_recommended": true,
+      "notes": "link_role: primary | alternative | peer. cta_position: hero | secondary | weak_direction | colman_section. This is the V3+ equivalent of V2's official_program_click (not emitted by V5)."
+    },
+    {
+      "event_name": "result_contact_click",
+      "category": "conversion",
+      "trigger_description": "A contact CTA is pressed (scrolls to the lead form).",
+      "required_params": ["flow_version", "entry_mode", "comparison_id", "result_kind", "cta_position"],
+      "optional_params": [
+        "recommended_program",
+        "alternative_programs",
+        "scored_answer_count",
+        "total_answer_count",
+        "project_ids",
+        "world_ids"
+      ],
+      "primary_kpi_use": "Contact Intent Rate",
+      "ga4_recommended": true,
+      "notes": "cta_position: hero | colman_section | sticky."
+    },
+    {
+      "event_name": "result_all_programs_click",
+      "category": "conversion",
+      "trigger_description": "The all-programs link is opened (new tab, outbound UTMs).",
+      "required_params": ["flow_version", "entry_mode", "comparison_id", "result_kind"],
+      "optional_params": [
+        "recommended_program",
+        "alternative_programs",
+        "scored_answer_count",
+        "total_answer_count",
+        "project_ids",
+        "world_ids"
+      ],
+      "primary_kpi_use": "Downstream exploration",
+      "ga4_recommended": true,
+      "notes": ""
+    },
+    {
+      "event_name": "result_detail_expand",
+      "category": "result",
+      "trigger_description": "A collapsed result detail is opened (not on close).",
+      "required_params": ["flow_version", "entry_mode", "comparison_id", "result_kind", "detail_section"],
+      "optional_params": ["recommended_program", "project_ids", "world_ids"],
+      "primary_kpi_use": "Engagement with the explanation",
+      "ga4_recommended": true,
+      "notes": "detail_section: why_result | more_to_know."
+    },
+    {
+      "event_name": "secondary_program_view",
+      "category": "result",
+      "trigger_description": "The secondary direction scrolls into view (once per result state).",
+      "required_params": ["flow_version", "entry_mode", "comparison_id", "result_kind"],
+      "optional_params": ["program_id", "recommended_program", "project_ids", "world_ids"],
+      "primary_kpi_use": "Exposure of the alternative (diagnostic)",
+      "ga4_recommended": false,
+      "notes": ""
+    },
+    {
+      "event_name": "reality_check_view",
+      "category": "result",
+      "trigger_description": "A reality-check note becomes visible (once per note and result state).",
+      "required_params": ["flow_version", "entry_mode", "comparison_id", "result_kind", "program_id"],
+      "optional_params": ["recommended_program", "project_ids", "world_ids"],
+      "primary_kpi_use": "Reality-check exposure by program (diagnostic)",
+      "ga4_recommended": false,
+      "notes": "Wired for V5 by DEC-038 (the redesigned result never emitted it before; V3/V4 still do not)."
+    },
+    {
+      "event_name": "result_feedback_view",
+      "category": "feedback",
+      "trigger_description": "The pilot feedback block is at least half visible (once per result state).",
+      "required_params": ["flow_version", "entry_mode", "comparison_id", "result_kind", "feedback_version"],
+      "optional_params": [
+        "recommended_program",
+        "alternative_programs",
+        "scored_answer_count",
+        "total_answer_count",
+        "project_ids",
+        "world_ids"
+      ],
+      "primary_kpi_use": "Feedback response rate (denominator)",
+      "ga4_recommended": true,
+      "notes": "feedback_version = v1."
+    },
+    {
+      "event_name": "result_feedback_submit",
+      "category": "feedback",
+      "trigger_description": "The candidate submits the pilot feedback (once per result state).",
+      "required_params": [
+        "flow_version",
+        "entry_mode",
+        "comparison_id",
+        "result_kind",
+        "feedback_version",
+        "scored_answer_count",
+        "total_answer_count"
+      ],
+      "optional_params": [
+        "feedback_fit",
+        "feedback_helpfulness",
+        "recommended_program",
+        "alternative_programs",
+        "project_ids",
+        "world_ids"
+      ],
+      "primary_kpi_use": "Positive Result Fit Rate; Clearly Wrong Result Rate; Helpfulness Rate",
+      "ga4_recommended": true,
+      "notes": "feedback_fit (very_suitable | quite_suitable | not_sure | not_suitable) is never sent for insufficient_positive_evidence or when unanswered; feedback_helpfulness: yes | somewhat | no."
+    },
+    {
+      "event_name": "lead_form_view",
+      "category": "lead",
+      "trigger_description": "The lead form is seen (once per result state).",
+      "required_params": ["flow_version", "entry_mode", "comparison_id", "result_kind"],
+      "optional_params": [
+        "recommended_program",
+        "alternative_programs",
+        "scored_answer_count",
+        "total_answer_count",
+        "project_ids",
+        "world_ids"
+      ],
+      "primary_kpi_use": "Lead Form Start Rate; Lead Submit Rate (denominator)",
+      "ga4_recommended": true,
+      "notes": "Metadata only: never a field value."
+    },
+    {
+      "event_name": "lead_form_submit",
+      "category": "lead",
+      "trigger_description": "A VALID form is sent to the lead API (invalid presses emit lead_form_error validation).",
+      "required_params": ["flow_version", "entry_mode", "comparison_id", "result_kind"],
+      "optional_params": [
+        "recommended_program",
+        "alternative_programs",
+        "scored_answer_count",
+        "total_answer_count",
+        "project_ids",
+        "world_ids"
+      ],
+      "primary_kpi_use": "Lead Submit Rate",
+      "ga4_recommended": true,
+      "notes": ""
+    },
+    {
+      "event_name": "lead_form_success",
+      "category": "lead",
+      "trigger_description": "The lead API confirmed delivery.",
+      "required_params": ["flow_version", "entry_mode", "comparison_id", "result_kind"],
+      "optional_params": [
+        "recommended_program",
+        "alternative_programs",
+        "scored_answer_count",
+        "total_answer_count",
+        "project_ids",
+        "world_ids"
+      ],
+      "primary_kpi_use": "Lead Success Rate; leads by journey",
+      "ga4_recommended": true,
+      "notes": "Primary conversion."
+    },
+    {
+      "event_name": "lead_form_error",
+      "category": "lead",
+      "trigger_description": "Validation failed or the lead API failed.",
+      "required_params": ["flow_version", "entry_mode", "comparison_id", "result_kind", "error_type"],
+      "optional_params": ["recommended_program", "project_ids", "world_ids"],
+      "primary_kpi_use": "Lead friction (diagnostic)",
+      "ga4_recommended": true,
+      "notes": "error_type: validation | server | network."
+    },
+    {
+      "event_name": "restart_comparison",
+      "category": "funnel",
+      "trigger_description": "The candidate restarts (try again / restart) with something selected or answered.",
+      "required_params": ["flow_version", "entry_mode", "questions_answered"],
+      "optional_params": [
+        "comparison_id",
+        "project_ids",
+        "world_ids",
+        "selected_project_count",
+        "selected_world_count"
+      ],
+      "primary_kpi_use": "Restart rate (diagnostic)",
+      "ga4_recommended": true,
+      "notes": ""
+    },
+    {
+      "event_name": "ui_click",
+      "category": "ux",
+      "trigger_description": "Any candidate-facing control is clicked (in addition to its semantic event).",
+      "required_params": ["flow_version", "element_id", "element_type", "screen_id"],
+      "optional_params": [
+        "entry_mode",
+        "comparison_id",
+        "destination_type",
+        "project_id",
+        "world_id",
+        "program_id",
+        "question_id",
+        "question_index",
+        "question_mode",
+        "question_kind",
+        "answer_id",
+        "cta_position",
+        "link_role",
+        "detail_section",
+        "feedback_fit",
+        "feedback_helpfulness",
+        "result_kind",
+        "recommended_program",
+        "alternative_programs",
+        "scored_answer_count",
+        "total_answer_count",
+        "project_ids",
+        "world_ids",
+        "selected_project_count",
+        "selected_world_count",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_content",
+        "utm_term"
+      ],
+      "primary_kpi_use": "UX / click coverage / debugging only (never a funnel KPI)",
+      "ga4_recommended": true,
+      "notes": "element_id values: see src/analytics/pilot.ts UI_ELEMENT_IDS. Never a label, answer text or field value. A refused third selection emits ui_click but no *_selected event."
+    }
+  ],
+  "not_emitted_by_v5": [
+    {
+      "event_name": "official_program_click",
+      "reason": "V2-only event. V3/V4/V5 report program link clicks as result_program_click (same meaning, with link_role and cta_position)."
+    }
+  ]
+}

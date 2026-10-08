@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { UiClickParams } from "@/analytics";
 import type { ExperienceCopy } from "@/data";
 import { buildV3QuestionView, journeyStep, type V2QuestionView } from "@/flow";
 import { useV3, useV3Guard } from "@/ui/state/V3Provider";
@@ -19,9 +20,11 @@ function QuestionPanel({
   onRestart,
   answered,
   copy,
+  onUiClick,
 }: {
   view: V2QuestionView;
   copy: ExperienceCopy["questions"];
+  onUiClick?: (params: UiClickParams) => void;
   onContinue: (optionId: string) => void;
   onBack: () => void;
   onRestart: () => void;
@@ -66,6 +69,15 @@ function QuestionPanel({
                 data-option-id={option.id}
                 checked={checked}
                 onChange={() => setSelected(option.id)}
+                onClick={() =>
+                  onUiClick?.({
+                    element_id: "answer_option",
+                    element_type: "answer_option",
+                    screen_id: "question",
+                    question_id: view.id,
+                    answer_id: option.id,
+                  })
+                }
                 className="sr-only"
               />
               <span
@@ -87,10 +99,36 @@ function QuestionPanel({
       </div>
 
       <div className="flex items-center justify-between gap-4 border-t border-colman-border pt-4">
-        <button type="button" className="min-h-11 rounded-lg px-3 text-colman-blue underline" onClick={onBack}>
+        <button
+          type="button"
+          className="min-h-11 rounded-lg px-3 text-colman-blue underline"
+          onClick={() => {
+            onUiClick?.({
+              element_id: "question_back",
+              element_type: "button",
+              screen_id: "question",
+              destination_type: "internal",
+              question_id: view.id,
+            });
+            onBack();
+          }}
+        >
           {copy.back}
         </button>
-        <button type="button" className="min-h-11 rounded-lg px-3 text-slate-600 underline" onClick={onRestart}>
+        <button
+          type="button"
+          className="min-h-11 rounded-lg px-3 text-slate-600 underline"
+          onClick={() => {
+            onUiClick?.({
+              element_id: "question_restart",
+              element_type: "button",
+              screen_id: "question",
+              destination_type: "restart",
+              question_id: view.id,
+            });
+            onRestart();
+          }}
+        >
           {copy.restart}
         </button>
       </div>
@@ -101,7 +139,18 @@ function QuestionPanel({
           className={v3Primary}
           disabled={selected === null}
           data-testid="question-continue"
-          onClick={() => selected !== null && onContinue(selected)}
+          onClick={() => {
+            if (selected === null) return;
+            onUiClick?.({
+              element_id: "question_continue",
+              element_type: "button",
+              screen_id: "question",
+              destination_type: "question",
+              question_id: view.id,
+              answer_id: selected,
+            });
+            onContinue(selected);
+          }}
         >
           {copy.continue}
         </button>
@@ -138,6 +187,7 @@ export function QuestionStep() {
       key={`${state.answers.length}:${view.id}`}
       view={view}
       copy={ui.questions}
+      onUiClick={analytics.uiClick}
       answered={state.answers.length}
       onContinue={(answerId) => {
         // question_continue first (it describes the question being committed), then the commit derives question_answer.

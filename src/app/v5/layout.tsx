@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { V5_COPY } from "@/data";
+import { GtmLoader } from "@/ui/analytics/GtmLoader";
 import { V5Provider } from "@/ui/state/V5Provider";
 
 export const metadata: Metadata = {
@@ -15,6 +16,8 @@ export default function V5Layout({ children }: { children: ReactNode }) {
   return (
     <V5Provider>
       <div className="colman-theme">{children}</div>
+      {/* V5 pilot (DEC-038): GTM only when NEXT_PUBLIC_GTM_ID is set; nothing otherwise. */}
+      <GtmLoader />
     </V5Provider>
   );
 }

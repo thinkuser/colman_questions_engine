@@ -5,3 +5,5 @@ export * from "./funnelTracker";
 export * from "./track";
 export * from "./viewOnce";
 export * from "./journeyTracker";
+export * from "./pilot";
+export * from "./outboundUtm";

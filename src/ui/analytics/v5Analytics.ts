@@ -1,7 +1,15 @@
 "use client";
 
 import { useMemo } from "react";
-import { JourneyTracker, trackEvent, type DataLayerHost, type StorageLike } from "@/analytics";
+import {
+  JourneyTracker,
+  parseUtm,
+  trackEvent,
+  type DataLayerHost,
+  type ResultFeedbackAnswers,
+  type StorageLike,
+  type UiClickParams,
+} from "@/analytics";
 import { strategyForV5EntryMode, type V5EntryMode } from "@/flow";
 import type { ExperienceAnalytics } from "@/ui/experience/ExperienceContext";
 
@@ -13,9 +21,29 @@ import type { ExperienceAnalytics } from "@/ui/experience/ExperienceContext";
  * `discovery_method_selected` fires only when the candidate actually chooses on the method screen: a direct
  * /v5/worlds or /v5/projects visit (externally assigned mode) never fabricates it. V2/V3/V4 bindings are untouched.
  * No personal data.
+ *
+ * Pilot measurement (DEC-038), V5 only: `ui_click` on every candidate control (in addition to the semantic events)
+ * and the pilot feedback events (`result_feedback_view`, `result_feedback_submit`).
  */
 
 const trackers = new Map<V5EntryMode, JourneyTracker>();
+
+/**
+ * INBOUND acquisition context (how the candidate reached StudyMatch): the query string of the first V5 page of this
+ * visit. A self-selected candidate lands on /v5?utm_...; the journey tracker only exists once a method is chosen (on
+ * /v5/start, whose URL has no query), so the entry query is remembered here and used for the tracker and for the
+ * pre-journey events. Not to be confused with the fixed OUTBOUND UTMs (outboundUtm.ts).
+ */
+let entrySearch: string | null = null;
+
+/** Remember the entry query string once per visit (the first V5 page). */
+export function rememberV5EntrySearch(search: string): void {
+  if (entrySearch === null) entrySearch = search;
+}
+
+export function v5EntrySearch(fallback: string): string {
+  return entrySearch && Object.keys(parseUtm(entrySearch)).length > 0 ? entrySearch : fallback;
+}
 const fired = new Set<string>();
 
 function sessionStorageOrNull(): StorageLike | null {
@@ -50,7 +78,8 @@ export function getV5Tracker(mode: V5EntryMode | null): JourneyTracker | null {
 function emitV5(event: Parameters<typeof trackEvent>[0], params: Parameters<typeof trackEvent>[1]): void {
   try {
     if (typeof window === "undefined") return;
-    trackEvent(event, { flow_version: "v5", ...params }, window as unknown as DataLayerHost);
+    const utm = parseUtm(v5EntrySearch(window.location.search));
+    trackEvent(event, { flow_version: "v5", ...utm, ...params }, window as unknown as DataLayerHost);
   } catch {
     // Analytics must never affect the product.
   }
@@ -91,6 +120,14 @@ export function useV5Analytics(mode: V5EntryMode | null): ExperienceAnalytics {
       leadFormSucceeded: () => t()?.leadFormSucceeded(),
       leadFormFailed: (errorType: "validation" | "server" | "network") => t()?.leadFormFailed(errorType),
       journeyId: () => t()?.getJourneyId() ?? null,
+      uiClick: (params: UiClickParams) => {
+        const tracker = t();
+        // Before a mode exists (landing, method screen) there is no journey: flow version (+ known mode) only.
+        if (tracker) tracker.uiClick(params);
+        else emitV5("ui_click", { ...modeParam, ...params });
+      },
+      feedbackViewed: () => t()?.resultFeedbackViewed(),
+      feedbackSubmitted: (answers: ResultFeedbackAnswers) => t()?.resultFeedbackSubmitted(answers),
     };
   }, [mode]);
 }
