@@ -280,6 +280,10 @@ Status: accepted for review — THI-17.
 - The Tech world's opener carries into V1 as Q1 (same option ids and separator, like V2's T1), so V1 never asks its own Q1 (whose copy names a brand) in V3.
 - Leads keep `POST /api/v2/lead`; V3 adds an optional `selected_world_ids` (and sends `selected_project_ids: []`); world ids never go into `selected_project_ids`. The n8n workflow is unchanged and currently ignores the new field.
 - V3 persistence is version 2 (`strategy: "worlds"`, `selectedIds`); older V3 state restarts at the landing.
+- **WT1 → V1 Q1 is an approved intentional semantic reuse** (same V1 answer ids, same V1 scoring, same carry mechanism; V1 continues at Q2; V1 Q1 is never shown in V3).
+- **People & Psychology and Education & Future deliberately share the same three-program candidate set** for the pilot (different self-identification doors, scored by their different openers; the world choice itself scores zero). To be evaluated with real usage data; no differentiating questions were added.
+- World selection stays routing-only (0 score, 0 support).
+- `selected_world_ids` is persisted in the lead sheet (n8n workflow "Colman Webhook for question engine", tab `Leads`, column S); V2 rows keep it blank and V3 rows keep `selected_project_ids` blank. Lead dedupe (`comparison_id:phone_e164`), the webhook path and the 200 response timing are unchanged.
 - **The discovery strategy and the experience are separate modules on purpose**: the V3 UX can be run with V2's brand discovery (`BRAND_STRATEGY`) if the brand-led hypothesis performs better.
 
 ## DEC-033 — V3 UX redesign shipped side by side with a frozen V2

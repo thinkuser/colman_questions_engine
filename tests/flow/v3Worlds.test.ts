@@ -51,7 +51,7 @@ const EXPECTED_WORLDS: Array<[string, string, string, string]> = [
   [
     "people_psychology",
     "אנשים ופסיכולוגיה",
-    "קליניקה / מרכז שעובד עם אנשים",
+    "קליניקה / מרכז ליווי והתפתחות",
     "להבין מה עובר על אנשים, מה משפיע עליהם ואיך שינוי קורה.",
   ],
   [
@@ -418,5 +418,105 @@ describe("lead: world selections travel as selected_world_ids", () => {
     expect(LeadRequestSchema.safeParse({ ...v3, selected_project_ids: ["wolt_new_city"] }).success).toBe(false);
     expect(LeadRequestSchema.safeParse({ ...v3, flow_version: "v2" }).success).toBe(false);
     expect(LeadRequestSchema.safeParse({ ...v3, selected_world_ids: [] }).success).toBe(false);
+  });
+});
+
+describe("People/HR follow-ups WO2-WO5 and the People & Psychology label (copy refinement)", () => {
+  /** Pinned mapping: ids, option ids and programs never change with a copy edit. */
+  const MAPPING = {
+    A: "management_information_systems",
+    B: "behavioral_science",
+    C: "economics_and_psychology",
+    D: "business_administration",
+  };
+  const COPY: Record<string, { prompt: string; A: string; B: string; C: string; D: string }> = {
+    WO2: {
+      prompt: "הוחלט לבנות תוכנית לשימור עובדים. איזה חלק הייתם רוצים לקחת?",
+      A: "לבנות מערכת שמרכזת מידע ומזהה איפה יש סיכון לעזיבה",
+      B: "לדבר עם צוותים ולהבין מה בתרבות וביחסים גורם לאנשים להישאר או לעזוב",
+      C: "לבדוק איך שכר, הטבות ותמריצים משפיעים על ההחלטה להישאר",
+      D: "להחליט על יעדי התוכנית, התקציב ואיך מודדים אם היא עובדת",
+    },
+    WO3: {
+      prompt: "עובדים חדשים מתקשים להשתלב בחודשים הראשונים. מה הייתם רוצים לעשות?",
+      A: "לבנות תהליך ומערכת קליטה שמלווים כל עובד צעד אחר צעד",
+      B: "להבין איך הצוות והאווירה משפיעים על תחושת השייכות וההשתלבות",
+      C: "לבדוק איך הציפיות, התנאים והתמריצים שהוצגו בגיוס משפיעים על ההחלטה להישאר",
+      D: "להחליט איך תהליך הקליטה צריך להשתנות ברמת הארגון",
+    },
+    WO4: {
+      prompt: "ההנהלה שוקלת לעבור לעבודה היברידית. במה הייתם רוצים לעסוק?",
+      A: "לבחור ולהטמיע את הכלים והמערכות שיאפשרו את העבודה החדשה",
+      B: "להבין איך המעבר ישפיע על הקשרים ועל התרבות בצוותים",
+      C: "לבדוק איך גמישות, זמן נסיעה והטבות משפיעים על הבחירה של העובדים",
+      D: "לקבוע מדיניות שמאזנת בין עלויות, יעדים וצורכי הארגון",
+    },
+    WO5: {
+      prompt: "מנהלים מרגישים שאין להם תמונה ברורה על מה שקורה בצוותים שלהם. במה הייתם רוצים להתמקד?",
+      A: "לבנות מערכת שמרכזת את המידע על הצוותים במקום אחד",
+      B: "לבנות תהליך של שיחות והקשבה שיחשוף מה קורה בין אנשים",
+      C: "לבדוק איך משוב, הכרה ותגמול משפיעים על מה שעובדים בוחרים לשתף",
+      D: "להחליט איזה מידע ההנהלה צריכה ואיך מנהלים אמורים לפעול לפיו",
+    },
+  };
+
+  it("uses the refined Hebrew and the unchanged option ids, mappings and neutral option", () => {
+    const cluster = V3_WORLD_CLUSTERS.find((c) => c.id === "world_people_organizations")!;
+    for (const [id, copy] of Object.entries(COPY)) {
+      const question = cluster.questions.find((q) => q.id === id)!;
+      expect(question.kind, id).toBe("focus");
+      expect(question.options.map((o) => [o.id, o.programIds.join("+")])).toEqual([
+        ["A", MAPPING.A],
+        ["B", MAPPING.B],
+        ["C", MAPPING.C],
+        ["D", MAPPING.D],
+        ["neither", ""],
+      ]);
+      const text = getWorldQuestionCopy(id)!;
+      expect(text.prompt).toBe(copy.prompt);
+      expect(text.options.map((o) => o.label)).toEqual([
+        copy.A,
+        copy.B,
+        copy.C,
+        copy.D,
+        "אף אחת מהאפשרויות לא ממש מושכת אותי",
+      ]);
+    }
+    expect(cluster.questions.map((q) => q.id).slice(0, 6)).toEqual(["WO1", "WO2", "WO3", "WO4", "WO5", "P3"]);
+  });
+
+  it("keeps the four programs distinct in meaning (systems / culture / incentives / organisational decision)", () => {
+    for (const id of Object.keys(COPY)) {
+      const [mis, behavioral, econPsych, business] = ["A", "B", "C", "D"].map((o) => COPY[id]![o as "A"]);
+      expect(mis, id).toMatch(/מערכת|מערכות|תהליך|כלים/);
+      expect(behavioral, id).toMatch(/תרבות|קשרים|הצוות|שיחות|בין אנשים/);
+      expect(econPsych, id).toMatch(/שכר|הטבות|תמריצ|תגמול|התנאים|גמישות/);
+      expect(business, id).toMatch(/יעדי|תקציב|מדיניות|רמת הארגון|ההנהלה/);
+    }
+  });
+
+  it("People & Psychology: the context label no longer evokes treatment; title, line, WP1 and mappings are unchanged", () => {
+    const world = V3_WORLDS.find((w) => w.id === "people_psychology")!;
+    expect(world.contextHe).toBe("קליניקה / מרכז ליווי והתפתחות");
+    expect(world.titleHe).toBe("אנשים ופסיכולוגיה");
+    expect(world.lineHe).toBe("להבין מה עובר על אנשים, מה משפיע עליהם ואיך שינוי קורה.");
+    expect(world.contextHe).not.toMatch(/שעובד עם אנשים|טיפול|מטפל/);
+    expect(getWorldQuestionCopy("WP1")?.prompt).toBe(
+      "אדם עובר שינוי משמעותי בחיים ומתקשה להתמודד. מה הכי מסקרן אתכם להבין?",
+    );
+  });
+
+  it("People & Psychology and Education & Future intentionally share the same three-program set (and are separate worlds)", () => {
+    const people = V3_WORLDS.find((w) => w.id === "people_psychology")!;
+    const education = V3_WORLDS.find((w) => w.id === "education_future")!;
+    const set = (w: typeof people) => [...w.coreProgramIds, ...w.adjacentProgramIds].sort();
+    expect(set(people)).toEqual(["behavioral_science", "education", "psychology"]);
+    expect(set(education)).toEqual(set(people));
+    expect(people.scenarioId).not.toBe(education.scenarioId);
+    // Different doors: the selection scores nothing, and the two openers point at different first evidence.
+    expect(step(["people_psychology"]).state.scoredAnswerCount).toBe(0);
+    expect(step(["education_future"]).state.scoredAnswerCount).toBe(0);
+    expect(askedId(step(["people_psychology"]))).toBe("WP1");
+    expect(askedId(step(["education_future"]))).toBe("WE1");
   });
 });

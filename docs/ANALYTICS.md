@@ -168,6 +168,8 @@ V2 is **brand-led** and keeps `career_project_*` (unchanged; its tracker is byte
 | `career_world_selected` / `career_world_deselected` | A world card is selected / deselected (a refused third is silent) | `world_id`, `selected_world_count`, `selection_position` (on select) |
 | `career_world_selection_completed` | "בואו נמשיך" with a valid selection | `world_ids` (canonical), `selected_world_count`, `selection_count`, `comparison_id` |
 
+Downstream (lead sheet, not analytics): the lead payload carries `selected_world_ids` and the n8n sheet stores it in its own column (`selected_world_ids`, flattened `a | b`).
+
 In V3, every question and result event carries `selected_world_count` and `world_ids` instead of the project parameters. New parameter names: `world_id`, `world_ids`, `selected_world_count`, `world_count_available`. No PII.
 
 ## V3 events (UX redesign)

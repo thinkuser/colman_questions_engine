@@ -46,14 +46,22 @@ The opening world choice is **routing only**, exactly like a V2 project: 0 fit p
 | טכנולוגיה ודאטה | צוות מוצר דיגיטלי | CS, DS, MIS / BA | WT1: A→CS, B→DS, C→MIS (reuses V1 Q1) |
 | עסקים ושווקים | חברה בצמיחה | BA, Econ&Mgmt / Econ&Psych, Accounting | WB1: A→BA, B→Econ&Mgmt, C→Econ&Psych |
 | תקשורת והשפעה | סטודיו תוכן וקמפיינים | Comm, Comm&Mgmt / BA | WC1: A→Comm, B→Comm&Mgmt, C→BA |
-| אנשים ופסיכולוגיה | קליניקה / מרכז שעובד עם אנשים | Psych, BehavSci / Education | WP1: A→Psych, B→BehavSci, C→Education |
+| אנשים ופסיכולוגיה | קליניקה / מרכז ליווי והתפתחות | Psych, BehavSci / Education | WP1: A→Psych, B→BehavSci, C→Education |
 | אנשים בארגונים | מחלקת People / HR | BehavSci, Econ&Psych / BA, MIS | WO1: A→BehavSci, B→Econ&Psych, C→BA, D→MIS (+ follow-ups WO2-WO5) |
 | חינוך ודור העתיד | בית ספר / מסגרת חינוכית | Education / Psych, BehavSci | WE1: A→Education, B→Psych, C→BehavSci |
 | משפט וצדק | משרד עורכי דין / מערכת המשפט | Law / BA, Comm | WL1: A→Law, B→BA, C→Comm |
 | כסף וחשבונאות | משרד רואי חשבון / מחלקת כספים | Accounting / Econ&Mgmt, BA | WF1: A→Accounting, B→Econ&Mgmt, C→BA |
 | עיצוב וחללים | סטודיו לעיצוב | Interior Design / Comm, BA | WD1: A→Interior Design, B→Comm, C→BA |
 
-Openers have no neutral option. The People & Psychology wording stays about understanding and development (no treatment, diagnosis or therapist claims; tested).
+Openers have no neutral option. The People & Psychology wording stays about understanding and development (no treatment, diagnosis or therapist claims; tested). Its context label is "קליניקה / מרכז ליווי והתפתחות": a people/helping setting without implying that the BA itself qualifies anyone to practise therapy.
+
+**Intentional design decisions (approved, recorded so they are not mistaken for bugs):**
+- **WT1 → V1 Q1 carry is an approved, intentional semantic reuse.** WT1 is accepted as equivalent to V1 Q1 for the CS / DS / MIS separator (build the software or system → CS; investigate the data → DS; translate the business need into a system or process → MIS). It keeps V1's answer ids, V1's scoring and the carry/reuse mechanism, and V1 starts at Q2. V1 Q1 (which names Spotify) is never shown in V3. All equivalence tests stay.
+- **People & Psychology and Education & Future share the same three-program candidate set** (Psychology, Behavioral Science, Education) **on purpose for the pilot.** They are different self-identification doors: person / psychology / social influence / personal development vs learning / pupils / the educational environment. The world choice itself scores zero; each world's different opener provides the first evidence. No extra questions were added to differentiate them: this will be evaluated with real usage data.
+- **World selection is routing-only / zero score**, exactly like a V2 project.
+- **`selected_world_ids` is persisted downstream in the lead sheet** (n8n workflow "Colman Webhook for question engine", Google Sheet tab `Leads`, column S, flattened `world_a | world_b`; blank for V2 leads, while `selected_project_ids` stays blank for V3 leads). The sheet's `source` column (now T) still holds the constant `colman_studymatch_v2` for every lead; use `flow_version` to tell versions apart.
+
+**People/HR follow-ups (WO2-WO5, refined).** Same ids, option ids and program mappings; only the Hebrew was refined so the four programs are conceptually distinct: MIS = systems, workflows and information infrastructure; Behavioral Science = relationships, culture, group dynamics and the social environment; Economics + Psychology = incentives, trade-offs, framing and how they influence decisions; Business = organisational decisions, objectives, budgets and implementation. A test pins the copy and the mappings.
 
 **People/HR follow-ups (new content, review needed).** The exhaustive traversal found that an MIS lead in the HR world ran out of separating questions (the only existing MIS question, law's L2, is about AI copyright). Rather than borrow an off-topic question, the HR world has four short HR-context follow-ups (WO2-WO5: MIS / Behavioral Science / Econ+Psych / BA + a neutral option). The Law world also borrows the existing communication follow-ups (C2-C5) for a Communication lead.
 
