@@ -229,3 +229,6 @@ export const QUESTION_COPY_HE: ReadonlyMap<string, QuestionCopyHe> = buildQuesti
 export function getQuestionCopyHe(questionId: string): QuestionCopyHe {
   return QUESTION_COPY_HE.get(questionId) ?? fail(`no Hebrew copy for question "${questionId}"`);
 }
+
+/** The shared neutral option wording ("none of these really appeals to me"), reused by V2 generated focus questions. */
+export const NEUTRAL_OPTION_HE: string = QuestionCopyFileSchema.parse(copyRaw).neutral_option;

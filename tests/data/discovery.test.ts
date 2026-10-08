@@ -52,7 +52,7 @@ describe("accepted opening copy", () => {
   const spec = readFileSync("docs/V2_ALL_PROGRAMS_SPEC.md", "utf8");
 
   it("uses the accepted plural opening prompt and helper", () => {
-    expect(DISCOVERY_OPENING.prompt).toBe("אם הייתם יכולים להצטרף מחר לאחד מהפרויקטים האלה — מה הכי מושך אתכם?");
+    expect(DISCOVERY_OPENING.prompt).toBe("אם הייתם יכולים להצטרף מחר לאחד מהפרויקטים האלה, מה הכי מושך אתכם?");
     expect(DISCOVERY_OPENING.helper).toBe(
       "אפשר לבחור עד שניים. אל תחשבו איזה תואר “נכון” לכם — רק מה נשמע לכם מעניין לעבוד עליו.",
     );

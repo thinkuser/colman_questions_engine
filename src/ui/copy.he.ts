@@ -66,4 +66,24 @@ export const copy = {
     backToQuestion: "חזרה לשאלה האחרונה",
     restart: "התחלה מחדש",
   },
+  v2: {
+    appTitle: "StudyMatch — לאיזה פרויקט הייתם מצטרפים?",
+    appDescription: "בוחרים פרויקט שמושך אתכם ומגלים איזה כיוון לימודים נשמע הכי קרוב.",
+    stepsLabel: "שלבי המסע",
+    steps: { select: "פרויקטים", questions: "שאלות", result: "תוצאה" },
+    discover: {
+      projectsLabel: "פרויקטים לבחירה",
+      selectedCount: (count: number) => `נבחרו ${count} מתוך 2`,
+      selectedLabel: "נבחר",
+      maxReached: "אפשר לבחור עד שני פרויקטים. כדי להחליף, בטלו בחירה קיימת.",
+      start: "בואו נתחיל",
+    },
+    questions: {
+      progressTitle: "בונים את הכיוון שלכם",
+      back: "חזרה",
+      restart: "התחלה מחדש",
+      gapTitle: "לא הצלחנו להמשיך",
+      gapBody: "משהו בבחירות האלה לא הסתדר לנו. אפשר לחזור צעד אחורה או להתחיל מחדש עם פרויקטים אחרים.",
+    },
+  },
 } as const;

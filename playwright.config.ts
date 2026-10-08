@@ -27,7 +27,7 @@ export default defineConfig({
   use: { baseURL: `http://localhost:${WITH_ADVISOR.port}`, ...mobile, trace: "off" },
   webServer: [server(WITH_ADVISOR, ADVISOR_URL), server(WITHOUT_ADVISOR, "")],
   projects: [
-    { name: "functional", testMatch: /(personas|navigation|analytics|links-a11y)\.spec\.ts/ },
+    { name: "functional", testMatch: /(personas|navigation|analytics|links-a11y|discovery|discovery-lead)\.spec\.ts/ },
     { name: "layout-320", testMatch: /layout\.spec\.ts/, use: { viewport: { width: 320, height: 640 } } },
     { name: "layout-390", testMatch: /layout\.spec\.ts/, use: { viewport: { width: 390, height: 844 } } },
     { name: "layout-desktop", testMatch: /layout\.spec\.ts/, use: { viewport: { width: 1280, height: 900 } } },

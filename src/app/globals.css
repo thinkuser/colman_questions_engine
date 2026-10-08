@@ -2,8 +2,73 @@
 
 @theme {
   --font-sans: var(--font-heebo), ui-sans-serif, system-ui, sans-serif;
-  /* Placeholder brand color — replace with the official COLMAN palette when provided. */
+  /* V1 placeholder brand color. V2 re-points it to the COLMAN blue inside `.colman-theme` (below). */
   --color-brand: #1d4ed8;
+}
+
+/*
+ * COLMAN visual tokens (V2). Derived from the College's published stylesheet (colman.ac.il: primary #3e48ce, purple
+ * #8759ff) with deeper/lighter steps for text, surfaces and borders. Components use the semantic names, never raw hex.
+ * Contrast notes: blue/blue-dark/purple-ink/magenta-ink on white are all >= 4.5:1, so they are safe for text.
+ */
+:root {
+  --colman-blue: #3e48ce;
+  --colman-blue-dark: #1b2170;
+  --colman-purple: #8759ff;
+  --colman-purple-ink: #5b34c9;
+  --colman-magenta: #d0399b;
+  --colman-magenta-ink: #b0207f;
+  --colman-surface: #f4f5ff;
+  --colman-border: #c9cef5;
+
+  /*
+   * Company-name tones (visual only, DEC-032). Text variants are darkened until they pass 4.5:1 on white and on the
+   * selected-card tint; `-icon` variants are for decorative graphics only. No logos, no implied partnership.
+   */
+  --tone-spotify: #0f7a33;
+  --tone-spotify-icon: #17a049;
+  --tone-wolt: #00707f;
+  --tone-wolt-icon: #0096ad;
+  --tone-duolingo: #357100;
+  --tone-duolingo-icon: #4a9d00;
+  --tone-tiktok: #c9163f;
+  --tone-tiktok-icon: #00a3a8;
+  --tone-nike: #111111;
+  --tone-nike-icon: #111111;
+  --tone-apple: #4d4d52;
+  --tone-apple-icon: #6e6e73;
+  --tone-ai: var(--colman-magenta-ink);
+  --tone-ai-icon: var(--colman-purple);
+}
+
+@theme inline {
+  --color-colman-blue: var(--colman-blue);
+  --color-colman-blue-dark: var(--colman-blue-dark);
+  --color-colman-purple: var(--colman-purple);
+  --color-colman-purple-ink: var(--colman-purple-ink);
+  --color-colman-magenta: var(--colman-magenta);
+  --color-colman-magenta-ink: var(--colman-magenta-ink);
+  --color-colman-surface: var(--colman-surface);
+  --color-colman-border: var(--colman-border);
+}
+
+/* Scope: everything under /v2 (including the reused V1 question and result components) uses the COLMAN blue. */
+.colman-theme {
+  --color-brand: var(--colman-blue);
+}
+
+/* Soft brand wash used by hero / selected / lead surfaces. */
+.colman-wash {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--colman-blue) 9%, white),
+    color-mix(in srgb, var(--colman-purple) 9%, white) 60%,
+    color-mix(in srgb, var(--colman-magenta) 8%, white)
+  );
+}
+
+.colman-gradient {
+  background-image: linear-gradient(120deg, var(--colman-blue), var(--colman-purple) 65%, var(--colman-magenta));
 }
 
 html {

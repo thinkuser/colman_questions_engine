@@ -120,6 +120,45 @@ One event per **logical exposure** of a displayed question.
 - Which comparison pairs generate the highest advisor/lead conversion? (`advisor_cta_click` now; `lead_submit` when CRM exists)
 - Does recommendation alignment eventually correlate with enrollment? (needs CRM/enrollment data joined on `comparison_id` later)
 
+## V2 discovery events (THI-16)
+V2 (`/v2`) reuses the same transport, the same `window.dataLayer` and the same parameter whitelist (`sanitizeParams`). It adds events and parameters; **no V1 event or parameter is renamed or changed**. The tracker is `DiscoveryTracker` (`src/analytics/discoveryTracker.ts`), which derives events by replaying dispatched actions through the V2 journey reducer exactly like the V1 `FunnelTracker`: a rejected action (double tap, stale answer, a third project) emits nothing, and restoring after a refresh emits nothing.
+
+Every V2 event carries `flow_version: "v2"`. Session context is in `sessionStorage` under `colman-studymatch:analytics-v2` (a V2 journey id, first-touch UTMs, last question exposure), separate from V1's record and from the durable journey. **Invariants:** analytics never affects routing; no `dataLayer` means no change in behaviour; no answer text, no free text, no scores or support, no personal data. Project and program ids are acceptable product metadata. `project_ids` is canonical (alphabetical, `|`-joined) so click order does not matter.
+
+| Event | Fired when | Notable parameters |
+|---|---|---|
+| `career_project_discovery_view` | The project screen is shown (once per mounted view) | `flow_version`, `project_count_available` |
+| `career_project_selected` / `career_project_deselected` | A project card is selected / deselected (a rejected third is silent) | `project_id`, `selection_count`, `selection_position` (1 or 2, on select) |
+| `career_project_selection_completed` | "Start" with a valid selection | `project_ids`, `selection_count`, `comparison_id` |
+| `comparison_started` | Same moment, reused from V1 | `comparison_id`, `selected_project_count`, `project_ids` |
+| `question_view` | A question is exposed (Back = new exposure, refresh = none) | `question_id`, `question_index` (answers so far + 1), `question_mode` (`generic` or `precision`), `question_kind` (`scenario`, `focus`, `reality_check`; absent for V1 precision questions), `is_generated_focus`, `focus_program_count` (2 or 3, generated only) |
+| `question_answer` | An accepted answer | the same, plus `answer_id`, `is_neutral` |
+| `precision_module_handoff` | The flow enters the V1 module (Spotify alone: unseeded at start) | `module_id: "v1_tech"`, `seeded_answer_count` (carried answers: 0 or 1) |
+| `comparison_completed`, `recommended_program` | The journey completes (`recommended_program` only with a recommendation) | result parameters below, `questions_answered` |
+| `studymatch_result_view` | The result is shown (once per completed result) | result parameters below |
+| `official_program_click` | An official program page link is opened | `program_id`, `link_role` (`primary`, `alternative`, `peer`) + result parameters |
+| `admission_click`, `advisor_cta_click`, `mirror_response`, `secondary_program_view`, `reality_check_view` | Same semantics as V1, on the V2 result | `program_id` where applicable + result parameters |
+| `discovery_back` | Back is used and changes state | `questions_answered` (before Back) |
+| `restart_comparison` | Restart with something to clear | `questions_answered` |
+
+**Result parameters:** `result_kind` (`recommended`, `near_tie`, `insufficient_positive_evidence`, `v1_precision_result`), `recommended_program` (only when one exists), `alternative_programs` (canonical list: the runner-up, both near-tie programs, or the one weak direction), `selected_project_count`, `scored_answer_count` (answers that went through generic scoring, neutral ones included), `total_answer_count` (every candidate answer including reality checks and precision questions). V1 events keep `fit_classification`, `main_decision_pair` and the V1 `result_kind` values; V2 events never set them.
+
+### V2 lead form events (review pass)
+All carry `flow_version: "v2"`, `comparison_id` (the same id the lead payload sends, so a lead can be joined to its StudyMatch journey) and the result parameters above. **They never carry a field value** (no name, phone, consent text or anything typed); a test asserts the vocabulary has no personal-data parameter.
+
+| Event | Fired when | Extra parameters |
+|---|---|---|
+| `lead_form_view` | The lead form scrolls into view (once per completed result) | - |
+| `lead_form_submit` | A submission attempt started: the form passed client validation and the request is sent | - |
+| `lead_form_success` | Only after `/api/v2/lead` answered 200 (the webhook accepted the lead) | - |
+| `lead_form_error` | A failed attempt | `error_type`: `validation` (client or server field errors), `server` (non-2xx, incl. 503 not configured), `network` |
+
+The V1 `lead_submit` event is unchanged and unused by V2.
+
+New parameter names: `error_type` and `flow_version`, `project_id`, `project_ids`, `project_count_available`, `selected_project_count`, `selection_count`, `selection_position`, `question_mode`, `question_kind`, `is_generated_focus`, `focus_program_count`, `is_neutral`, `module_id`, `seeded_answer_count`, `alternative_programs`, `scored_answer_count`, `total_answer_count`, `link_role`.
+
+Analysis hints: group V2 runs by `comparison_id` and `flow_version`; demand by `project_ids`; neutral rate by question with `is_neutral`; how often generated focus appears with `is_generated_focus`; the journey length distribution with `total_answer_count` on `studymatch_result_view`; handoff rate with `precision_module_handoff`.
+
 ## Known gaps and notes
 - `reality_check_view` carries `program_id` but not a check id. Current data has one check per program, so this is sufficient; add a `check_id` parameter if a program ever has several.
 - Consent management and production GTM container configuration are out of scope here; events are pushed to the dataLayer and GTM decides what to forward.

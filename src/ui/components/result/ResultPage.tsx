@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { ResultView } from "@/flow";
 import {
   ResultHero,
@@ -24,7 +25,16 @@ import { CtaSection, NotYouSection, type ResultActionHandlers } from "./ResultAc
  * Order: answer first (hero), then why, the mirror, the real decision, what it means in practice, warnings,
  * the other option, why COLMAN (only after the fit explanation), actions, and an escape hatch.
  */
-export function ResultPage({ view, handlers }: { view: ResultView; handlers: ResultActionHandlers }) {
+export function ResultPage({
+  view,
+  handlers,
+  leadSlot,
+}: {
+  view: ResultView;
+  handlers: ResultActionHandlers;
+  /** Optional conversion block rendered after the actions and before the escape hatch (used by V2 only). */
+  leadSlot?: ReactNode;
+}) {
   return (
     <div className="space-y-5" data-result-kind={view.kind}>
       <ResultHero view={view} />
@@ -43,6 +53,7 @@ export function ResultPage({ view, handlers }: { view: ResultView; handlers: Res
       )}
       <WhyColmanSection view={view} />
       <CtaSection view={view} handlers={handlers} />
+      {leadSlot}
       <NotYouSection handlers={handlers} />
     </div>
   );
