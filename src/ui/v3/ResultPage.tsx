@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { V3_COPY, type ExperienceCopy } from "@/data";
 import type { V3Note, V3PairView, V3Program, V3ResultView } from "@/flow";
+import type { ExperienceFlowVersion } from "@/ui/experience/ExperienceContext";
 import { LogoMark, StickyBar, v3Primary, v3Secondary } from "./shared";
 
 export interface V3ResultHandlers {
@@ -148,7 +149,7 @@ export function ResultPage({
   handlers: V3ResultHandlers;
   leadForm: ReactNode;
   /** Which experience renders the result (marker only; the layout is the same). */
-  flow?: "v3" | "v4";
+  flow?: ExperienceFlowVersion;
   /** The experience's result copy (V3 by default; V4 passes its gender-inclusive wording). */
   copy?: ResultCopy;
 }) {

@@ -3,11 +3,13 @@ import {
   getCatalogProgram,
   getSource,
   getV2QuestionCopy,
+  getV5ProjectQuestionCopy,
   getWorldQuestionCopy,
   PROGRAM_MEANING,
   V2_PROGRAM_IDS,
   V3_COPY,
   V3_WORLD_CLUSTERS,
+  V5_PROJECT_CLUSTERS,
 } from "@/data";
 import type { ProgramId, RealityLevel, RecordedAnswer, V2Step } from "@/engine";
 import type { DiscoveryStrategyId } from "./journey";
@@ -161,7 +163,10 @@ function chosenFor(step: Extract<V2Step, { status: "complete" }>, programId: Pro
         const index = Number(answer.questionId.split(":").at(-1));
         return Number.isInteger(index) ? (getCatalogProgram(programId)?.workStatementsHe[index] ?? null) : null;
       }
-      const copy = getWorldQuestionCopy(answer.questionId) ?? getV2QuestionCopy(answer.questionId);
+      const copy =
+        getWorldQuestionCopy(answer.questionId) ??
+        getV5ProjectQuestionCopy(answer.questionId) ??
+        getV2QuestionCopy(answer.questionId);
       return copy?.options.find((option) => option.id === answer.answerId)?.label ?? null;
     })
     .filter((label): label is string => label !== null)
@@ -220,14 +225,17 @@ export function buildV3ResultView(
     textHe: text(reality.bodyHe),
     important: true,
   }));
-  // A V1 card for a module question that a world scenario answered (Tech: WT1 carried in as Q1) shows the candidate's
-  // own world answer, not the V1 copy of a question they never saw.
+  // A V1 card for a module question that a world or V5 project opener answered (Tech: WT1 / the V5 Spotify opener
+  // carried in as Q1) shows the candidate's own answer, not the V1 copy of a question they never saw.
   const carriedFrom = (questionId: string, answerId: string): string | null => {
-    const source = V3_WORLD_CLUSTERS.flatMap((cluster) => cluster.questions).find(
-      (question) => question.reuses?.questionId === questionId && step.state.askedQuestionIds.includes(question.id),
-    );
+    const source = [...V3_WORLD_CLUSTERS, ...V5_PROJECT_CLUSTERS]
+      .flatMap((cluster) => cluster.questions)
+      .find(
+        (question) => question.reuses?.questionId === questionId && step.state.askedQuestionIds.includes(question.id),
+      );
     if (!source) return null;
-    return getWorldQuestionCopy(source.id)?.options.find((option) => option.id === answerId)?.label ?? null;
+    const copy = getWorldQuestionCopy(source.id) ?? getV5ProjectQuestionCopy(source.id);
+    return copy?.options.find((option) => option.id === answerId)?.label ?? null;
   };
   const chosenHe = v1.evidence
     .filter((card) => card.kind !== "mixed")

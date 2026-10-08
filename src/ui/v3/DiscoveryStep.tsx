@@ -6,7 +6,7 @@ import { DISCOVERY_OPENING, V3_WORLD_OPENING, V4_COPY } from "@/data";
 import { canStartJourney } from "@/flow";
 import type { EntryMode } from "@/ui/experience/ExperienceContext";
 import { useV3, useV3Guard } from "@/ui/state/V3Provider";
-import { BrandProjectCard, WorldCard } from "./DiscoveryCards";
+import { BrandProjectCard, ProjectCard, WorldCard } from "./DiscoveryCards";
 import { ProgressHeader, StickyBar, v3Primary } from "./shared";
 
 /**
@@ -82,6 +82,8 @@ export function DiscoveryStep({ mode }: { mode?: EntryMode } = {}) {
           <li key={entryId} className="flex">
             {worlds ? (
               <WorldCard worldId={entryId} selected={selected.includes(entryId)} onPress={handlePress} />
+            ) : strategy.id === "projects" ? (
+              <ProjectCard projectId={entryId} selected={selected.includes(entryId)} onPress={handlePress} />
             ) : (
               <BrandProjectCard projectId={entryId} selected={selected.includes(entryId)} onPress={handlePress} />
             )}

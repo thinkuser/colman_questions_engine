@@ -25,6 +25,9 @@ V2 lets a candidate pick one or two career projects (Spotify, Wolt, TikTok, Duol
 ## V4 (dual-entry experiment)
 `/v4` uses the redesigned UX and lets the candidate choose how to discover: working worlds (V3 content) or brand projects (V2 content), on the same engine. `/v4/worlds` and `/v4/projects` are direct experiment URLs. V2 (brand-only) and V3 (world-only) remain the production baselines; the final direction is not chosen yet. See `docs/V4_EXPERIENCE.md`.
 
+## V5 (balanced project-led discovery)
+`/v5` keeps V4's dual-entry structure and inclusive Hebrew, but the projects path offers ten balanced project-led entries (`PROJECT_STRATEGY`) that give all 14 programs a direct door. Worlds are identical to V4. `/v5/worlds` and `/v5/projects` are direct experiment URLs. V1–V4 are historical baselines (V4 tag `studymatch-v4-dual-entry-baseline`); the final direction is not chosen yet. See `docs/V5_EXPERIENCE.md` and DEC-037.
+
 ## Product architecture
 `Program data → Question bank → Adaptive selector → Candidate vector → Deterministic fit engine → Explanation/result experience → Analytics/lead handoff`
 

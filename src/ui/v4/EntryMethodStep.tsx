@@ -8,13 +8,15 @@ import { useExperience, useExperienceGuard } from "@/ui/experience/ExperienceCon
 import { V4_PATHS } from "@/ui/routes";
 import { ProgressHeader } from "@/ui/v3/shared";
 
+const v4DiscoverPath = (mode: EntryMode) => (mode === "projects" ? V4_PATHS.projects : V4_PATHS.worlds);
+
 /**
- * V4: how would the candidate like to start? Two equal options (working worlds or projects). This is NOT a question:
+ * V4/V5: where is the candidate in the decision? Two equal options (working worlds or projects). This is NOT a question:
  * it scores nothing and is not evidence; it only selects the discovery strategy. Neither option is ranked or preferred:
  * same size, same style, worlds first only because the list must have an order.
  */
 export function EntryMethodStep() {
-  const { entryMode, selectEntryMode, analytics, hydrated } = useExperience();
+  const { entryMode, selectEntryMode, analytics, hydrated, pathFor, discoverPathFor } = useExperience();
   const allowed = useExperienceGuard("start");
   const router = useRouter();
   const viewToken = useId();
@@ -29,7 +31,7 @@ export function EntryMethodStep() {
   function choose(mode: EntryMode) {
     analytics.methodSelected?.(mode);
     selectEntryMode(mode);
-    router.push(mode === "projects" ? V4_PATHS.projects : V4_PATHS.worlds);
+    router.push((discoverPathFor ?? v4DiscoverPath)(mode));
   }
 
   const options: Array<{ mode: EntryMode; title: string; description: string; cue: string }> = [
@@ -77,7 +79,7 @@ export function EntryMethodStep() {
       <button
         type="button"
         className="min-h-11 rounded-lg px-3 text-colman-blue underline"
-        onClick={() => router.push(V4_PATHS.landing)}
+        onClick={() => router.push(pathFor("landing"))}
       >
         {copy.back}
       </button>

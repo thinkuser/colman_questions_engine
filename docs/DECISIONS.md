@@ -270,6 +270,19 @@ Full description and pressure-test traces: `docs/V2_SCORING.md`. Code: `src/engi
 - **Open, proposed, pending product review:** a generic **"no strong fit" threshold**. V1's normalized-fit thresholds are not transplanted into V2 points, and the accepted V2 docs define none. Until decided, the generic engine reports only `recommended`, `near_tie` or `insufficient_positive_evidence`.
 - **Accepted product decisions (THI-14 review):** a cross-cluster Spotify journey may exceed 5–7 questions (generic questions before handoff plus V1's remaining ones); THI-16 QA must measure it. V1 `Q1` stays the Spotify question (no duplicate Discover Weekly question).
 
+## DEC-037 — V5 Balanced Project-led Discovery
+Status: accepted for review — V5 PR.
+
+- **V4 = dual entry with the original Brand-led Projects** (worlds or V2's seven brand projects, `BRAND_STRATEGY`). **V5 = dual entry with balanced Project-led Discovery** (worlds or ten new projects, `PROJECT_STRATEGY`), at `/v5`. V4 is frozen as tag `studymatch-v4-dual-entry-baseline` (`cbfa8c0`) and is not redefined. **The final production direction is still NOT chosen.**
+- **Project card selection is routing only** (pool + opening scenario; 0 points, 0 support, not evidence). **The project opener is evidence (+3, the existing scenario weight).** No neutral answer on openers; no new score values; thresholds, weights, DEC-018 and V1 classification unchanged.
+- **All 14 programs have a direct project-opener answer** (tested). Display order is fixed and is not a ranking.
+- Two projects: openers in the candidate's **selection order** (no points from order), then the existing evidence-aware routing. Documented and tested as intentional.
+- `PROJECT_STRATEGY` is a new strategy; `BRAND_STRATEGY` stays frozen for V2/V4. V5 projects are "doors" adapted exactly like V3 worlds through a shared adapter extracted unchanged from the world builder (V3 output byte-identical). V5 Worlds is the same `WORLD_STRATEGY` as V3/V4.
+- The Spotify opener reuses V1 Q1 (same answer ids, same mechanism as WT1): V1 continues at Q2, Q1 is never asked twice or double counted. Spotify has `business_administration` as adjacent (like the Technology world) because an all-Tech pool hands off to V1 before any opener.
+- Follow-ups are existing authored questions borrowed by id (incl. WO2–WO5 for People / HR); V5 authors only its ten openers.
+- **V5 inherits DEC-036 gender-inclusive presentation** (V4's screen copy, lead copy and text seam); the V5 project content is authored inclusive. V1–V4 copy unchanged.
+- Own storage key (`colman-studymatch:v5:journey`), analytics (`flow_version: "v5"` + `entry_mode`), and **flow-version-specific lead validation** (V4 rejects V5-only project ids and vice versa). The n8n workflow only gained `v5` in its version whitelist (`source = colman_studymatch_v5`).
+
 ## DEC-036 — V4 candidate-facing Hebrew is gender-inclusive
 Status: accepted for review — V4 gender-inclusive copy PR.
 

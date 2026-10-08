@@ -34,3 +34,17 @@ export const V4_PATHS = {
   questions: "/v4/questions",
   result: "/v4/result",
 } as const;
+
+/**
+ * V5 (dual entry with balanced project-led discovery, DEC-037) lives under /v5. Same structure as V4; /v5/projects shows
+ * the ten V5 projects, never V4's. No route redirects between V4 and V5.
+ */
+export const V5_PATHS = {
+  landing: "/v5",
+  start: "/v5/start",
+  worlds: "/v5/worlds",
+  projects: "/v5/projects",
+  ready: "/v5/ready",
+  questions: "/v5/questions",
+  result: "/v5/result",
+} as const;

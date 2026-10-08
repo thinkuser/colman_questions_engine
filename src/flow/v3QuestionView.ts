@@ -1,10 +1,10 @@
-import { getWorldQuestionCopy } from "@/data";
+import { getV5ProjectQuestionCopy, getWorldQuestionCopy } from "@/data";
 import type { V2Step } from "@/engine";
 import { buildV2QuestionView, type V2QuestionKind, type V2QuestionView } from "./v2QuestionView";
 
 /**
- * Question view for the V3 experience. World questions (each world's opening scenario and the People/HR follow-ups)
- * carry their own copy; every other question (borrowed V2 focus questions, generated focus questions, reality checks,
+ * Question view for the redesigned experience (V3/V4/V5). World questions (each world's opening scenario and the
+ * People/HR follow-ups) and V5 project openers carry their own copy; every other question (borrowed V2 focus questions, generated focus questions, reality checks,
  * V1 Tech precision questions) is rendered exactly as V2 renders it.
  *
  * `text` is the experience's presentation seam for the candidate-facing strings (V3: identity; V4: its
@@ -25,7 +25,7 @@ export function buildV3QuestionView(
 function baseQuestionView(step: Extract<V2Step, { status: "ask" }>): V2QuestionView {
   if (step.mode === "generic" && step.question.source === "cluster") {
     const question = step.question.question;
-    const copy = getWorldQuestionCopy(question.id);
+    const copy = getWorldQuestionCopy(question.id) ?? getV5ProjectQuestionCopy(question.id);
     if (copy) {
       return {
         id: question.id,

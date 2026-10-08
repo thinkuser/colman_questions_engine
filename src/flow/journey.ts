@@ -1,4 +1,13 @@
-import { CAREER_PROJECTS, V2_CLUSTERS, V3_WORLD_CLUSTERS, V3_WORLDS, worldsAsRoutingEntries } from "@/data";
+import {
+  CAREER_PROJECTS,
+  V2_CLUSTERS,
+  V3_WORLD_CLUSTERS,
+  V3_WORLDS,
+  V5_PROJECT_CLUSTERS,
+  V5_PROJECTS,
+  v5ProjectsAsRoutingEntries,
+  worldsAsRoutingEntries,
+} from "@/data";
 import {
   MAX_SELECTED_PROJECTS,
   nextV2Step,
@@ -16,11 +25,13 @@ import { nextDiscoveryStep, V1_TECH_PRECISION_MODULE, V2_WORK_STATEMENTS } from 
  *  - `brand_projects`: the V2 career projects, delegating to the unchanged V2 `nextDiscoveryStep`. V2 itself does not
  *    use this module (it keeps `discoveryFlow.ts`); this wrapper exists so the V3 experience could run brand-led.
  *  - `worlds`: the V3 working worlds, adapted into the engine's routing entries and clusters.
+ *  - `projects`: the V5 balanced projects (DEC-037), adapted exactly like worlds. NOT the V2 brand projects:
+ *    BRAND_STRATEGY stays frozen for V2/V4.
  *
  * The generic journey below mirrors the V2 reducer exactly (same accept/reject rules), parameterised by strategy.
  */
 
-export type DiscoveryStrategyId = "brand_projects" | "worlds";
+export type DiscoveryStrategyId = "brand_projects" | "worlds" | "projects";
 
 export interface DiscoveryStrategy {
   id: DiscoveryStrategyId;
@@ -55,6 +66,30 @@ export const WORLD_STRATEGY: DiscoveryStrategy = {
       // The world clusters drive the journey; the V2 clusters are present so reality checks (found by explicit
       // applicability across all clusters) reach every program exactly as in V2.
       clusters: WORLD_CLUSTERS,
+      workStatements: V2_WORK_STATEMENTS,
+      precisionModules: [V1_TECH_PRECISION_MODULE],
+      selectedProjectIds: selectedIds,
+      answers,
+    }),
+};
+
+/**
+ * V5 balanced project-led discovery (DEC-037). Same engine and same adaptation as worlds: the card selection is routing
+ * only, openers follow the candidate's SELECTION ORDER (no points), the opener is +3 evidence, and the follow-ups are
+ * existing authored questions borrowed by id. The V2 clusters are present so reality checks reach every program exactly
+ * as in V2/V3/V4.
+ */
+const PROJECT_CLUSTERS = [...V5_PROJECT_CLUSTERS, ...V2_CLUSTERS];
+
+export const PROJECT_STRATEGY: DiscoveryStrategy = {
+  id: "projects",
+  entryIds: V5_PROJECTS.filter((project) => project.enabled).map((project) => project.id),
+  maxSelected: MAX_SELECTED_PROJECTS,
+  isValidSelection: (selectedIds) => validateProjectSelection(selectedIds, v5ProjectsAsRoutingEntries(selectedIds)).ok,
+  nextStep: (selectedIds, answers) =>
+    nextV2Step({
+      projects: v5ProjectsAsRoutingEntries(selectedIds),
+      clusters: PROJECT_CLUSTERS,
       workStatements: V2_WORK_STATEMENTS,
       precisionModules: [V1_TECH_PRECISION_MODULE],
       selectedProjectIds: selectedIds,

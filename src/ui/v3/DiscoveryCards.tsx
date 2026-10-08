@@ -1,4 +1,4 @@
-import { getCareerProjectCopy, getWorld } from "@/data";
+import { getCareerProjectCopy, getV5Project, getWorld } from "@/data";
 import { useExperience } from "@/ui/experience/ExperienceContext";
 
 /**
@@ -102,6 +102,46 @@ export function BrandProjectCard({
       </span>
       <span className="block text-lg leading-snug font-bold break-words text-colman-blue-dark">{t(project.title)}</span>
       <span className="block text-base leading-snug break-words text-slate-700">{t(project.scenario)}</span>
+    </button>
+  );
+}
+
+/**
+ * A V5 balanced project (PROJECT_STRATEGY, DEC-037). Text-first: the project title in one consistent COLMAN typography
+ * (a company name is plain text: no logo, icon or brand colour), then one line about the task. All ten cards share the
+ * same shell, so none looks ranked.
+ */
+export function ProjectCard({
+  projectId,
+  selected,
+  onPress,
+}: {
+  projectId: string;
+  selected: boolean;
+  onPress: (projectId: string) => void;
+}) {
+  const { t } = useExperience();
+  const project = getV5Project(projectId);
+  if (!project) return null;
+  return (
+    <button
+      type="button"
+      data-entry-id={projectId}
+      data-project-id={projectId}
+      aria-pressed={selected}
+      onClick={() => onPress(projectId)}
+      className={cardShell(selected)}
+    >
+      <span className="flex min-h-7 items-start justify-between gap-3">
+        <span
+          data-project-title
+          className="block text-lg leading-snug font-bold break-words text-colman-blue-dark [unicode-bidi:plaintext]"
+        >
+          {t(project.titleHe)}
+        </span>
+        {selected && <SelectedBadge />}
+      </span>
+      <span className="block text-base leading-snug break-words text-slate-700">{t(project.cardHe)}</span>
     </button>
   );
 }
