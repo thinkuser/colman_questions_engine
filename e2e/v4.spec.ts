@@ -48,19 +48,23 @@ test.describe("V4 landing and method choice", () => {
 
   test("the method screen offers exactly two equal options with the agreed copy", async ({ page }) => {
     await reachMethod(page);
-    await expect(page.locator("h1")).toHaveText("איך הכי קל לכם לחשוב על העתיד שלכם?");
-    await expect(
-      page.getByText("אפשר להתחיל מסוג העבודה שמעניין אתכם, או מפרויקט שהייתם רוצים להיות חלק ממנו."),
-    ).toBeVisible();
+    await expect(page.locator("h1")).toHaveText("איפה אתם נמצאים כרגע בבחירה של מה ללמוד?");
+    await expect(page.getByText("בחרו את האפשרות שהכי מתארת אתכם — ונמשיך משם.")).toBeVisible();
     await expect(page.locator("button[data-entry-mode]")).toHaveCount(2);
-    await expect(methodOption(page, "worlds")).toContainText("דרך עולם שמעניין אותי");
-    await expect(methodOption(page, "worlds")).toContainText("טכנולוגיה, אנשים, חינוך, משפטים, עסקים, עיצוב ועוד.");
+    await expect(methodOption(page, "worlds")).toContainText("יש לי כיוון שאני רוצה ללמוד");
     await expect(methodOption(page, "worlds")).toContainText(
-      "מתאים אם קל לכם לדמיין באיזה סוג סביבה או עשייה הייתם רוצים להיות.",
+      "יש תחום שמושך אותי, ואני רוצה לדייק איזה מסלול הכי מתאים לי.",
     );
-    await expect(methodOption(page, "projects")).toContainText("דרך פרויקט שהייתי רוצה לעבוד עליו");
-    await expect(methodOption(page, "projects")).toContainText("Spotify, Wolt, TikTok ופרויקטים מוכרים אחרים.");
-    await expect(methodOption(page, "projects")).toContainText("מתאים אם קל לכם להתחיל ממשימה או מוצר שמסקרנים אתכם.");
+    await expect(methodOption(page, "worlds")).toContainText(
+      "נתחיל מעולמות כמו טכנולוגיה, אנשים, חינוך, משפטים, עסקים ועיצוב.",
+    );
+    await expect(methodOption(page, "projects")).toContainText("אין לי מושג מה אני רוצה ללמוד");
+    await expect(methodOption(page, "projects")).toContainText("אני רוצה להתחיל לחקור ולגלות מה באמת מסקרן אותי.");
+    await expect(methodOption(page, "projects")).toContainText(
+      "נתחיל מפרויקטים ומשימות מוכרות ונבין יחד לאילו כיוונים אתם נמשכים.",
+    );
+    // The old framing is gone.
+    await expect(page.getByText("איך הכי קל לכם לחשוב על העתיד שלכם?")).toHaveCount(0);
     // Neither option is ranked: same width, border, background and title typography.
     await page.mouse.move(1, 1); // no hover on either card
     const readLooks = () =>
@@ -145,6 +149,27 @@ test.describe("V4 landing and method choice", () => {
       entryMode: "projects",
       selectedIds: ["nike_israel_launch", "tiktok_endless_scroll"], // selection order kept
     });
+  });
+});
+
+test.describe("V4 method screen layout and routing", () => {
+  test.use({ viewport: { width: 1280, height: 900 } });
+
+  test("Worlds is the RIGHT card and Projects the LEFT card (RTL); each routes to its own page", async ({ page }) => {
+    await reachMethod(page);
+    const worlds = (await methodOption(page, "worlds").boundingBox())!;
+    const projects = (await methodOption(page, "projects").boundingBox())!;
+    expect(worlds.x).toBeGreaterThan(projects.x); // right = worlds, left = projects
+    expect(Math.abs(worlds.y - projects.y)).toBeLessThan(2); // side by side
+    expect(Math.round(worlds.width)).toBe(Math.round(projects.width));
+    await methodOption(page, "projects").click();
+    await expect(page).toHaveURL(/\/v4\/projects$/);
+    expect(await eventsOf(page, "discovery_method_selected")).toMatchObject([
+      { entry_mode: "projects", flow_version: "v4" },
+    ]);
+    await page.getByTestId("back-to-method").click();
+    await methodOption(page, "worlds").click();
+    await expect(page).toHaveURL(/\/v4\/worlds$/);
   });
 });
 
