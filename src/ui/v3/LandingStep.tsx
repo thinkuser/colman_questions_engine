@@ -26,6 +26,12 @@ export function LandingStep() {
   const inProgress = hydrated && (state.selectedIds.length > 0 || state.answers.length > 0);
 
   function handleStart() {
+    analytics.uiClick?.({
+      element_id: "landing_start",
+      element_type: "button",
+      screen_id: "landing",
+      destination_type: "internal",
+    });
     analytics.started();
     router.push(pathFor(landingNext(inProgress)));
   }
@@ -73,7 +79,15 @@ export function LandingStep() {
           <button
             type="button"
             className="mx-auto flex min-h-11 items-center rounded-lg px-3 text-slate-600 underline"
-            onClick={() => dispatch({ type: "restart" })}
+            onClick={() => {
+              analytics.uiClick?.({
+                element_id: "landing_start_over",
+                element_type: "button",
+                screen_id: "landing",
+                destination_type: "restart",
+              });
+              dispatch({ type: "restart" });
+            }}
           >
             {copy.startOver}
           </button>

@@ -29,3 +29,36 @@ export const V5_LEAD_COPY: LeadCopy = V4_LEAD_COPY;
 
 /** V5's text seam: V4's inclusive wording of shared content; V5's own content is authored inclusive and passes as is. */
 export const v5Text: (text: string) => string = v4Text;
+
+/**
+ * V5 pilot result feedback (DEC-038). Structured choices only (no free text). The values are the canonical analytics
+ * values; the labels are candidate-facing and never sent. Wording follows DEC-036 ("שקיבלת" is spelled the same for
+ * every gender). "קשה לי לדעת" (not_sure) is gender-neutral.
+ */
+export const V5_FEEDBACK_COPY = {
+  title: "שאלה או שתיים לשיפור StudyMatch",
+  note: "לא חובה. התשובות עוזרות לנו לשפר את הכלי.",
+  fit: {
+    question: "עד כמה הכיוון שקיבלת מרגיש מתאים?",
+    options: [
+      { value: "very_suitable", label: "מאוד מתאים" },
+      { value: "quite_suitable", label: "די מתאים" },
+      { value: "not_sure", label: "קשה לי לדעת" },
+      { value: "not_suitable", label: "לא מתאים" },
+    ],
+  },
+  helpfulness: {
+    question: "האם התהליך עזר לצמצם את האפשרויות?",
+    /** For an insufficient-evidence result: there is no recommendation to judge, only the process. */
+    insufficientQuestion: "האם התהליך עזר להבין קצת יותר מה מתאים ומה פחות?",
+    options: [
+      { value: "yes", label: "כן" },
+      { value: "somewhat", label: "קצת" },
+      { value: "no", label: "לא" },
+    ],
+  },
+  submit: "שליחת המשוב",
+  thanks: "תודה! המשוב עוזר לנו לשפר את StudyMatch.",
+} as const;
+
+export type ResultFeedbackCopy = typeof V5_FEEDBACK_COPY;

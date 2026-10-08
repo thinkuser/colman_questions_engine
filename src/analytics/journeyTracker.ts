@@ -13,6 +13,15 @@ import {
 import { hasUtm, parseUtm, UTM_KEYS, type UtmContext } from "./context";
 import type { AnalyticsEventName, AnalyticsParamName, AnalyticsParams } from "./events";
 import type { StorageLike } from "./funnelTracker";
+import {
+  FEEDBACK_FIT_VALUES,
+  FEEDBACK_HELPFULNESS_VALUES,
+  FEEDBACK_VERSION,
+  type FeedbackFit,
+  type FeedbackHelpfulness,
+  type ResultFeedbackAnswers,
+  type UiClickParams,
+} from "./pilot";
 import { trackEvent, type DataLayerEvent, type DataLayerHost } from "./track";
 
 /**
@@ -85,6 +94,16 @@ const StoredContextSchema = z.strictObject({
 
 const isRunning = (state: JourneyState) => state.phase === "answering";
 const canonical = (ids: readonly string[]) => [...new Set(ids)].sort().join("|");
+
+/** Drop undefined / empty values: a non-applicable parameter is omitted, never sent as "". */
+function pickDefined(params: object): AnalyticsParams {
+  const out: Record<string, string | number | boolean> = {};
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null || value === "") continue;
+    out[key] = value as string | number | boolean;
+  }
+  return out as AnalyticsParams;
+}
 
 function defaultUuid(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
@@ -242,6 +261,51 @@ export class JourneyTracker {
   realityCheckViewed(programId: string): void {
     if (!this.once(`reality:${this.journeyId}:${this.epoch}:${programId}`)) return;
     this.resultEvent("reality_check_view", { program_id: programId });
+  }
+
+  // --- V5 pilot measurement (DEC-038) ---------------------------------------------------------------------------------
+
+  /**
+   * A candidate click (UX evidence, in addition to the semantic events). Carries the journey context, the current
+   * question's position on a question screen, and the result context on result / lead / feedback screens. Ids only:
+   * never a label, an answer text or a field value.
+   */
+  uiClick(params: UiClickParams): void {
+    this.safely(() => {
+      const step = journeyStep(this.strategy, this.state);
+      const onResult = params.screen_id === "result" || params.screen_id === "lead" || params.screen_id === "feedback";
+      const result = onResult ? this.result() : null;
+      const question =
+        params.screen_id === "question" && step?.status === "ask"
+          ? this.questionParams(buildV3QuestionView(step), this.state.answers.length + 1)
+          : {};
+      this.emit("ui_click", {
+        ...this.context(),
+        ...(result ? this.resultParams(result) : {}),
+        ...question,
+        ...pickDefined(params),
+      });
+    });
+  }
+
+  /** The pilot feedback block was exposed (once per result state). */
+  resultFeedbackViewed(): void {
+    if (!this.once(`feedback:${this.journeyId}:${this.epoch}`)) return;
+    this.resultEvent("result_feedback_view", { feedback_version: FEEDBACK_VERSION });
+  }
+
+  /** Structured pilot feedback. Unknown values are dropped; an empty submission emits nothing. */
+  resultFeedbackSubmitted(answers: ResultFeedbackAnswers): void {
+    const fit = FEEDBACK_FIT_VALUES.includes(answers.fit as FeedbackFit) ? answers.fit : undefined;
+    const helpfulness = FEEDBACK_HELPFULNESS_VALUES.includes(answers.helpfulness as FeedbackHelpfulness)
+      ? answers.helpfulness
+      : undefined;
+    if (!fit && !helpfulness) return;
+    this.resultEvent("result_feedback_submit", {
+      feedback_version: FEEDBACK_VERSION,
+      ...(fit ? { feedback_fit: fit } : {}),
+      ...(helpfulness ? { feedback_helpfulness: helpfulness } : {}),
+    });
   }
 
   // --- Lead (metadata only: never a field value) --------------------------------------------------------------------

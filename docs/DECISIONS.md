@@ -270,6 +270,16 @@ Full description and pressure-test traces: `docs/V2_SCORING.md`. Code: `src/engi
 - **Open, proposed, pending product review:** a generic **"no strong fit" threshold**. V1's normalized-fit thresholds are not transplanted into V2 points, and the accepted V2 docs define none. Until decided, the generic engine reports only `recommended`, `near_tie` or `insufficient_positive_evidence`.
 - **Accepted product decisions (THI-14 review):** a cross-cluster Spotify journey may exceed 5–7 questions (generic questions before handoff plus V1's remaining ones); THI-16 QA must measure it. V1 `Q1` stays the Spotify question (no duplicate Discover Weekly question).
 
+## DEC-038 — V5 pilot measurement layer
+Status: accepted for review — V5 pilot measurement PR.
+
+- Measurement never changes the product: no scoring, routing, weights, stop conditions, mappings or result selection change; V1–V4 behaviour and analytics are unchanged (every new capability is an optional experience seam that only V5 supplies).
+- **Semantic events stay the KPI source of truth** (names and meanings unchanged). New **`ui_click`** fires on every V5 candidate control *in addition to* its semantic event, with a small closed vocabulary (`element_id`, `element_type`, `screen_id`, `destination_type` + contextual ids); never labels, answer texts or field values.
+- **Outbound attribution:** every V5 http(s) link out of StudyMatch carries the fixed `utm_source=study_match&utm_medium=questionaire&utm_campaign=ai_tools` (`questionaire` is the agreed spelling). Inbound acquisition UTMs (how the candidate arrived) are separate; for V5 the entry query is now kept for the whole visit so self-selected runs keep them.
+- **Pilot feedback:** a structured, optional block on the V5 result (fit + helpfulness; helpfulness only for insufficient evidence), events `result_feedback_view` / `result_feedback_submit` (`feedback_version = v1`), one submission per result state under its own storage key. The analytics event is the single source of truth (no second n8n flow).
+- `reality_check_view` is wired on the V5 result (the redesigned result never emitted it; V3/V4 unchanged).
+- A GTM loader exists for `/v5` only and is **off until `NEXT_PUBLIC_GTM_ID` is set**. GTM / GA4 / custom definitions / dashboard are documented, not configured.
+
 ## DEC-037 — V5 Balanced Project-led Discovery
 Status: accepted for review — V5 PR.
 

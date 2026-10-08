@@ -277,8 +277,12 @@ test.describe("V5 result and lead", () => {
   test("every journey event carries flow_version v5 and entry_mode", async ({ page }) => {
     await reachV5ProjectResult(page, V5_PATHS_TO.nearTie);
     await expect(v5Result(page)).toHaveAttribute("data-result-kind", "near_tie");
+    // Pre-journey events (no mode exists yet): the landing view / start / method view, and landing-screen ui_click
+    // (DEC-038). Every other event must carry the entry mode.
     const events = (await dataLayer(page)).filter(
-      (e) => !["studymatch_landing_view", "studymatch_start", "discovery_method_view"].includes(String(e.event)),
+      (e) =>
+        !["studymatch_landing_view", "studymatch_start", "discovery_method_view"].includes(String(e.event)) &&
+        !(e.event === "ui_click" && e.screen_id === "landing"),
     );
     expect(events.length).toBeGreaterThan(5);
     for (const event of events)

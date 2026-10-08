@@ -55,6 +55,12 @@ export function DiscoveryStep({ mode }: { mode?: EntryMode } = {}) {
   const selected = state.selectedIds;
 
   function handlePress(entryId: string) {
+    // The click is reported even when the selection is refused (third card): ui_click, but no *_selected event.
+    analytics.uiClick?.(
+      worlds
+        ? { element_id: "discovery_world_card", element_type: "card", screen_id: "worlds", world_id: entryId }
+        : { element_id: "discovery_project_card", element_type: "card", screen_id: "projects", project_id: entryId },
+    );
     const isSelected = selected.includes(entryId);
     if (!isSelected && selected.length >= strategy.maxSelected) {
       setLimitShown(true);
@@ -65,6 +71,12 @@ export function DiscoveryStep({ mode }: { mode?: EntryMode } = {}) {
   }
 
   function handleContinue() {
+    analytics.uiClick?.({
+      element_id: "discovery_continue",
+      element_type: "button",
+      screen_id: worlds ? "worlds" : "projects",
+      destination_type: "internal",
+    });
     dispatch({ type: "start" });
     router.push(pathFor("ready"));
   }
@@ -98,7 +110,15 @@ export function DiscoveryStep({ mode }: { mode?: EntryMode } = {}) {
           type="button"
           data-testid="back-to-method"
           className="min-h-11 rounded-lg px-3 text-colman-blue underline"
-          onClick={() => router.push(pathFor("start"))}
+          onClick={() => {
+            analytics.uiClick?.({
+              element_id: "discovery_back",
+              element_type: "button",
+              screen_id: worlds ? "worlds" : "projects",
+              destination_type: "internal",
+            });
+            router.push(pathFor("start"));
+          }}
         >
           {V4_COPY.discovery.backToMethod}
         </button>

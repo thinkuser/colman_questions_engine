@@ -7,7 +7,7 @@ import { ProgressHeader, v3Primary } from "./shared";
 
 /** The phase shift between choosing projects and answering: how the questions work, before the first one. */
 export function TransitionStep() {
-  const { markIntroSeen, pathFor, ui } = useV3();
+  const { markIntroSeen, pathFor, ui, analytics } = useV3();
   const copy = ui.transition;
   const router = useRouter();
   const allowed = useV3Guard("ready");
@@ -37,6 +37,12 @@ export function TransitionStep() {
         className={v3Primary}
         data-testid="transition-cta"
         onClick={() => {
+          analytics.uiClick?.({
+            element_id: "ready_continue",
+            element_type: "button",
+            screen_id: "ready",
+            destination_type: "question",
+          });
           markIntroSeen();
           router.push(pathFor("questions"));
         }}

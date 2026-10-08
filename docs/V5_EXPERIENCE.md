@@ -103,6 +103,8 @@ V5 inherits V4's gender-inclusive presentation layer instead of building another
 Key `colman-studymatch:v5:journey`: `{ version: 1, flow: "v5", entryMode, phase, selectedIds, answers }`, replayed through the entry mode's strategy. V5 never reads/writes V2/V3/V4 storage; V2–V4 never read V5's (tested both ways, incl. forged V4 ids in V5 project mode). Restart clears only V5.
 
 ## Analytics
+Pilot measurement (DEC-038): `ui_click`, pilot feedback, outbound UTMs and the KPI contract are in `docs/V5_PILOT_MEASUREMENT.md`.
+
 Every V5 event carries `flow_version: "v5"`; every journey event also carries `entry_mode`. Project mode emits `career_project_*` with the **V5 project ids**; world mode emits `career_world_*`. See `docs/ANALYTICS.md` ("V5 balanced project-led discovery events") for the analysis dimensions.
 
 **Self-selection vs externally assigned entry mode:** on `/v5/start` the candidate chooses (`discovery_method_view` → `discovery_method_selected`). Traffic sent straight to `/v5/worlds` or `/v5/projects` has its mode assigned by the link: no `discovery_method_selected` is fabricated, but every downstream event still carries `entry_mode`. Compare the two populations by landing URL / presence of `discovery_method_selected`; an externally assigned split is the clean A/B design (no self-selection bias).
