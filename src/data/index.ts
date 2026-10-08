@@ -12,3 +12,5 @@ export * from "./schema";
 export * from "./sources";
 export * from "./v2LeadCopy";
 export * from "./v2ResultCopy";
+export * from "./v3Copy";
+export * from "./v3Worlds";

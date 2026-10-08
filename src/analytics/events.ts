@@ -39,6 +39,19 @@ export const ANALYTICS_EVENTS = [
   "lead_form_submit",
   "lead_form_success",
   "lead_form_error",
+  // V3 (UX redesign). Additive; every V3 event carries flow_version "v3".
+  "studymatch_landing_view",
+  "studymatch_start",
+  "question_continue",
+  "result_program_click",
+  "result_contact_click",
+  "result_all_programs_click",
+  "result_detail_expand",
+  // V3 world-led discovery (DEC-034). V2 keeps the career_project_* events; V3 never emits them.
+  "career_world_discovery_view",
+  "career_world_selected",
+  "career_world_deselected",
+  "career_world_selection_completed",
 ] as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[number];
@@ -90,6 +103,12 @@ export const ANALYTICS_PARAMS = [
   "total_answer_count",
   "link_role",
   "error_type",
+  "cta_position",
+  "detail_section",
+  "world_id",
+  "world_ids",
+  "selected_world_count",
+  "world_count_available",
 ] as const;
 
 export type AnalyticsParamName = (typeof ANALYTICS_PARAMS)[number];

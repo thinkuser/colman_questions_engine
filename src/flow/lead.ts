@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CAREER_PROJECTS, getCatalogProgram, LEAD_CONSENT_VERSION, V2_PROGRAM_IDS } from "@/data";
+import { CAREER_PROJECTS, getCatalogProgram, LEAD_CONSENT_VERSION, V2_PROGRAM_IDS, V3_WORLDS } from "@/data";
 import type { ProgramId } from "@/engine";
 import { displayName } from "./resultView";
 import type { GenericResultView, V2ResultView } from "./v2ResultView";
@@ -141,6 +141,7 @@ export function leadContextFromResult(view: V2ResultView): LeadResultContext {
 
 const programIdSchema = z.enum(V2_PROGRAM_IDS as [ProgramId, ...ProgramId[]]);
 const projectIdSchema = z.enum(CAREER_PROJECTS.map((project) => project.id) as [string, ...string[]]);
+const worldIdSchema = z.enum(V3_WORLDS.map((world) => world.id) as [string, ...string[]]);
 
 export const LeadRequestSchema = z
   .strictObject({
@@ -150,13 +151,18 @@ export const LeadRequestSchema = z
     consent: z.literal(true),
     /** Honeypot: a visually hidden field real people never fill in. Must be empty. */
     website: z.string().max(200).optional(),
+    /** Which UI version produced the lead. Optional: a request without it is a V2 lead. */
+    flow_version: z.enum(["v2", "v3"]).optional(),
     comparison_id: z.string().min(1).max(100).nullable(),
     result_kind: z.enum(LEAD_RESULT_KINDS),
     primary_program_id: programIdSchema.nullable(),
     alternative_programs: z
       .array(z.strictObject({ id: programIdSchema, role: z.enum(["alternative", "peer", "weak_direction"]) }))
       .max(3),
-    selected_project_ids: z.array(projectIdSchema).min(1).max(2),
+    /** V2 brand-led discovery: the selected career projects. Empty for a world-led (V3) lead. */
+    selected_project_ids: z.array(projectIdSchema).max(2),
+    /** V3 world-led discovery (additive, optional): the selected working worlds. Never put in selected_project_ids. */
+    selected_world_ids: z.array(worldIdSchema).max(2).optional(),
   })
   .superRefine((value, ctx) => {
     const issue = (message: string) => ctx.addIssue({ code: "custom", message });
@@ -164,6 +170,15 @@ export const LeadRequestSchema = z
     const ids = [value.primary_program_id, ...value.alternative_programs.map((entry) => entry.id)].filter(Boolean);
     if (new Set(ids).size !== ids.length) issue("duplicate program");
     if (new Set(value.selected_project_ids).size !== value.selected_project_ids.length) issue("duplicate project");
+    const worlds = value.selected_world_ids ?? [];
+    if (new Set(worlds).size !== worlds.length) issue("duplicate world");
+    if (worlds.length > 0) {
+      // A world-led lead: worlds only, and only from the V3 experience.
+      if (value.selected_project_ids.length > 0) issue("a lead has either projects or worlds, not both");
+      if (value.flow_version !== "v3") issue("world selections come from the V3 experience");
+    } else if (value.selected_project_ids.length < 1) {
+      issue("at least one selected project or world");
+    }
     const only = (role: LeadProgramRole) => roles.every((candidate) => candidate === role);
     switch (value.result_kind) {
       case "recommended":
@@ -184,11 +199,16 @@ export const LeadRequestSchema = z
 
 export type LeadRequest = z.infer<typeof LeadRequestSchema>;
 
+export type LeadFlowVersion = "v2" | "v3";
+
 export interface LeadSubmitInput extends LeadFormValues {
+  flowVersion?: LeadFlowVersion;
   website: string;
   comparisonId: string | null;
   context: LeadResultContext;
   selectedProjectIds: readonly string[];
+  /** World-led discovery (V3): the selected worlds. When given, `selected_project_ids` is sent empty. */
+  selectedWorldIds?: readonly string[];
 }
 
 /** The JSON body the browser posts. Values are sent as typed; the server trims, validates and normalises. */
@@ -199,11 +219,14 @@ export function buildLeadRequest(input: LeadSubmitInput): Record<string, unknown
     phone: input.phone,
     consent: input.consent,
     website: input.website,
+    ...(input.flowVersion ? { flow_version: input.flowVersion } : {}),
     comparison_id: input.comparisonId,
     result_kind: input.context.resultKind,
     primary_program_id: input.context.primaryProgramId,
     alternative_programs: input.context.alternatives,
-    selected_project_ids: [...input.selectedProjectIds],
+    ...(input.selectedWorldIds && input.selectedWorldIds.length > 0
+      ? { selected_project_ids: [], selected_world_ids: [...input.selectedWorldIds] }
+      : { selected_project_ids: [...input.selectedProjectIds] }),
   };
 }
 
@@ -222,13 +245,15 @@ export interface LeadWebhookPayload {
   phone_e164: string;
   consent: true;
   consent_text_version: string;
-  flow_version: "v2";
+  flow_version: LeadFlowVersion;
   comparison_id: string | null;
   result_kind: LeadResultKind;
   /** The recommendation; null for a near tie (no winner) and for insufficient positive evidence. */
   primary_program: LeadProgramRef | null;
   alternative_programs: Array<LeadProgramRef & { role: LeadProgramRole }>;
   selected_project_ids: string[];
+  /** Present only for world-led (V3) leads. */
+  selected_world_ids?: string[];
   submitted_at: string;
 }
 
@@ -254,12 +279,15 @@ export function buildLeadWebhookPayload(
     phone_e164: phone.phoneE164,
     consent: true,
     consent_text_version: LEAD_CONSENT_VERSION,
-    flow_version: "v2",
+    flow_version: request.flow_version ?? "v2",
     comparison_id: request.comparison_id,
     result_kind: request.result_kind,
     primary_program: request.primary_program_id ? programRef(request.primary_program_id) : null,
     alternative_programs: request.alternative_programs.map((entry) => ({ ...programRef(entry.id), role: entry.role })),
     selected_project_ids: [...request.selected_project_ids],
+    ...(request.selected_world_ids && request.selected_world_ids.length > 0
+      ? { selected_world_ids: [...request.selected_world_ids] }
+      : {}),
     submitted_at: submittedAt.toISOString(),
   };
 }

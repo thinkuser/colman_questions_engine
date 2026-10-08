@@ -71,6 +71,14 @@
   background-image: linear-gradient(120deg, var(--colman-blue), var(--colman-purple) 65%, var(--colman-magenta));
 }
 
+/* Deep COLMAN surface (V3 "what this means at COLMAN" section): blue gradient with soft purple/magenta glows, no extra elements. */
+.colman-dark-surface {
+  background-image:
+    radial-gradient(circle at 0% 100%, color-mix(in srgb, var(--colman-purple) 45%, transparent), transparent 45%),
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--colman-magenta) 30%, transparent), transparent 40%),
+    linear-gradient(135deg, var(--colman-blue-dark), var(--colman-blue));
+}
+
 html {
   font-family: var(--font-sans);
 }

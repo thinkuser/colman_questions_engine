@@ -2,7 +2,13 @@
 
 import { useId, useRef, useState, type ChangeEvent, type FormEvent, type RefObject } from "react";
 import { V2_LEAD_COPY } from "@/data";
-import { buildLeadRequest, validateLeadForm, type LeadField, type LeadResultContext } from "@/flow";
+import {
+  buildLeadRequest,
+  validateLeadForm,
+  type LeadField,
+  type LeadFlowVersion,
+  type LeadResultContext,
+} from "@/flow";
 import { ViewOnce } from "@/ui/components/ViewOnce";
 import { submitLead as defaultSubmitLead, type LeadSubmitResult } from "./submitLead";
 
@@ -31,6 +37,9 @@ export function LeadForm({
   comparisonId,
   analytics,
   submit = defaultSubmitLead,
+  flowVersion = "v2",
+  placeholders,
+  selectedWorldIds,
 }: {
   context: LeadResultContext;
   selectedProjectIds: readonly string[];
@@ -38,6 +47,12 @@ export function LeadForm({
   analytics: LeadFormAnalytics;
   /** Injectable for tests; defaults to the real same-origin request. */
   submit?: (body: Record<string, unknown>) => Promise<LeadSubmitResult>;
+  /** Which UI produced the lead; sent as `flow_version`. V2 is the default. */
+  flowVersion?: LeadFlowVersion;
+  /** Optional example placeholders (V3). When given, the separate phone hint is not rendered. */
+  placeholders?: { firstName: string; lastName: string; phone: string };
+  /** World-led discovery (V3): sent as `selected_world_ids` (and `selected_project_ids` stays empty). */
+  selectedWorldIds?: readonly string[];
 }) {
   const uid = useId();
   const [values, setValues] = useState({ firstName: "", lastName: "", phone: "", consent: false });
@@ -87,7 +102,15 @@ export function LeadForm({
     setStatus("submitting");
     analytics.onSubmit();
     const result = await submit(
-      buildLeadRequest({ ...values, website: honeypot, comparisonId: comparisonId(), context, selectedProjectIds }),
+      buildLeadRequest({
+        ...values,
+        flowVersion,
+        website: honeypot,
+        comparisonId: comparisonId(),
+        context,
+        selectedProjectIds,
+        selectedWorldIds,
+      }),
     ).catch((): LeadSubmitResult => ({ ok: false, kind: "network" }));
     inFlight.current = false;
 
@@ -149,6 +172,7 @@ export function LeadForm({
                     autoComplete="given-name"
                     required
                     maxLength={50}
+                    placeholder={placeholders?.firstName}
                     value={values.firstName}
                     onChange={change("firstName")}
                     aria-invalid={fieldError("firstName")}
@@ -173,6 +197,7 @@ export function LeadForm({
                     autoComplete="family-name"
                     required
                     maxLength={50}
+                    placeholder={placeholders?.lastName}
                     value={values.lastName}
                     onChange={change("lastName")}
                     aria-invalid={fieldError("lastName")}
@@ -201,15 +226,22 @@ export function LeadForm({
                   required
                   maxLength={30}
                   dir="ltr"
+                  placeholder={placeholders?.phone}
                   value={values.phone}
                   onChange={change("phone")}
                   aria-invalid={fieldError("phone")}
-                  aria-describedby={`${id("phone-hint")}${fieldError("phone") ? ` ${id("phone-error")}` : ""}`}
+                  aria-describedby={
+                    [placeholders ? null : id("phone-hint"), fieldError("phone") ? id("phone-error") : null]
+                      .filter(Boolean)
+                      .join(" ") || undefined
+                  }
                   className={`${input} text-right`}
                 />
-                <p id={id("phone-hint")} className="text-sm text-slate-600">
-                  {copy.phoneHint}
-                </p>
+                {!placeholders && (
+                  <p id={id("phone-hint")} className="text-sm text-slate-600">
+                    {copy.phoneHint}
+                  </p>
+                )}
                 {fieldError("phone") && (
                   <p id={id("phone-error")} className="text-sm font-medium text-red-700">
                     {copy.errors.phone}

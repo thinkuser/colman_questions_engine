@@ -270,6 +270,33 @@ Full description and pressure-test traces: `docs/V2_SCORING.md`. Code: `src/engi
 - **Open, proposed, pending product review:** a generic **"no strong fit" threshold**. V1's normalized-fit thresholds are not transplanted into V2 points, and the accepted V2 docs define none. Until decided, the generic engine reports only `recommended`, `near_tie` or `insufficient_positive_evidence`.
 - **Accepted product decisions (THI-14 review):** a cross-cluster Spotify journey may exceed 5–7 questions (generic questions before handoff plus V1's remaining ones); THI-16 QA must measure it. V1 `Q1` stays the Spotify question (no duplicate Discover Weekly question).
 
+## DEC-034 — V2 is the brand-led baseline, V3 the world-led experiment
+Status: accepted for review — THI-17.
+
+- **V2 (frozen) is BRAND-LED discovery** (Spotify / Wolt / TikTok... projects). It stays exactly as approved: routing, analytics, persistence, result and lead behaviour.
+- **V3 is WORLD-LED discovery**: the candidate picks 1-2 of nine working worlds (product team, growing company, content studio, clinic-type setting, HR department, school, law office, CPA firm, design studio), shown without companies, logos or brand colours.
+- The world choice is **routing only** (0 points, 0 support): it builds the candidate pool (core + adjacent) and opens the world's own first scenario (+3). Everything downstream is the SAME, unchanged engine: weights, clear-leader rule, ceiling, evidence-aware leading set, generated focus, reality checks, near-tie rules and the V1 Tech precision module. Worlds are adapted into the engine's existing data shapes; no engine code changed.
+- Two worlds open in the candidate's selection order (persisted). Order gives no points.
+- The Tech world's opener carries into V1 as Q1 (same option ids and separator, like V2's T1), so V1 never asks its own Q1 (whose copy names a brand) in V3.
+- Leads keep `POST /api/v2/lead`; V3 adds an optional `selected_world_ids` (and sends `selected_project_ids: []`); world ids never go into `selected_project_ids`. The n8n workflow is unchanged and currently ignores the new field.
+- V3 persistence is version 2 (`strategy: "worlds"`, `selectedIds`); older V3 state restarts at the landing.
+- **WT1 → V1 Q1 is an approved intentional semantic reuse** (same V1 answer ids, same V1 scoring, same carry mechanism; V1 continues at Q2; V1 Q1 is never shown in V3).
+- **People & Psychology and Education & Future deliberately share the same three-program candidate set** for the pilot (different self-identification doors, scored by their different openers; the world choice itself scores zero). To be evaluated with real usage data; no differentiating questions were added.
+- World selection stays routing-only (0 score, 0 support).
+- `selected_world_ids` is persisted in the lead sheet (n8n workflow "Colman Webhook for question engine", tab `Leads`, column S); V2 rows keep it blank and V3 rows keep `selected_project_ids` blank. Lead dedupe (`comparison_id:phone_e164`), the webhook path and the 200 response timing are unchanged.
+- **The discovery strategy and the experience are separate modules on purpose**: the V3 UX can be run with V2's brand discovery (`BRAND_STRATEGY`) if the brand-led hypothesis performs better.
+
+## DEC-033 — V3 UX redesign shipped side by side with a frozen V2
+Status: accepted for review — V3 PR.
+
+- **V2 is frozen** at commit `9a25113` (tag `studymatch-v2-ui-baseline`) and stays at `/v2`; V1 stays at `/`. The redesign lives at `/v3` in the same application so it can be compared side by side and removed without touching V2.
+- V3 is a presentation/interaction layer over the **same** engine, scoring, routing, question/program data and lead backend. Its result is built from `buildV2ResultView`, so the outcome is identical by construction; this is tested per persona in the browser.
+- V3 has its **own persistence key** (`colman-studymatch:v3:journey`, `flow:"v3"`) and analytics session; the two versions reject each other's payloads and never overwrite each other's state.
+- V3 uses explicit select-then-Continue; V2 keeps tap-to-advance. The answer and its analytics event happen only on commit.
+- The lead endpoint is shared (`/api/v2/lead`); V3 sends `flow_version: "v3"`. No new webhook, no n8n change.
+- V3 result copy is deterministic curated copy (`PROGRAM_MEANING`, `PAIR_CONTENT`), interest-level, with no program claims; the official College logo is stored locally.
+- Not decided here: which version `/` serves (DEC-031), and legal approval of the consent wording (DEC-032).
+
 ## DEC-032 — V2 lead capture and COLMAN visual system
 Status: accepted for review — THI-16 review pass.
 
