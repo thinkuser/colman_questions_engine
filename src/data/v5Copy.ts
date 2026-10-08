@@ -33,7 +33,7 @@ export const v5Text: (text: string) => string = v4Text;
 /**
  * V5 pilot result feedback (DEC-038). Structured choices only (no free text). The values are the canonical analytics
  * values; the labels are candidate-facing and never sent. Wording follows DEC-036 ("שקיבלת" is spelled the same for
- * every gender). Note: "לא בטוח" is the product-specified label; it is flagged for Hebrew review in the PR.
+ * every gender). "קשה לי לדעת" (not_sure) is gender-neutral.
  */
 export const V5_FEEDBACK_COPY = {
   title: "שאלה או שתיים לשיפור StudyMatch",
@@ -43,7 +43,7 @@ export const V5_FEEDBACK_COPY = {
     options: [
       { value: "very_suitable", label: "מאוד מתאים" },
       { value: "quite_suitable", label: "די מתאים" },
-      { value: "not_sure", label: "לא בטוח" },
+      { value: "not_sure", label: "קשה לי לדעת" },
       { value: "not_suitable", label: "לא מתאים" },
     ],
   },

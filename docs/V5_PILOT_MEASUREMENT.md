@@ -121,7 +121,7 @@ After the COLMAN section and before the optional details / lead form; light, opt
 
 | Result kind | Questions |
 |---|---|
-| recommended, near tie (incl. Tech precision results) | "עד כמה הכיוון שקיבלת מרגיש מתאים?" → `very_suitable` "מאוד מתאים", `quite_suitable` "די מתאים", `not_sure` "לא בטוח", `not_suitable` "לא מתאים"; "האם התהליך עזר לצמצם את האפשרויות?" → `yes` "כן", `somewhat` "קצת", `no` "לא" |
+| recommended, near tie (incl. Tech precision results) | "עד כמה הכיוון שקיבלת מרגיש מתאים?" → `very_suitable` "מאוד מתאים", `quite_suitable` "די מתאים", `not_sure` "קשה לי לדעת", `not_suitable` "לא מתאים"; "האם התהליך עזר לצמצם את האפשרויות?" → `yes` "כן", `somewhat` "קצת", `no` "לא" |
 | insufficient positive evidence | only "האם התהליך עזר להבין קצת יותר מה מתאים ומה פחות?" → `yes` / `somewhat` / `no` |
 
 Submit is enabled once any question is answered; only answered questions are sent (`feedback_fit` is never sent empty). `feedback_version = "v1"`.

@@ -268,7 +268,12 @@ describe("pilot feedback events", () => {
   it("the feedback copy offers exactly the canonical values, is inclusive and has no free text", () => {
     expect(V5_FEEDBACK_COPY.fit.question).toBe("עד כמה הכיוון שקיבלת מרגיש מתאים?");
     expect(V5_FEEDBACK_COPY.fit.options.map((o) => o.value)).toEqual([...FEEDBACK_FIT_VALUES]);
-    expect(V5_FEEDBACK_COPY.fit.options.map((o) => o.label)).toEqual(["מאוד מתאים", "די מתאים", "לא בטוח", "לא מתאים"]);
+    expect(V5_FEEDBACK_COPY.fit.options.map((o) => o.label)).toEqual([
+      "מאוד מתאים",
+      "די מתאים",
+      "קשה לי לדעת",
+      "לא מתאים",
+    ]);
     expect(V5_FEEDBACK_COPY.helpfulness.question).toBe("האם התהליך עזר לצמצם את האפשרויות?");
     expect(V5_FEEDBACK_COPY.helpfulness.insufficientQuestion).toBe("האם התהליך עזר להבין קצת יותר מה מתאים ומה פחות?");
     expect(V5_FEEDBACK_COPY.helpfulness.options.map((o) => o.value)).toEqual([...FEEDBACK_HELPFULNESS_VALUES]);
@@ -353,5 +358,19 @@ describe("machine-readable event matrix (docs/analytics/v5_event_matrix.json)", 
       for (const param of group) expect(params.has(param), param).toBe(true);
     for (const name of ["ui_click", "result_feedback_view", "result_feedback_submit", "studymatch_result_view"])
       expect(matrix.events.some((entry) => entry.event_name === name)).toBe(true);
+  });
+});
+
+describe("not_sure feedback option", () => {
+  it("shows 'קשה לי לדעת' while analytics keeps the internal value not_sure", () => {
+    const option = V5_FEEDBACK_COPY.fit.options.find((o) => o.value === "not_sure");
+    expect(option?.label).toBe("קשה לי לדעת");
+    expect(masculineHits(option!.label)).toEqual([]);
+    const h = v5Harness();
+    completeJourney(h, ["accounting_gap"]);
+    h.tracker.resultFeedbackSubmitted({ fit: "not_sure", helpfulness: "yes" });
+    const [submit] = h.events().filter((e) => e.event === "result_feedback_submit");
+    expect(submit).toMatchObject({ feedback_fit: "not_sure", feedback_helpfulness: "yes" });
+    expect(JSON.stringify(submit)).not.toContain("קשה לי לדעת");
   });
 });
