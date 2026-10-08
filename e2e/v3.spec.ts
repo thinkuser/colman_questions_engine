@@ -300,7 +300,9 @@ test.describe("result", () => {
     // COLMAN section: official logo + CTAs.
     const colman = page.getByTestId("colman-section");
     await expect(colman.getByRole("img", { name: "המכללה למינהל" })).toBeVisible();
-    await expect(colman.getByText("מה תמצאו במסלול?")).toBeVisible();
+    await expect(colman.getByRole("heading", { name: "לאיזה סוג עשייה המסלול מתחבר?" })).toBeVisible();
+    await expect(colman.getByText("דוגמאות למה שאפשר לעשות בתחום:")).toBeVisible();
+    await expect(colman).not.toContainText("מה תמצאו במסלול");
     await expect(colman.locator("a")).toHaveText(/הכירו את המסלול במכללה/);
 
     // Detail is collapsed; the escape hatch precedes the form.

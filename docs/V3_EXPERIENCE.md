@@ -25,7 +25,7 @@ Rollback is not shipping or linking `/v3` (nothing links to it yet); V2 never ch
 5. **Result (`/v3/result`)** — see below.
 
 ## Progress transparency
-No fake question count. "שלב N מתוך 3" (1 projects, 2 "מדייקים את הכיוון", 3 the result) with a three-segment bar, and during questions a deterministic line from the number of **committed** answers: 0-1 "כמה שאלות קצרות", 2-3 "אנחנו כבר מתחילים לראות כיוון", 4+ "כמעט סיימנו". (The Tech cross-cluster journey can run to 11 answers, so "כמעט סיימנו" can be shown for several questions on that path; see risks.)
+No fake question count. "שלב N מתוך 3" (1 projects, 2 "מדייקים את הכיוון", 3 the result) with a three-segment bar, and during questions a deterministic line from the number of **committed** answers: 0-1 "כמה שאלות קצרות", 2-3 "אנחנו כבר מתחילים לראות כיוון", 4+ "הכיוון כבר מתחיל להתחדד". The tone is deliberately **non-temporal**: the engine does not know how many questions remain (a Tech cross-cluster journey can run to 11 answers), so V3 never says "almost done", "one more question" or "a little left".
 
 ## Result
 Top of the page answers *what is my result / why / what next*:
@@ -34,14 +34,14 @@ Top of the page answers *what is my result / why / what next*:
 3. **למה זה מתאים לכם?** — two or three short bullets in *meaning*, not an echo of the choices ("מעניין אתכם להבין איך אנשים מגיבים למסרים"). Source: `PROGRAM_MEANING` in `src/data/v3Copy.ts` (3 curated interest-level lines per program, deterministic, no runtime generation; the number shown follows how many independent signals pointed to the program, always 2-3). The literal choices the candidate made live only inside the collapsed detail.
 4. A **materially important warning** (a negative reality check) is a calm note that is never collapsed. Other reality notes are in "מה עוד כדאי לדעת?".
 5. **Comparison / secondary** — recommended: "כיוון נוסף שכדאי להכיר"; near tie: **"מה ההבדל ביניהם?"** (below).
-6. **COLMAN section** — a distinct deep-blue/purple block with the official logo: "מה תמצאו במסלול?" (the program's verified work-imagination statements only, never invented academic facts; a note points to the official site for details), the program CTA and the contact CTA.
+6. **COLMAN section** — a distinct deep-blue/purple block with the official logo: "לאיזה סוג עשייה המסלול מתחבר?" with "דוגמאות למה שאפשר לעשות בתחום:" (the program's verified work-imagination statements only: they describe the type of activity, not literal courses or curriculum, and are never invented academic facts; the official-program CTA right below leads to the real curriculum, and a note points to the official site for details), the program CTA and the contact CTA.
 7. **Collapsed detail** (native `<details>`): "למה קיבלתי את התוצאה הזו?" (the choices) and "מה עוד כדאי לדעת?". Opening one reports `result_detail_expand`.
 8. **"לא מרגיש לכם נכון?"** → "לנסות שוב" (restart to the landing), **before** the form.
 9. **Lead form** (same component and API as V2; V3 adds example placeholders and tags the lead `flow_version: "v3"`), then **"לכל תוכניות הלימוד במכללה"** (the verified source-registry page `https://www.colman.ac.il/academics/ba/`, `colman_ba_programs_index`), then the brand disclaimer.
 10. **Sticky contact** (mobile) "דברו איתנו על המסלול": safe-area aware, steps aside while the form is on screen.
 
 ## Near-tie pair content
-`PAIR_CONTENT` (`src/data/v3Copy.ts`) is a short list of curated pairs, **not N×N**: Communication vs Communication + Management, Computer Science vs Data Science, Business vs Economics, Psychology vs Behavioral Science. Each has per-program differentiators and an "if X draws you → program" guidance line (Communication wording as specified). Lookup is order-independent (`findPairContent`). Any other pair falls back to each program's own verified work statements, without inventing distinctions (`pair.curated === false`).
+`PAIR_CONTENT` (`src/data/v3Copy.ts`) is a short list of curated pairs, **not N×N**: Communication vs Communication + Management, Computer Science vs Data Science, Business vs Economics, Psychology vs Behavioral Science. Each has per-program differentiators and an "if X draws you → program" guidance line (Communication wording as specified). Psychology is positioned on the **individual** (feelings, thoughts, motivation) and Behavioral Science on **people in groups, organizations and social environments** (culture, relationships, norms); decisions that meet money, price and risk belong to Economics + Psychology, not Behavioral Science. Lookup is order-independent (`findPairContent`). Any other pair falls back to each program's own verified work statements, without inventing distinctions (`pair.curated === false`).
 
 ## Official logo
 `public/brand/colman-logo.webp` is the College's header logo as served by `colman.ac.il` (`/content/images/logo.png`, 107x107, a WebP despite the extension). Stored locally, never hotlinked, never redrawn; shown on the landing and in the COLMAN section only. Replace the file if the College supplies a higher-resolution asset (reference by the same path).
@@ -63,7 +63,6 @@ Same endpoint (`POST /api/v2/lead`) and the same n8n webhook. The request gains 
 
 ## Known risks / next
 - Hebrew copy (landing, meaning lines, pair content) needs a native reviewer; the per-program meaning lines are interest-level and deliberately make no program claims.
-- "כמעט סיימנו" is count-based; very long Tech journeys show it early.
 - The advisor and admissions links of V2 are not in the V3 result by design (two primary actions only); they can return if product wants them.
 - The logo file is small (107 px); request a vector from the College before launch.
-- Launch switch, legal approval of the consent wording and `LEAD_WEBHOOK_URL` remain as in DEC-031 / DEC-032.
+- Open: the launch switch (DEC-031) and the College's legal approval of the consent wording (DEC-032). `LEAD_WEBHOOK_URL` is configured in Vercel (Preview + Production) and the Vercel → `/api/v2/lead` → n8n path has been verified end to end.

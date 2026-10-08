@@ -86,8 +86,21 @@ describe("V3 progress", () => {
     expect([4, 7, 11].map(progressTone)).toEqual(["late", "late", "late"]);
     expect(v3Progress(2, 0).toneHe).toBe("כמה שאלות קצרות");
     expect(v3Progress(2, 2).toneHe).toBe("אנחנו כבר מתחילים לראות כיוון");
-    expect(v3Progress(2, 5).toneHe).toBe("כמעט סיימנו");
+    expect(v3Progress(2, 5).toneHe).toBe("הכיוון כבר מתחיל להתחדד");
     expect(v3Progress(1).toneHe).toBeNull();
+  });
+});
+
+describe("V3 progress never promises the end", () => {
+  it("has no completion or remaining-effort promise in any tone, at any count", () => {
+    const forbidden = /כמעט סיימנו|עוד שאלה|נשאר|בקרוב|סוף/;
+    for (let answered = 0; answered <= 12; answered++) {
+      const progress = v3Progress(2, answered);
+      expect(`${progress.stageNameHe} ${progress.toneHe}`).not.toMatch(forbidden);
+    }
+    for (const line of [V3_COPY.progress.early, V3_COPY.progress.middle, V3_COPY.progress.late]) {
+      expect(line).not.toMatch(forbidden);
+    }
   });
 });
 
@@ -182,6 +195,34 @@ describe("V3 curated copy", () => {
     }
     expect(PAIR_CONTENT).toHaveLength(4);
     expect(findPairContent("law", "accounting")).toBeNull();
+  });
+
+  it("positions Behavioral Science around groups and organizations, and Psychology around the individual", () => {
+    const behavioral = PROGRAM_MEANING.behavioral_science!;
+    expect(behavioral.summaryHe).toBe(
+      "מתאים למי שרוצה להבין איך קבוצות, ארגונים והסביבה החברתית משפיעים על הדרך שבה אנשים מתנהגים.",
+    );
+    expect(behavioral.whyHe.join(" ")).toMatch(/קבוצות/);
+    expect(behavioral.whyHe.join(" ")).toMatch(/תרבות/);
+    // It must no longer read as behavioral economics / individual decision-making.
+    expect(behavioral.summaryHe + behavioral.whyHe.join(" ")).not.toMatch(/החלטות|נתונים|מחקר|השערות/);
+
+    const pair = findPairContent("behavioral_science", "psychology")!;
+    expect(pair.programs).toEqual(["psychology", "behavioral_science"]);
+    expect(pair.bullets[0]).toEqual(["האדם עצמו", "רגשות, מחשבות ומוטיבציה", "איך אדם חושב ומתנהג"]);
+    expect(pair.bullets[1]).toEqual(["קבוצות וארגונים", "תרבות, יחסים ונורמות", "איך הסביבה החברתית משפיעה על אנשים"]);
+    expect(pair.guidance.map((g) => [g.programId, g.ifHe])).toEqual([
+      ["psychology", "אם מושך אתכם להבין אדם לעומק: מה הוא מרגיש, חושב ולמה הוא פועל כך"],
+      ["behavioral_science", "אם מושך אתכם להבין אנשים בתוך קבוצות, ארגונים וסביבות חברתיות"],
+    ]);
+  });
+
+  it("the COLMAN section describes the type of work, not curriculum", () => {
+    expect(V3_COPY.result.colmanTitle).toBe("לאיזה סוג עשייה המסלול מתחבר?");
+    expect(V3_COPY.result.colmanExamples).toBe("דוגמאות למה שאפשר לעשות בתחום:");
+    expect(V3_COPY.result.colmanTitle + V3_COPY.result.colmanExamples).not.toMatch(
+      /תמצאו|קורסים|לימודים|תוכנית הלימודים/,
+    );
   });
 
   it("uses the agreed Communication guidance wording", () => {
