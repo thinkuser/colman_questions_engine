@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DISCOVERY_OPENING, V3_COPY, V3_WORLD_OPENING, V4_COPY } from "@/data";
+import { DISCOVERY_OPENING, V3_WORLD_OPENING, V4_COPY } from "@/data";
 import { canStartJourney } from "@/flow";
 import type { EntryMode } from "@/ui/experience/ExperienceContext";
 import { useV3, useV3Guard } from "@/ui/state/V3Provider";
@@ -26,6 +26,8 @@ export function DiscoveryStep({ mode }: { mode?: EntryMode } = {}) {
     entryMode,
     ensureEntryMode,
     hydrated,
+    ui,
+    t,
   } = useV3();
   const router = useRouter();
   const guardAllowed = useV3Guard("discover");
@@ -38,10 +40,10 @@ export function DiscoveryStep({ mode }: { mode?: EntryMode } = {}) {
   const [limitShown, setLimitShown] = useState(false);
   const worlds = strategy.id === "worlds";
   const copy = {
-    headline: worlds ? V3_WORLD_OPENING.prompt : projectsCopy.headline,
-    support: worlds ? V3_WORLD_OPENING.helper : projectsCopy.support,
-    entriesLabel: worlds ? V3_COPY.worlds.entriesLabel : V3_COPY.discovery.projectsLabel,
-    limit: worlds ? V3_COPY.worlds.limit : V3_COPY.discovery.limit,
+    headline: worlds ? t(V3_WORLD_OPENING.prompt) : projectsCopy.headline,
+    support: worlds ? t(V3_WORLD_OPENING.helper) : projectsCopy.support,
+    entriesLabel: worlds ? ui.worlds.entriesLabel : ui.discovery.projectsLabel,
+    limit: worlds ? ui.worlds.limit : ui.discovery.limit,
   };
 
   useEffect(() => {
@@ -87,7 +89,7 @@ export function DiscoveryStep({ mode }: { mode?: EntryMode } = {}) {
         ))}
       </ul>
 
-      {!worlds && <p className="text-sm leading-snug text-slate-500">{DISCOVERY_OPENING.brandDisclaimer}</p>}
+      {!worlds && <p className="text-sm leading-snug text-slate-500">{t(DISCOVERY_OPENING.brandDisclaimer)}</p>}
 
       {hasEntryChoice && (
         <button
@@ -115,7 +117,7 @@ export function DiscoveryStep({ mode }: { mode?: EntryMode } = {}) {
             aria-live="polite"
             data-testid="selection-status"
           >
-            {V3_COPY.discovery.selectedCount(selected.length)}
+            {ui.discovery.selectedCount(selected.length)}
           </span>
           <button
             type="button"
@@ -124,7 +126,7 @@ export function DiscoveryStep({ mode }: { mode?: EntryMode } = {}) {
             onClick={handleContinue}
             data-testid="discover-continue"
           >
-            {V3_COPY.discovery.next}
+            {ui.discovery.next}
           </button>
         </div>
       </StickyBar>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { V3_COPY } from "@/data";
+import type { ExperienceCopy } from "@/data";
 import { buildV3QuestionView, journeyStep, type V2QuestionView } from "@/flow";
 import { useV3, useV3Guard } from "@/ui/state/V3Provider";
 import { ProgressHeader, StickyBar, v3Primary } from "./shared";
@@ -18,8 +18,10 @@ function QuestionPanel({
   onBack,
   onRestart,
   answered,
+  copy,
 }: {
   view: V2QuestionView;
+  copy: ExperienceCopy["questions"];
   onContinue: (optionId: string) => void;
   onBack: () => void;
   onRestart: () => void;
@@ -27,7 +29,6 @@ function QuestionPanel({
 }) {
   const [selected, setSelected] = useState<string | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
-  const copy = V3_COPY.questions;
   const headingId = `q-${view.id}`;
 
   useEffect(() => {
@@ -110,11 +111,11 @@ function QuestionPanel({
 }
 
 export function QuestionStep() {
-  const { strategy, state, dispatch, restartToLanding, analytics } = useV3();
+  const { strategy, state, dispatch, restartToLanding, analytics, ui, t } = useV3();
   const allowed = useV3Guard("questions");
 
   const step = useMemo(() => (allowed ? journeyStep(strategy, state) : null), [allowed, strategy, state]);
-  const view = useMemo(() => (step?.status === "ask" ? buildV3QuestionView(step) : null), [step]);
+  const view = useMemo(() => (step?.status === "ask" ? buildV3QuestionView(step, t) : null), [step, t]);
 
   const exposureKey = view ? `${state.answers.length}:${view.id}` : null;
   useEffect(() => {
@@ -126,8 +127,8 @@ export function QuestionStep() {
   if (!view) {
     return (
       <div className="space-y-2" role="alert">
-        <h1 className="text-xl font-bold">{V3_COPY.questions.gapTitle}</h1>
-        <p className="text-slate-700">{V3_COPY.questions.gapBody}</p>
+        <h1 className="text-xl font-bold">{ui.questions.gapTitle}</h1>
+        <p className="text-slate-700">{ui.questions.gapBody}</p>
       </div>
     );
   }
@@ -136,6 +137,7 @@ export function QuestionStep() {
     <QuestionPanel
       key={`${state.answers.length}:${view.id}`}
       view={view}
+      copy={ui.questions}
       answered={state.answers.length}
       onContinue={(answerId) => {
         // question_continue first (it describes the question being committed), then the commit derives question_answer.

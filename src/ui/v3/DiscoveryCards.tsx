@@ -1,4 +1,5 @@
-import { getCareerProjectCopy, getWorld, V3_COPY } from "@/data";
+import { getCareerProjectCopy, getWorld } from "@/data";
+import { useExperience } from "@/ui/experience/ExperienceContext";
 
 /**
  * Discovery cards for the V3 experience, one per discovery strategy. The card shell (button, selection state,
@@ -7,12 +8,13 @@ import { getCareerProjectCopy, getWorld, V3_COPY } from "@/data";
  */
 
 function SelectedBadge() {
+  const { ui } = useExperience();
   return (
     <span className="flex shrink-0 items-center gap-1 rounded-full bg-colman-blue px-2.5 py-1 text-sm font-semibold text-white">
       <svg viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
         <path d="m3 8.5 3.2 3L13 4.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      {V3_COPY.discovery.selectedBadge}
+      {ui.discovery.selectedBadge}
     </span>
   );
 }
@@ -37,6 +39,7 @@ export function WorldCard({
   selected: boolean;
   onPress: (worldId: string) => void;
 }) {
+  const { t } = useExperience();
   const world = getWorld(worldId);
   if (!world) return null;
   return (
@@ -50,14 +53,14 @@ export function WorldCard({
     >
       <span className="flex min-h-7 items-start justify-between gap-3">
         <span className="block text-lg leading-snug font-bold break-words text-colman-blue-dark" data-world-title>
-          {world.titleHe}
+          {t(world.titleHe)}
         </span>
         {selected && <SelectedBadge />}
       </span>
       <span className="block text-sm leading-snug font-semibold text-colman-purple-ink" data-world-context>
-        {world.contextHe}
+        {t(world.contextHe)}
       </span>
-      <span className="block text-base leading-snug break-words text-slate-700">{world.lineHe}</span>
+      <span className="block text-base leading-snug break-words text-slate-700">{t(world.lineHe)}</span>
     </button>
   );
 }
@@ -75,9 +78,10 @@ export function BrandProjectCard({
   selected: boolean;
   onPress: (projectId: string) => void;
 }) {
+  const { ui, t } = useExperience();
   const project = getCareerProjectCopy(projectId);
   if (!project) return null;
-  const company = V3_COPY.companyLabels[projectId] ?? project.brandName;
+  const company = ui.companyLabels[projectId] ?? project.brandName;
   return (
     <button
       type="button"
@@ -96,8 +100,8 @@ export function BrandProjectCard({
         </span>
         {selected && <SelectedBadge />}
       </span>
-      <span className="block text-lg leading-snug font-bold break-words text-colman-blue-dark">{project.title}</span>
-      <span className="block text-base leading-snug break-words text-slate-700">{project.scenario}</span>
+      <span className="block text-lg leading-snug font-bold break-words text-colman-blue-dark">{t(project.title)}</span>
+      <span className="block text-base leading-snug break-words text-slate-700">{t(project.scenario)}</span>
     </button>
   );
 }

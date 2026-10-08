@@ -1,8 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 import { V2_PERSONAS } from "../tests/flow/v2Personas";
-import { V3_PERSONAS } from "../tests/flow/v3Personas";
+import { V3_PERSONAS, v3PersonaChoice } from "../tests/flow/v3Personas";
 import { dataLayer, runPersonaInBrowser, startDiscovery } from "./discoveryHelpers";
-import { LEAD_PII, fillLead, leadSubmit, mockLeadApi } from "./leadHelpers";
+import { LEAD_PII, fillLead, mockLeadApi } from "./leadHelpers";
 import { reachV3Result } from "./v3Helpers";
 import {
   V2_KEY,
@@ -10,6 +10,7 @@ import {
   V4_KEY,
   chooseAndContinue,
   chooseMethod,
+  masculineOnScreen,
   methodOption,
   openV4,
   resetV4,
@@ -19,8 +20,10 @@ import {
   selectEntries,
   startV4,
   stored,
+  v4LeadSubmit,
   v4OptionIds,
   v4QuestionId,
+  v4Result,
 } from "./v4Helpers";
 
 /**
@@ -37,10 +40,10 @@ test.describe("V4 landing and method choice", () => {
     page,
   }) => {
     await openV4(page);
-    await expect(page.locator("h1")).toHaveText("איזה תחום לימודים יכול להתאים לכם?");
+    await expect(page.locator("h1")).toHaveText("איזה תחום לימודים יכול להתאים לך?");
     await expect(page.getByRole("img", { name: "המכללה למינהל" })).toBeVisible();
     await expect(page.getByText("כ־3–5 דקות")).toBeVisible();
-    await expect(page.getByTestId("landing-cta")).toHaveText("בואו נמצא את הכיוון שלכם");
+    await expect(page.getByTestId("landing-cta")).toHaveText("נמצא יחד את הכיוון שלך");
     await page.getByTestId("landing-cta").click();
     await expect(page).toHaveURL(/\/v4\/start$/);
     expect(await eventsOf(page, "studymatch_landing_view")).toMatchObject([{ flow_version: "v4" }]);
@@ -48,8 +51,8 @@ test.describe("V4 landing and method choice", () => {
 
   test("the method screen offers exactly two equal options with the agreed copy", async ({ page }) => {
     await reachMethod(page);
-    await expect(page.locator("h1")).toHaveText("איפה אתם נמצאים כרגע בבחירה של מה ללמוד?");
-    await expect(page.getByText("בחרו את האפשרות שהכי מתארת אתכם — ונמשיך משם.")).toBeVisible();
+    await expect(page.locator("h1")).toHaveText("מה הכי מתאר את השלב הנוכחי בבחירה של מה ללמוד?");
+    await expect(page.getByText("אפשר לבחור את האפשרות שהכי מתאימה — ונמשיך משם.")).toBeVisible();
     await expect(page.locator("button[data-entry-mode]")).toHaveCount(2);
     await expect(methodOption(page, "worlds")).toContainText("יש לי כיוון שאני רוצה ללמוד");
     await expect(methodOption(page, "worlds")).toContainText(
@@ -61,10 +64,11 @@ test.describe("V4 landing and method choice", () => {
     await expect(methodOption(page, "projects")).toContainText("אין לי מושג מה אני רוצה ללמוד");
     await expect(methodOption(page, "projects")).toContainText("אני רוצה להתחיל לחקור ולגלות מה באמת מסקרן אותי.");
     await expect(methodOption(page, "projects")).toContainText(
-      "נתחיל מפרויקטים ומשימות מוכרות ונבין יחד לאילו כיוונים אתם נמשכים.",
+      "נתחיל מפרויקטים ומשימות מוכרות ונבין יחד לאלו כיוונים יש יותר חיבור.",
     );
-    // The old framing is gone.
+    // The old framings are gone.
     await expect(page.getByText("איך הכי קל לכם לחשוב על העתיד שלכם?")).toHaveCount(0);
+    await expect(page.getByText("איפה אתם נמצאים כרגע בבחירה של מה ללמוד?")).toHaveCount(0);
     // Neither option is ranked: same width, border, background and title typography.
     await page.mouse.move(1, 1); // no hover on either card
     const readLooks = () =>
@@ -89,7 +93,7 @@ test.describe("V4 landing and method choice", () => {
     page,
   }) => {
     await chooseMethod(page, "worlds");
-    await expect(page.locator("h1")).toHaveText("איזה מעולמות העשייה האלה הכי מסקרן אתכם?");
+    await expect(page.locator("h1")).toHaveText("איזה מעולמות העשייה האלה הכי מסקרן אותך?");
     await expect(page.locator("button[data-world-id]")).toHaveCount(9);
     await expect(page.locator("button[data-project-id]")).toHaveCount(0);
     expect(await eventsOf(page, "discovery_method_selected")).toMatchObject([
@@ -108,8 +112,8 @@ test.describe("V4 landing and method choice", () => {
     page,
   }) => {
     await chooseMethod(page, "projects");
-    await expect(page.locator("h1")).toHaveText("לאיזה פרויקט הייתם הכי רוצים להצטרף?");
-    await expect(page.getByText("בחרו עד שניים שהכי מסקרנים אתכם. אין תשובה נכונה.")).toBeVisible();
+    await expect(page.locator("h1")).toHaveText("לאיזה פרויקט היית הכי רוצה להצטרף?");
+    await expect(page.getByText("אפשר לבחור עד שניים שהכי מסקרנים אותך. אין תשובה נכונה.")).toBeVisible();
     await expect(page.locator("button[data-project-id]")).toHaveCount(7);
     await expect(page.locator("button[data-world-id]")).toHaveCount(0);
     await expect(page.locator('button[data-project-id="ai_feature_privacy"] [data-company-label]')).toHaveText("AI");
@@ -179,11 +183,11 @@ test.describe("V4 projects path", () => {
     await selectEntries(page, ["wolt_new_city", "nike_israel_launch"]);
     await page.locator('button[data-project-id="apple_store_space"]').click();
     await expect(page.getByTestId("limit-message")).toHaveText(
-      "אפשר לבחור עד שני פרויקטים. בטלו בחירה אחת כדי לבחור אחרת.",
+      "אפשר לבחור עד שני פרויקטים. כדי לבחור פרויקט אחר, צריך קודם לבטל בחירה אחת.",
     );
     await expect(page.locator('button[aria-pressed="true"]')).toHaveCount(2);
     await expect(page.getByTestId("selection-status")).toHaveText("נבחרו 2 מתוך 2");
-    await expect(page.getByTestId("discover-continue")).toHaveText("בואו נמשיך");
+    await expect(page.getByTestId("discover-continue")).toHaveText("ממשיכים");
   });
 
   test("the transition, then V2 routing with V4's explicit Continue (no tap-to-advance)", async ({ page }) => {
@@ -263,7 +267,7 @@ test.describe("V4 result and lead", () => {
     const captured = await mockLeadApi(page);
     await reachV4WorldResult(page, v3Persona("law"));
     await fillLead(page);
-    await leadSubmit(page).click();
+    await v4LeadSubmit(page).click();
     await expect(page.getByTestId("lead-success")).toBeVisible();
     expect(captured[0]!.body).toMatchObject({
       flow_version: "v4",
@@ -275,7 +279,7 @@ test.describe("V4 result and lead", () => {
     await resetV4(page);
     await reachV4ProjectResult(page, v2Persona("accounting"));
     await fillLead(page);
-    await leadSubmit(page).click();
+    await v4LeadSubmit(page).click();
     await expect(page.getByTestId("lead-success")).toBeVisible();
     expect(captured[1]!.body).toMatchObject({
       flow_version: "v4",
@@ -377,5 +381,128 @@ test.describe("V4 question options", () => {
     const options = await v4OptionIds(page);
     expect(options.length).toBeGreaterThan(1);
     await expect(page.getByTestId("question-continue")).toBeDisabled();
+  });
+});
+
+test.describe("V4 gender-inclusive copy (DEC-036)", () => {
+  type Choose = (questionId: string, offered: string[], turn: number) => string;
+
+  /**
+   * Walks a whole V4 journey and scans every screen the candidate sees for masculine-only address. `press` triggers the
+   * third-selection message; then only `keep` stays selected.
+   */
+  async function scanJourney(
+    page: Page,
+    mode: "worlds" | "projects",
+    press: [string, string, string],
+    keep: string[],
+    choose: Choose,
+  ) {
+    const found: string[] = [];
+    const scan = async (where: string) => {
+      for (const hit of await masculineOnScreen(page)) found.push(`${where}: ${hit}`);
+    };
+    const captured = await mockLeadApi(page);
+    await openV4(page);
+    await scan("landing");
+    await page.getByTestId("landing-cta").click();
+    await expect(page.getByTestId("v4-method")).toBeVisible();
+    await scan("method");
+    await methodOption(page, mode).click();
+    await expect(page.locator("button[data-entry-id]").first()).toBeVisible();
+    await scan("discovery");
+    await selectEntries(page, press);
+    await expect(page.getByTestId("limit-message")).not.toBeEmpty();
+    await scan("discovery at the limit");
+    await selectEntries(
+      page,
+      press.slice(0, 2).filter((id) => !keep.includes(id)),
+    );
+    await page.getByTestId("discover-continue").click();
+    await expect(page.getByTestId("v3-transition")).toBeVisible();
+    await scan("transition");
+    await page.getByTestId("transition-cta").click();
+    const asked: string[] = [];
+    for (let turn = 0; turn < 25; turn++) {
+      await page.locator('section[data-question-id], [data-result-flow="v4"]').first().waitFor();
+      if ((await v4Result(page).count()) > 0) break;
+      const id = (await v4QuestionId(page))!;
+      asked.push(id);
+      await scan(`question ${id}`);
+      await chooseAndContinue(page, choose(id, await v4OptionIds(page), turn));
+    }
+    await expect(v4Result(page)).toBeVisible();
+    await scan("result");
+    await v4LeadSubmit(page).click(); // empty form: validation messages
+    await scan("lead validation");
+    await fillLead(page);
+    await v4LeadSubmit(page).click();
+    await expect(page.getByTestId("lead-success")).toBeVisible();
+    await scan("lead success");
+    expect(captured).toHaveLength(1);
+    return { found, asked };
+  }
+
+  const persona = (id: string): Choose => {
+    const p = v3Persona(id);
+    return (questionId, offered) => v3PersonaChoice(p, questionId, offered);
+  };
+  const rotating: Choose = (_id, offered, turn) => offered[turn % offered.length]!;
+
+  test("worlds journey into the V1 Tech precision questions: every screen is inclusive", async ({ page }) => {
+    const { found, asked } = await scanJourney(
+      page,
+      "worlds",
+      ["technology_data", "finance_accounting", "law_justice"],
+      ["technology_data"],
+      persona("tech_build"),
+    );
+    expect(asked.slice(0, 2)).toEqual(["WT1", "Q2"]);
+    expect(found).toEqual([]);
+  });
+
+  test("projects journey through Spotify's V1 Q1: every screen is inclusive", async ({ page }) => {
+    const { found, asked } = await scanJourney(
+      page,
+      "projects",
+      ["spotify_discover_weekly", "wolt_new_city", "nike_israel_launch"],
+      ["spotify_discover_weekly"],
+      rotating,
+    );
+    expect(asked[0]).toBe("Q1");
+    expect(found).toEqual([]);
+  });
+
+  test("projects journey through the V2 cluster and generated focus questions: every screen is inclusive", async ({
+    page,
+  }) => {
+    const { found, asked } = await scanJourney(
+      page,
+      "projects",
+      ["wolt_new_city", "nike_israel_launch", "apple_store_space"],
+      ["wolt_new_city", "nike_israel_launch"],
+      rotating,
+    );
+    expect(asked[0]).toBe("B1");
+    expect(found).toEqual([]);
+  });
+
+  test("a near-tie result (the difference block and the guidance) is inclusive too", async ({ page }) => {
+    const { found } = await scanJourney(
+      page,
+      "worlds",
+      ["communication_influence", "business_markets", "law_justice"],
+      ["communication_influence"],
+      persona("communication_tie"),
+    );
+    await expect(v4Result(page)).toHaveAttribute("data-result-kind", "near_tie");
+    await expect(page.getByTestId("pair-guidance")).toContainText("אם מושך אותך בעיקר ליצור ולהשפיע דרך תוכן");
+    expect(found).toEqual([]);
+  });
+
+  test("V3 keeps its approved copy (the V4 wording never leaks into /v3)", async ({ page }) => {
+    await page.goto("/v3");
+    await expect(page.locator("h1")).toHaveText("איזה תחום לימודים יכול להתאים לכם?");
+    await expect(page.getByTestId("landing-cta")).toHaveText("בואו נמצא את הכיוון שלכם");
   });
 });

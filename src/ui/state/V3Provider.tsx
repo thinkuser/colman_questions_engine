@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { V3_COPY } from "@/data";
+import { V2_LEAD_COPY, V3_COPY } from "@/data";
 import {
   initialJourneyState,
   journeyReducer,
@@ -66,6 +66,8 @@ function createShellReducer(strategy: DiscoveryStrategy) {
 }
 
 const shellReducer = createShellReducer(V3_STRATEGY);
+/** V3 renders shared content as is. */
+const identity = (text: string) => text;
 
 function load(strategy: DiscoveryStrategy): JourneyState | null {
   try {
@@ -153,6 +155,9 @@ export function V3Provider({ children }: { children: ReactNode }) {
       },
       projectsCopy: { headline: V3_COPY.discovery.headline, support: V3_COPY.discovery.support },
       hasEntryChoice: false,
+      ui: V3_COPY,
+      t: identity,
+      leadCopy: V2_LEAD_COPY,
       ensureEntryMode: () => true,
       selectEntryMode: () => {},
     }),

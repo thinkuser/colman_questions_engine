@@ -2,14 +2,13 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { V3_COPY } from "@/data";
 import { useV3, useV3Guard } from "@/ui/state/V3Provider";
 import { ProgressHeader, v3Primary } from "./shared";
 
 /** The phase shift between choosing projects and answering: how the questions work, before the first one. */
 export function TransitionStep() {
-  const copy = V3_COPY.transition;
-  const { markIntroSeen, pathFor } = useV3();
+  const { markIntroSeen, pathFor, ui } = useV3();
+  const copy = ui.transition;
   const router = useRouter();
   const allowed = useV3Guard("ready");
   const heading = useRef<HTMLHeadingElement>(null);

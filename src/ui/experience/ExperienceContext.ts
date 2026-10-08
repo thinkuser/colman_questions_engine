@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import type { ExperienceCopy, LeadCopy } from "@/data";
 import type { DiscoveryStrategy, JourneyAction, JourneyState } from "@/flow";
 import type { useV3Analytics } from "@/ui/analytics/v3Analytics";
 
@@ -11,7 +12,8 @@ import type { useV3Analytics } from "@/ui/analytics/v3Analytics";
  * projects) each supply their own value; the screens are shared and never know which version they run in.
  *
  * Only experience-specific facts live here: routes, the "where does this journey belong" rule, analytics bindings,
- * the lead flow version and entry mode, and the brand-mode copy. Business rules stay in the flow layer.
+ * the lead flow version and entry mode, and the copy (screen copy, lead copy and the text seam for shared content).
+ * Business rules stay in the flow layer.
  */
 
 export type ExperienceRoute = "landing" | "start" | "discover" | "ready" | "questions" | "result";
@@ -49,6 +51,15 @@ export interface ExperienceValue {
   landingNext: (inProgress: boolean) => ExperienceRoute;
   /** Copy for brand-led (projects) discovery in this experience. */
   projectsCopy: { headline: string; support: string };
+  /** Screen copy (V3: the approved `V3_COPY`; V4: its gender-inclusive wording, `V4_UI_COPY`). */
+  ui: ExperienceCopy;
+  /**
+   * Presentation seam for shared content strings (questions, worlds, projects, result meaning...): V3 renders them
+   * as is (identity); V4 renders its gender-inclusive wording (`v4Text`, DEC-036). Text only: never ids or mappings.
+   */
+  t: (text: string) => string;
+  /** Lead form copy (V3: `V2_LEAD_COPY`; V4: `V4_LEAD_COPY`). */
+  leadCopy: LeadCopy;
   /** V4: discovery screens offer a way back to the entry-method screen. */
   hasEntryChoice: boolean;
   /**

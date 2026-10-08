@@ -1,5 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import { personaChoice, type V2Persona } from "../tests/flow/v2Personas";
+import { masculineHits } from "../tests/flow/inclusiveScan";
 import { v3PersonaChoice, type V3Persona } from "../tests/flow/v3Personas";
 
 /** Helpers for the V4 dual-entry acceptance suite. */
@@ -9,6 +10,25 @@ export const V3_KEY = "colman-studymatch:v3:journey";
 export const V2_KEY = "colman-studymatch:v2:journey";
 
 export const v4Result = (page: Page) => page.locator('[data-result-flow="v4"]');
+
+/** V4's lead submit button (gender-inclusive wording, DEC-036; V2/V3 keep "חזרו אליי עם פרטים"). */
+export const V4_SUBMIT_NAME = "אשמח שיחזרו אליי עם פרטים";
+export const v4LeadSubmit = (page: Page) => page.getByTestId("lead-form").getByRole("button", { name: V4_SUBMIT_NAME });
+
+/**
+ * Every masculine-only phrase the candidate can perceive on the current screen: visible text, collapsed details (opened
+ * first), and accessible names (aria-label, alt). Returns "<phrase> [rule]" entries; empty when the screen is inclusive.
+ */
+export async function masculineOnScreen(page: Page): Promise<string[]> {
+  const texts = await page.evaluate(() => {
+    document.querySelectorAll("details").forEach((el) => el.setAttribute("open", ""));
+    const labels = [...document.querySelectorAll("[aria-label], img[alt]")].map(
+      (el) => el.getAttribute("aria-label") ?? el.getAttribute("alt") ?? "",
+    );
+    return [...document.body.innerText.split("\n"), ...labels].map((line) => line.trim()).filter(Boolean);
+  });
+  return texts.flatMap((text) => masculineHits(text).map((rule) => `${text} [${rule}]`));
+}
 export const v4QuestionId = (page: Page) => page.locator("section[data-question-id]").getAttribute("data-question-id");
 export const methodOption = (page: Page, mode: "worlds" | "projects") =>
   page.locator(`button[data-entry-mode="${mode}"]`);

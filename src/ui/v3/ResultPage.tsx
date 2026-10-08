@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { V3_COPY } from "@/data";
+import { V3_COPY, type ExperienceCopy } from "@/data";
 import type { V3Note, V3PairView, V3Program, V3ResultView } from "@/flow";
 import { LogoMark, StickyBar, v3Primary, v3Secondary } from "./shared";
 
@@ -14,7 +14,7 @@ export interface V3ResultHandlers {
   onRestart: () => void;
 }
 
-const copy = V3_COPY.result;
+type ResultCopy = ExperienceCopy["result"];
 const LEAD_ID = "v3-lead";
 
 function ProgramLink({
@@ -90,7 +90,7 @@ function Note({ note }: { note: V3Note }) {
   );
 }
 
-function PairBlock({ pair }: { pair: V3PairView }) {
+function PairBlock({ pair, copy }: { pair: V3PairView; copy: ResultCopy }) {
   return (
     <section
       aria-label={copy.differenceTitle}
@@ -142,12 +142,15 @@ export function ResultPage({
   handlers,
   leadForm,
   flow = "v3",
+  copy = V3_COPY.result,
 }: {
   view: V3ResultView;
   handlers: V3ResultHandlers;
   leadForm: ReactNode;
   /** Which experience renders the result (marker only; the layout is the same). */
   flow?: "v3" | "v4";
+  /** The experience's result copy (V3 by default; V4 passes its gender-inclusive wording). */
+  copy?: ResultCopy;
 }) {
   const [primary, second] = view.programs;
   const leadRef = useRef<HTMLDivElement>(null);
@@ -283,7 +286,7 @@ export function ResultPage({
       ))}
 
       {/* 4. Comparison / secondary */}
-      {view.kind === "near_tie" && view.pair && <PairBlock pair={view.pair} />}
+      {view.kind === "near_tie" && view.pair && <PairBlock pair={view.pair} copy={copy} />}
 
       {view.kind === "recommended" && second && (
         <section

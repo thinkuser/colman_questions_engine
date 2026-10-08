@@ -6,8 +6,23 @@ import { buildV2QuestionView, type V2QuestionKind, type V2QuestionView } from ".
  * Question view for the V3 experience. World questions (each world's opening scenario and the People/HR follow-ups)
  * carry their own copy; every other question (borrowed V2 focus questions, generated focus questions, reality checks,
  * V1 Tech precision questions) is rendered exactly as V2 renders it.
+ *
+ * `text` is the experience's presentation seam for the candidate-facing strings (V3: identity; V4: its
+ * gender-inclusive wording, DEC-036). It never touches ids, option order or mappings.
  */
-export function buildV3QuestionView(step: Extract<V2Step, { status: "ask" }>): V2QuestionView {
+export function buildV3QuestionView(
+  step: Extract<V2Step, { status: "ask" }>,
+  text: (he: string) => string = (he) => he,
+): V2QuestionView {
+  const view = baseQuestionView(step);
+  return {
+    ...view,
+    prompt: text(view.prompt),
+    options: view.options.map((option) => ({ ...option, label: text(option.label) })),
+  };
+}
+
+function baseQuestionView(step: Extract<V2Step, { status: "ask" }>): V2QuestionView {
   if (step.mode === "generic" && step.question.source === "cluster") {
     const question = step.question.question;
     const copy = getWorldQuestionCopy(question.id);

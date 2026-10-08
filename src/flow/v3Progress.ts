@@ -26,8 +26,16 @@ export function progressTone(committedAnswers: number): V3ProgressTone {
   return "late";
 }
 
-export function v3Progress(stage: V3Stage, committedAnswers = 0): V3Progress {
-  const copy = V3_COPY.progress;
+/** The progress copy an experience supplies (V3: `V3_COPY.progress`; V4: its gender-inclusive wording). */
+export interface V3ProgressCopy {
+  stage: (n: number) => string;
+  stageNames: Readonly<Record<number, string>>;
+  early: string;
+  middle: string;
+  late: string;
+}
+
+export function v3Progress(stage: V3Stage, committedAnswers = 0, copy: V3ProgressCopy = V3_COPY.progress): V3Progress {
   const tone = stage === 2 ? progressTone(committedAnswers) : null;
   return {
     stage,

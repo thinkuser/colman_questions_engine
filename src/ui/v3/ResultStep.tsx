@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { V3_COPY } from "@/data";
 import { buildV3ResultView, journeyStep, leadContextFromResult } from "@/flow";
 import { LeadForm } from "@/ui/discovery/LeadForm";
 import { useV3, useV3Guard } from "@/ui/state/V3Provider";
@@ -13,16 +12,16 @@ import { ProgressHeader } from "./shared";
  * V3 view model. The lead form posts to the same `/api/v2/lead` as V2, tagged `flow_version: "v3"`.
  */
 export function ResultStep() {
-  const { strategy, state, restartToLanding, analytics, flowVersion, entryMode } = useV3();
+  const { strategy, state, restartToLanding, analytics, flowVersion, entryMode, ui, t, leadCopy } = useV3();
   const allowed = useV3Guard("result");
 
   const view = useMemo(() => {
     if (!allowed) return null;
     const step = journeyStep(strategy, state);
     return step?.status === "complete"
-      ? buildV3ResultView(step, state.selectedIds, state.answers, { strategyId: strategy.id })
+      ? buildV3ResultView(step, state.selectedIds, state.answers, { strategyId: strategy.id, text: t })
       : null;
-  }, [allowed, strategy, state]);
+  }, [allowed, strategy, state, t]);
 
   useEffect(() => {
     if (view) analytics.resultViewed();
@@ -36,6 +35,7 @@ export function ResultStep() {
       <ResultPage
         flow={flowVersion}
         view={view}
+        copy={ui.result}
         handlers={{
           onProgramClick: analytics.programClick,
           onContactClick: analytics.contactClick,
@@ -48,7 +48,8 @@ export function ResultStep() {
           <LeadForm
             flowVersion={flowVersion}
             entryMode={flowVersion === "v4" ? (entryMode ?? undefined) : undefined}
-            placeholders={V3_COPY.lead.placeholders}
+            copy={leadCopy}
+            placeholders={ui.lead.placeholders}
             context={leadContextFromResult(view.base)}
             selectedProjectIds={strategy.id === "worlds" ? [] : state.selectedIds}
             selectedWorldIds={strategy.id === "worlds" ? state.selectedIds : undefined}
