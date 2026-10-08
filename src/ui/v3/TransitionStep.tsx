@@ -3,14 +3,13 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { V3_COPY } from "@/data";
-import { V3_PATHS } from "@/ui/routes";
 import { useV3, useV3Guard } from "@/ui/state/V3Provider";
 import { ProgressHeader, v3Primary } from "./shared";
 
 /** The phase shift between choosing projects and answering: how the questions work, before the first one. */
 export function TransitionStep() {
   const copy = V3_COPY.transition;
-  const { markIntroSeen } = useV3();
+  const { markIntroSeen, pathFor } = useV3();
   const router = useRouter();
   const allowed = useV3Guard("ready");
   const heading = useRef<HTMLHeadingElement>(null);
@@ -40,7 +39,7 @@ export function TransitionStep() {
         data-testid="transition-cta"
         onClick={() => {
           markIntroSeen();
-          router.push(V3_PATHS.questions);
+          router.push(pathFor("questions"));
         }}
       >
         {copy.cta}

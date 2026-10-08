@@ -278,3 +278,55 @@ describe("lead API: world-led (V3) leads", () => {
     expect(sentPayload(fetchMock)).not.toHaveProperty("selected_world_ids");
   });
 });
+
+describe("lead API: V4 dual-entry leads", () => {
+  const v4 = (mode: "worlds" | "projects", overrides: Record<string, unknown> = {}) => ({
+    ...body("business_vs_economics"),
+    flow_version: "v4",
+    entry_mode: mode,
+    selected_project_ids: mode === "projects" ? ["wolt_new_city"] : [],
+    selected_world_ids: mode === "worlds" ? ["business_markets"] : [],
+    ...overrides,
+  });
+
+  it.each(["worlds", "projects"] as const)("forwards a V4 %s lead with entry_mode and both lists", async (mode) => {
+    const { fetchMock, deps } = setup();
+    const response = await handleLeadRequest(post(v4(mode)), deps);
+    expect(response.status).toBe(200);
+    expect(sentPayload(fetchMock)).toMatchObject({
+      flow_version: "v4",
+      entry_mode: mode,
+      selected_project_ids: mode === "projects" ? ["wolt_new_city"] : [],
+      selected_world_ids: mode === "worlds" ? ["business_markets"] : [],
+    });
+  });
+
+  it("rejects mismatched, mixed, missing-mode and invalid V4 selections", async () => {
+    for (const bad of [
+      v4("worlds", { selected_project_ids: ["wolt_new_city"] }),
+      v4("projects", { selected_world_ids: ["business_markets"] }),
+      v4("worlds", { entry_mode: "projects" }),
+      v4("worlds", { entry_mode: undefined }),
+      v4("worlds", { selected_world_ids: ["not_a_world"] }),
+      v4("projects", { selected_project_ids: ["business_markets"] }),
+    ]) {
+      const { fetchMock, deps } = setup();
+      expect((await handleLeadRequest(post(bad), deps)).status).toBe(400);
+      expect(fetchMock).not.toHaveBeenCalled();
+    }
+  });
+
+  it("still accepts V2 and V3 leads unchanged, and rejects entry_mode on them", async () => {
+    const ok = async (b: Record<string, unknown>) => (await handleLeadRequest(post(b), setup().deps)).status;
+    expect(await ok(body("accounting", { flow_version: "v2" }))).toBe(200);
+    expect(
+      await ok({
+        ...body("business_vs_economics"),
+        flow_version: "v3",
+        selected_project_ids: [],
+        selected_world_ids: ["law_justice"],
+      }),
+    ).toBe(200);
+    expect(await ok(body("accounting", { flow_version: "v2", entry_mode: "projects" }))).toBe(400);
+  });
+});

@@ -71,6 +71,8 @@ export interface JourneyTrackerOptions {
   storage?: StorageLike | null;
   uuid?: () => string;
   debug?: (payload: DataLayerEvent) => void;
+  /** Parameters added to EVERY event of this tracker (V4: `entry_mode`). Ids only, never personal data. */
+  baseParams?: AnalyticsParams;
 }
 
 const STORAGE_VERSION = 1;
@@ -98,6 +100,7 @@ export class JourneyTracker {
   private readonly storage: StorageLike | null;
   private readonly uuid: () => string;
   private readonly debug?: (payload: DataLayerEvent) => void;
+  private readonly baseParams: AnalyticsParams;
 
   private state: JourneyState = initialJourneyState;
   private journeyId: string | null = null;
@@ -116,6 +119,7 @@ export class JourneyTracker {
     this.storage = options.storage ?? null;
     this.uuid = options.uuid ?? defaultUuid;
     this.debug = options.debug;
+    this.baseParams = options.baseParams ?? {};
   }
 
   hydrate(restored: JourneyState | null, search = ""): void {
@@ -443,7 +447,7 @@ export class JourneyTracker {
   }
 
   private emit(event: AnalyticsEventName, params: AnalyticsParams): void {
-    const payload = trackEvent(event, params, this.host);
+    const payload = trackEvent(event, { ...this.baseParams, ...params }, this.host);
     if (payload) this.debug?.(payload);
   }
 

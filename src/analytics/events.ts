@@ -52,6 +52,9 @@ export const ANALYTICS_EVENTS = [
   "career_world_selected",
   "career_world_deselected",
   "career_world_selection_completed",
+  // V4 dual-entry discovery (DEC-035). Every V4 event also carries flow_version "v4" and entry_mode.
+  "discovery_method_view",
+  "discovery_method_selected",
 ] as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[number];
@@ -109,6 +112,7 @@ export const ANALYTICS_PARAMS = [
   "world_ids",
   "selected_world_count",
   "world_count_available",
+  "entry_mode",
 ] as const;
 
 export type AnalyticsParamName = (typeof ANALYTICS_PARAMS)[number];

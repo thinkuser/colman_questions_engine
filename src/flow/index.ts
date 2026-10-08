@@ -15,3 +15,4 @@ export * from "./v3Progress";
 export * from "./v3ResultView";
 export * from "./journey";
 export * from "./v3QuestionView";
+export * from "./v4Persistence";

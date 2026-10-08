@@ -152,7 +152,9 @@ export const LeadRequestSchema = z
     /** Honeypot: a visually hidden field real people never fill in. Must be empty. */
     website: z.string().max(200).optional(),
     /** Which UI version produced the lead. Optional: a request without it is a V2 lead. */
-    flow_version: z.enum(["v2", "v3"]).optional(),
+    flow_version: z.enum(["v2", "v3", "v4"]).optional(),
+    /** V4 only (required there): which discovery method the candidate used. Never sent by V2 or V3. */
+    entry_mode: z.enum(["worlds", "projects"]).optional(),
     comparison_id: z.string().min(1).max(100).nullable(),
     result_kind: z.enum(LEAD_RESULT_KINDS),
     primary_program_id: programIdSchema.nullable(),
@@ -172,12 +174,27 @@ export const LeadRequestSchema = z
     if (new Set(value.selected_project_ids).size !== value.selected_project_ids.length) issue("duplicate project");
     const worlds = value.selected_world_ids ?? [];
     if (new Set(worlds).size !== worlds.length) issue("duplicate world");
-    if (worlds.length > 0) {
-      // A world-led lead: worlds only, and only from the V3 experience.
-      if (value.selected_project_ids.length > 0) issue("a lead has either projects or worlds, not both");
-      if (value.flow_version !== "v3") issue("world selections come from the V3 experience");
-    } else if (value.selected_project_ids.length < 1) {
-      issue("at least one selected project or world");
+    const projects = value.selected_project_ids;
+    if (value.flow_version === "v4") {
+      // V4 (dual entry): the entry mode is required and decides which single list is populated.
+      if (value.entry_mode === "worlds") {
+        if (worlds.length < 1) issue("a V4 worlds lead needs selected worlds");
+        if (projects.length > 0) issue("a V4 worlds lead carries no project ids");
+      } else if (value.entry_mode === "projects") {
+        if (projects.length < 1) issue("a V4 projects lead needs selected projects");
+        if (worlds.length > 0) issue("a V4 projects lead carries no world ids");
+      } else {
+        issue("a V4 lead needs an entry mode");
+      }
+    } else {
+      if (value.entry_mode !== undefined) issue("entry_mode is a V4 field");
+      if (worlds.length > 0) {
+        // A world-led lead: worlds only, and only from the V3 experience.
+        if (projects.length > 0) issue("a lead has either projects or worlds, not both");
+        if (value.flow_version !== "v3") issue("world selections come from the V3 experience");
+      } else if (projects.length < 1) {
+        issue("at least one selected project or world");
+      }
     }
     const only = (role: LeadProgramRole) => roles.every((candidate) => candidate === role);
     switch (value.result_kind) {
@@ -199,10 +216,13 @@ export const LeadRequestSchema = z
 
 export type LeadRequest = z.infer<typeof LeadRequestSchema>;
 
-export type LeadFlowVersion = "v2" | "v3";
+export type LeadFlowVersion = "v2" | "v3" | "v4";
+export type LeadEntryMode = "worlds" | "projects";
 
 export interface LeadSubmitInput extends LeadFormValues {
   flowVersion?: LeadFlowVersion;
+  /** V4 only: the discovery method used. */
+  entryMode?: LeadEntryMode;
   website: string;
   comparisonId: string | null;
   context: LeadResultContext;
@@ -224,10 +244,20 @@ export function buildLeadRequest(input: LeadSubmitInput): Record<string, unknown
     result_kind: input.context.resultKind,
     primary_program_id: input.context.primaryProgramId,
     alternative_programs: input.context.alternatives,
-    ...(input.selectedWorldIds && input.selectedWorldIds.length > 0
-      ? { selected_project_ids: [], selected_world_ids: [...input.selectedWorldIds] }
-      : { selected_project_ids: [...input.selectedProjectIds] }),
+    ...selectionFields(input),
   };
+}
+
+function selectionFields(input: LeadSubmitInput): Record<string, unknown> {
+  if (input.flowVersion === "v4") {
+    // V4 always sends both lists (exactly one populated) plus the entry mode.
+    return input.entryMode === "worlds"
+      ? { entry_mode: "worlds", selected_project_ids: [], selected_world_ids: [...(input.selectedWorldIds ?? [])] }
+      : { entry_mode: "projects", selected_project_ids: [...input.selectedProjectIds], selected_world_ids: [] };
+  }
+  return input.selectedWorldIds && input.selectedWorldIds.length > 0
+    ? { selected_project_ids: [], selected_world_ids: [...input.selectedWorldIds] }
+    : { selected_project_ids: [...input.selectedProjectIds] };
 }
 
 // ----------------------------------------------------------------------------------------------------------------
@@ -252,8 +282,10 @@ export interface LeadWebhookPayload {
   primary_program: LeadProgramRef | null;
   alternative_programs: Array<LeadProgramRef & { role: LeadProgramRole }>;
   selected_project_ids: string[];
-  /** Present only for world-led (V3) leads. */
+  /** Present for world-led (V3) leads, and always present (possibly empty) for V4 leads. */
   selected_world_ids?: string[];
+  /** V4 only. */
+  entry_mode?: LeadEntryMode;
   submitted_at: string;
 }
 
@@ -285,9 +317,11 @@ export function buildLeadWebhookPayload(
     primary_program: request.primary_program_id ? programRef(request.primary_program_id) : null,
     alternative_programs: request.alternative_programs.map((entry) => ({ ...programRef(entry.id), role: entry.role })),
     selected_project_ids: [...request.selected_project_ids],
-    ...(request.selected_world_ids && request.selected_world_ids.length > 0
-      ? { selected_world_ids: [...request.selected_world_ids] }
-      : {}),
+    ...(request.flow_version === "v4"
+      ? { selected_world_ids: [...(request.selected_world_ids ?? [])], entry_mode: request.entry_mode }
+      : request.selected_world_ids && request.selected_world_ids.length > 0
+        ? { selected_world_ids: [...request.selected_world_ids] }
+        : {}),
     submitted_at: submittedAt.toISOString(),
   };
 }

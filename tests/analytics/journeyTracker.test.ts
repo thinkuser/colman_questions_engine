@@ -7,7 +7,7 @@ import {
   type DataLayerEvent,
   type DataLayerHost,
 } from "@/analytics";
-import { journeyStep, WORLD_STRATEGY, type JourneyAction } from "@/flow";
+import { BRAND_STRATEGY, journeyStep, WORLD_STRATEGY, type JourneyAction } from "@/flow";
 import { v3PersonaChoice, V3_PERSONAS } from "../flow/v3Personas";
 import { memoryStorage } from "./harness";
 
@@ -159,5 +159,81 @@ describe("V3 world discovery events", () => {
         expect(event).not.toHaveProperty(forbidden);
       }
     }
+  });
+});
+
+describe("V4 trackers (entry_mode on every event)", () => {
+  function v4Harness(mode: "worlds" | "projects") {
+    const host: DataLayerHost = {};
+    const tracker = new JourneyTracker({
+      host,
+      storage: memoryStorage(),
+      strategy: mode === "projects" ? BRAND_STRATEGY : WORLD_STRATEGY,
+      flowVersion: "v4",
+      storageKey: `colman-studymatch:analytics-v4:${mode}`,
+      baseParams: { entry_mode: mode },
+      uuid: () => `v4-${mode}`,
+    });
+    tracker.hydrate(null, "");
+    const events = () => (host.dataLayer ?? []) as DataLayerEvent[];
+    const dispatch = (action: JourneyAction) => {
+      tracker.enqueue(action);
+      tracker.flush();
+    };
+    return { tracker, events, dispatch };
+  }
+
+  it("world mode emits career_world_* with flow_version v4 and entry_mode worlds", () => {
+    const h = v4Harness("worlds");
+    h.tracker.discoveryViewed("v");
+    h.dispatch({ type: "toggle_entry", entryId: "law_justice" });
+    h.dispatch({ type: "start" });
+    h.tracker.questionViewed();
+    const names = h.events().map((e) => e.event);
+    expect(names).toEqual(
+      expect.arrayContaining([
+        "career_world_discovery_view",
+        "career_world_selected",
+        "career_world_selection_completed",
+        "question_view",
+      ]),
+    );
+    expect(names.some((n) => String(n).startsWith("career_project_"))).toBe(false);
+    for (const event of h.events()) expect(event).toMatchObject({ flow_version: "v4", entry_mode: "worlds" });
+  });
+
+  it("project mode emits career_project_* with flow_version v4 and entry_mode projects", () => {
+    const h = v4Harness("projects");
+    h.tracker.discoveryViewed("v");
+    h.dispatch({ type: "toggle_entry", entryId: "wolt_new_city" });
+    h.dispatch({ type: "start" });
+    h.dispatch({ type: "record_answer", answer: { questionId: "B1", answerId: "A" } });
+    const names = h.events().map((e) => e.event);
+    expect(names).toEqual(
+      expect.arrayContaining([
+        "career_project_discovery_view",
+        "career_project_selected",
+        "career_project_selection_completed",
+        "question_answer",
+      ]),
+    );
+    expect(names.some((n) => String(n).startsWith("career_world_"))).toBe(false);
+    for (const event of h.events()) expect(event).toMatchObject({ flow_version: "v4", entry_mode: "projects" });
+    const [selected] = h.events().filter((e) => e.event === "career_project_selected");
+    expect(selected).toMatchObject({ project_id: "wolt_new_city", selected_project_count: 1 });
+    for (const event of h.events())
+      for (const k of ["first_name", "last_name", "phone", "email"]) expect(event).not.toHaveProperty(k);
+  });
+
+  it("entry_mode and the method events are part of the analytics vocabulary", () => {
+    expect(ANALYTICS_PARAMS as readonly string[]).toContain("entry_mode");
+    expect(ANALYTICS_EVENTS).toContain("discovery_method_view");
+    expect(ANALYTICS_EVENTS).toContain("discovery_method_selected");
+  });
+
+  it("a V3 tracker (no baseParams) still emits no entry_mode", () => {
+    const h = harness();
+    h.tracker.discoveryViewed("v");
+    expect(h.events()[0]).not.toHaveProperty("entry_mode");
   });
 });

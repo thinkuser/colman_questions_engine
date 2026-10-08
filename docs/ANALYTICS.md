@@ -159,6 +159,34 @@ New parameter names: `error_type` and `flow_version`, `project_id`, `project_ids
 
 Analysis hints: group V2 runs by `comparison_id` and `flow_version`; demand by `project_ids`; neutral rate by question with `is_neutral`; how often generated focus appears with `is_generated_focus`; the journey length distribution with `total_answer_count` on `studymatch_result_view`; handoff rate with `precision_module_handoff`.
 
+## V4 dual-entry events (DEC-035)
+V4 (`/v4`) reports with one `JourneyTracker` per entry mode. **Every V4 event carries `flow_version: "v4"`, and every journey event also carries `entry_mode`** (`worlds` | `projects`). V2 and V3 analytics are unchanged.
+
+| Event | Fired when | Notable parameters |
+|---|---|---|
+| `studymatch_landing_view`, `studymatch_start` | V4 landing shown / CTA pressed | `flow_version` (+ `entry_mode` for a returning candidate) |
+| `discovery_method_view` | The entry-method screen is shown | `flow_version` |
+| `discovery_method_selected` | A method is chosen (not scored, not evidence) | `entry_mode` |
+| `career_world_*` | World mode discovery (as V3) | + `flow_version: v4`, `entry_mode: worlds` |
+| `career_project_*` | Project mode discovery (as V2, in the redesigned UX) | + `flow_version: v4`, `entry_mode: projects` |
+| question / result / lead events | As V3 | + `entry_mode` |
+
+New: events `discovery_method_view`, `discovery_method_selected`; parameter `entry_mode`. No PII.
+
+**The comparison V4 exists for (all by `entry_mode`, `flow_version = v4`):**
+| Metric | How |
+|---|---|
+| % choosing worlds vs projects | `discovery_method_selected` by `entry_mode` ÷ `discovery_method_view` |
+| Discovery completion | `career_*_selection_completed` ÷ `career_*_discovery_view` |
+| Questionnaire completion | `comparison_completed` ÷ `comparison_started` |
+| Average questions | mean `total_answer_count` on `studymatch_result_view` |
+| Near-tie / recommendation / insufficient-evidence rate | `result_kind` share on `studymatch_result_view` |
+| Result program click | `result_program_click` ÷ `studymatch_result_view` |
+| Contact click | `result_contact_click` ÷ `studymatch_result_view` |
+| Lead conversion | `lead_form_success` ÷ `studymatch_result_view` (and the lead sheet's `entry_mode` column) |
+
+Externally assigned traffic (`/v4/worlds`, `/v4/projects` links) has no `discovery_method_selected` event; segment it by `entry_mode` and landing URL.
+
 ## V3 world discovery events (DEC-034)
 V2 is **brand-led** and keeps `career_project_*` (unchanged; its tracker is byte-identical to the baseline). V3 is **world-led** and is reported by its own strategy-driven `JourneyTracker` (`src/analytics/journeyTracker.ts`); it never emits `career_project_*`.
 
