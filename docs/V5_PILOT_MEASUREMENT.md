@@ -11,7 +11,8 @@ DEC-038. The measurement **contract** for the V5 real-user pilot at `/v5`: what 
 | Application instrumentation | **DONE** | Semantic events (unchanged) + `ui_click` + feedback events + `reality_check_view` (V5). |
 | dataLayer | **DONE** | `trackEvent()` → `window.dataLayer.push`. Verified in the browser suite. |
 | Outbound UTM | **DONE** | Every V5 outbound http(s) link (program pages, all programs). |
-| Pilot feedback | **DONE** | V5 result page, structured, non-blocking. |
+| Pilot feedback | **DONE** | V5 result page (last content block), structured, non-blocking; persisted to the Feedback sheet tab (DEC-039). |
+| Feedback persistence | **DONE** | `/api/v5/feedback` → n8n "Colman StudyMatch Feedback" (active) → Feedback tab. `FEEDBACK_WEBHOOK_URL` must be set in Vercel (see §12). |
 | GTM container on the page | **NOT DONE (gated)** | No GTM snippet was ever loaded by the app. A loader now exists for `/v5` only, **off until `NEXT_PUBLIC_GTM_ID` is set** in Vercel. No COLMAN container was found in the GTM accounts available to us. |
 | GTM variables | **DOCUMENTED** | Not configured. |
 | GTM triggers | **DOCUMENTED** | Not configured. |
@@ -117,7 +118,7 @@ Never a label, answer text or field value. A refused third selection emits `ui_c
 | Feedback | fit option, helpfulness option, submit |
 
 ## 4. Pilot feedback
-After the COLMAN section and before the optional details / lead form; light, optional, never gating the result, the program links, contact or the lead form. Structured only (no free text).
+**Placement (DEC-039):** the LAST normal content block of the result page — result hero, actions, why / warnings, secondary / comparison, COLMAN section, optional details, "not right?", lead form, all-programs link, disclaimer, **feedback**. The mobile sticky contact bar is an overlay after it in the tree, not content. Light, optional, never gating the result, the program links, contact or the lead form. Structured only (no free text).
 
 | Result kind | Questions |
 |---|---|
@@ -125,6 +126,8 @@ After the COLMAN section and before the optional details / lead form; light, opt
 | insufficient positive evidence | only "האם התהליך עזר להבין קצת יותר מה מתאים ומה פחות?" → `yes` / `somewhat` / `no` |
 
 Submit is enabled once any question is answered; only answered questions are sent (`feedback_fit` is never sent empty). `feedback_version = "v1"`.
+
+**Persistence (DEC-039):** Submit disables the button while saving and posts to the same-origin `/api/v5/feedback`. Only after a 2xx are `result_feedback_submit` emitted, the local memory written and "thanks" shown; on failure nothing is emitted or remembered, a short message ("לא הצלחנו לשמור את המשוב כרגע. אפשר לנסות שוב.") appears and the form stays for a retry. `result_feedback_submit` therefore means "structured feedback successfully persisted"; the attempt is visible as `ui_click` `feedback_submit`.
 
 **Dedupe:** one submission per **result state** = journey id + selection + full answer sequence (ids only). Remembered under its own key `colman-studymatch:v5:result-feedback` (never the V5 journey payload); after a refresh the block shows "thanks" instead of the form. A new result state (try again → new `comparison_id`, or different answers) gets a fresh form. The redesigned result page has no Back control (a completed journey stays on its result), so in practice a new state comes from "try again". `result_feedback_view` fires once per result state per page load. Feedback never reaches the engine, routing, ranking or recommendation state.
 
@@ -220,4 +223,8 @@ Source: the GA4 BigQuery export (queries in `docs/V5_PILOT_KPI_QUERIES.md`, idea
 - Lead data goes only to the same-origin lead API → n8n → the lead sheet, never to analytics.
 
 ## 12. n8n / Google Sheet
-Verified read-only (this release): the "Colman Webhook for question engine" workflow is active; `v5` is whitelisted; `source = colman_studymatch_<version>`; `entry_mode` is normalised and stored; `selected_project_ids` is stored as sent (V5 ids accepted); `selected_world_ids` is stored; the duplicate check is in place. The sheet holds a real V5 worlds row stored as `v5 / colman_studymatch_v5 / worlds`; no test rows exist. **n8n/Sheet already V5-compatible — verified, no change.** Feedback is not sent to n8n: `result_feedback_submit` (joinable by `comparison_id`) is the single source of truth for pilot feedback.
+Verified read-only (this release): the "Colman Webhook for question engine" workflow is active; `v5` is whitelisted; `source = colman_studymatch_<version>`; `entry_mode` is normalised and stored; `selected_project_ids` is stored as sent (V5 ids accepted); `selected_world_ids` is stored; the duplicate check is in place. The sheet holds a real V5 worlds row stored as `v5 / colman_studymatch_v5 / worlds`; no test rows exist. **n8n/Sheet already V5-compatible — verified, no change.** **Feedback persistence (DEC-039).** Feedback IS persisted: GA4 / BigQuery (`result_feedback_submit`) are the KPI source of truth; the **Feedback** tab of the same spreadsheet is the durable raw response log / QA backup, with the same canonical values and `comparison_id`.
+- Flow: browser → `POST /api/v5/feedback` (strict validation; the raw result-state key is hashed with SHA-256) → server-only `FEEDBACK_WEBHOOK_URL` → n8n workflow "Colman StudyMatch Feedback" (webhook path `colman-studymatch-v5-feedback`): normalise / validate → look up `feedback_key_hash` → duplicate: `{ok:true, deduped:true}`, else append a row and `{ok:true, deduped:false}`; an invalid payload gets 400. Same Google credential as the lead workflow.
+- Columns (in order): `submitted_at` (n8n, ISO), `feedback_key_hash`, `source` (`colman_studymatch_v5_feedback`), `feedback_version`, `flow_version`, `entry_mode`, `comparison_id`, `result_kind`, `recommended_program`, `alternative_programs`, `selected_project_ids`, `selected_world_ids`, `scored_answer_count`, `total_answer_count`, `feedback_fit`, `feedback_helpfulness` (lists are sorted, pipe-joined; fit is blank for insufficient evidence or when unanswered).
+- Never stored: names, phone, consent, labels, question or answer text, the raw answer sequence, user agent, IP.
+- Environment: `FEEDBACK_WEBHOOK_URL` (server-only, no `NEXT_PUBLIC_`) must be set in Vercel (Production and Preview). If it is empty, the API answers 503 and the block shows the retry message: feedback is never reported saved when it was not.

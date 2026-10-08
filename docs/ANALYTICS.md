@@ -165,7 +165,7 @@ Full contract: `docs/V5_PILOT_MEASUREMENT.md` (events, parameters, KPIs, cohorts
 | New in V5 | Notes |
 |---|---|
 | `ui_click` | Every candidate control, in addition to its semantic event: `element_id`, `element_type`, `screen_id`, `destination_type` + contextual ids. UX evidence only. |
-| `result_feedback_view`, `result_feedback_submit` | Pilot feedback: `feedback_fit`, `feedback_helpfulness`, `feedback_version` + result context. |
+| `result_feedback_view`, `result_feedback_submit` | Pilot feedback: `feedback_fit`, `feedback_helpfulness`, `feedback_version` + result context. Since DEC-039 `result_feedback_submit` fires only after the feedback was **persisted** (a mirror row in the Feedback sheet tab); schema unchanged. |
 | `reality_check_view` | Now emitted by the V5 result when a reality-check note is visible. |
 | New parameters | `element_id`, `element_type`, `screen_id`, `destination_type`, `feedback_fit`, `feedback_helpfulness`, `feedback_version` |
 

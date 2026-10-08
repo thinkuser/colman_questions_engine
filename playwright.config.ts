@@ -30,7 +30,7 @@ export default defineConfig({
     {
       name: "functional",
       testMatch:
-        /(personas|navigation|analytics|links-a11y|discovery|discovery-lead|v3|v2-baseline|v4|v5|v5-measurement)\.spec\.ts/,
+        /(personas|navigation|analytics|links-a11y|discovery|discovery-lead|v3|v2-baseline|v4|v5|v5-measurement|v5-feedback-persistence)\.spec\.ts/,
     },
     { name: "layout-320", testMatch: /layout\.spec\.ts/, use: { viewport: { width: 320, height: 640 } } },
     { name: "layout-390", testMatch: /layout\.spec\.ts/, use: { viewport: { width: 390, height: 844 } } },

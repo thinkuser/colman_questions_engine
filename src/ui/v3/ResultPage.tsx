@@ -185,7 +185,7 @@ export function ResultPage({
   leadForm: ReactNode;
   /** Rewrites outbound http(s) links (V5: fixed StudyMatch UTMs). Default: links as they are (V3/V4). */
   outboundUrl?: (url: string) => string;
-  /** V5 pilot feedback block, placed after the COLMAN section and before the optional details. */
+  /** V5 pilot feedback block: the last normal content block of the page (after the disclaimer). */
   feedback?: ReactNode;
   /** Which experience renders the result (marker only; the layout is the same). */
   flow?: ExperienceFlowVersion;
@@ -432,9 +432,6 @@ export function ResultPage({
         </section>
       )}
 
-      {/* 5b. Pilot feedback (V5 only): after enough context to judge the result, before the optional depth */}
-      {feedback}
-
       {/* 6. Optional detail, collapsed */}
       {(view.chosenHe.length > 0 || moreNotes.length > 0) && (
         <div className="space-y-3" data-testid="details">
@@ -508,6 +505,9 @@ export function ResultPage({
         </a>
       )}
       {view.disclaimerHe && <p className="text-sm leading-snug text-slate-500">{view.disclaimerHe}</p>}
+
+      {/* 10. Pilot feedback (V5 only): the LAST normal content block. The mobile sticky bar below is an overlay. */}
+      {feedback}
 
       {/* Sticky contact (mobile): steps aside while the form is visible */}
       <div className="md:hidden">

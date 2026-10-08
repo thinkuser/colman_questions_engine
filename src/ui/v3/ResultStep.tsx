@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { resultFeedbackKey } from "@/analytics";
+import { resultFeedbackKey, type ResultFeedbackAnswers } from "@/analytics";
+import { FEEDBACK_SOURCE } from "@/flow/feedback";
+import { submitFeedback } from "@/ui/discovery/submitFeedback";
 import { buildV3ResultView, journeyStep, leadContextFromResult } from "@/flow";
 import { LeadForm } from "@/ui/discovery/LeadForm";
 import { useV3, useV3Guard } from "@/ui/state/V3Provider";
@@ -117,7 +119,34 @@ export function ResultStep() {
               resultKey={resultFeedbackKey(analytics.journeyId(), state.selectedIds, state.answers)}
               copy={resultFeedbackCopy}
               onView={analytics.feedbackViewed}
-              onSubmit={analytics.feedbackSubmitted}
+              onSubmit={async (answers: ResultFeedbackAnswers) => {
+                const comparisonId = analytics.journeyId();
+                if (!comparisonId || !entryMode) return false;
+                const info = view.base.analytics;
+                const saved = await submitFeedback({
+                  result_state_key: resultFeedbackKey(comparisonId, state.selectedIds, state.answers),
+                  source: FEEDBACK_SOURCE,
+                  feedback_version: "v1",
+                  flow_version: flowVersion,
+                  entry_mode: entryMode,
+                  comparison_id: comparisonId,
+                  result_kind: info.resultKind,
+                  ...(info.recommendedProgramId ? { recommended_program: info.recommendedProgramId } : {}),
+                  ...(info.alternativeProgramIds.length > 0
+                    ? { alternative_programs: info.alternativeProgramIds }
+                    : {}),
+                  ...(strategy.id === "worlds"
+                    ? { selected_world_ids: state.selectedIds }
+                    : { selected_project_ids: state.selectedIds }),
+                  scored_answer_count: info.scoredAnswerCount,
+                  total_answer_count: info.totalAnswerCount,
+                  ...(answers.fit ? { feedback_fit: answers.fit } : {}),
+                  ...(answers.helpfulness ? { feedback_helpfulness: answers.helpfulness } : {}),
+                });
+                // result_feedback_submit now means "structured feedback successfully persisted".
+                if (saved) analytics.feedbackSubmitted?.(answers);
+                return saved;
+              }}
               onUiClick={click}
             />
           ) : undefined
