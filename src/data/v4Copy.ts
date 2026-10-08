@@ -1,13 +1,14 @@
 /**
  * Candidate-facing Hebrew copy specific to the V4 dual-entry experiment (DEC-035). Everything else in V4 reuses the
- * approved V3 copy (landing, world discovery, transition, questions, result) and the V2 project content.
+ * approved V3 copy (landing, world discovery, transition, questions, result) and the V2 project content, rendered
+ * through the gender-inclusive V4 presentation layer (`v4InclusiveCopy.ts`, DEC-036). V4 copy is gender-inclusive.
  */
 export const V4_COPY = {
-  appTitle: "StudyMatch — איזה תחום לימודים יכול להתאים לכם?",
-  appDescription: "כמה שאלות קצרות על מה שמעניין אתכם לעשות, ואנחנו נעזור לכם לצמצם את האפשרויות.",
+  appTitle: "StudyMatch — איזה תחום לימודים יכול להתאים לך?",
+  appDescription: "כמה שאלות קצרות על מה שמעניין אותך לעשות, ואנחנו נעזור לצמצם את האפשרויות.",
   method: {
-    headline: "איפה אתם נמצאים כרגע בבחירה של מה ללמוד?",
-    support: "בחרו את האפשרות שהכי מתארת אתכם — ונמשיך משם.",
+    headline: "מה הכי מתאר את השלב הנוכחי בבחירה של מה ללמוד?",
+    support: "אפשר לבחור את האפשרות שהכי מתאימה — ונמשיך משם.",
     optionsLabel: "דרכים להתחיל",
     // First in the list = the RIGHT card in the RTL layout.
     worlds: {
@@ -19,13 +20,13 @@ export const V4_COPY = {
     projects: {
       title: "אין לי מושג מה אני רוצה ללמוד",
       description: "אני רוצה להתחיל לחקור ולגלות מה באמת מסקרן אותי.",
-      cue: "נתחיל מפרויקטים ומשימות מוכרות ונבין יחד לאילו כיוונים אתם נמשכים.",
+      cue: "נתחיל מפרויקטים ומשימות מוכרות ונבין יחד לאלו כיוונים יש יותר חיבור.",
     },
     back: "חזרה",
   },
   projects: {
-    headline: "לאיזה פרויקט הייתם הכי רוצים להצטרף?",
-    support: "בחרו עד שניים שהכי מסקרנים אתכם. אין תשובה נכונה.",
+    headline: "לאיזה פרויקט היית הכי רוצה להצטרף?",
+    support: "אפשר לבחור עד שניים שהכי מסקרנים אותך. אין תשובה נכונה.",
   },
   discovery: {
     backToMethod: "לבחירת דרך אחרת",

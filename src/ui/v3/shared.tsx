@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import { V3_COPY } from "@/data";
 import { v3Progress, type V3Stage } from "@/flow";
+import { useExperience } from "@/ui/experience/ExperienceContext";
 
 /** The official COLMAN logo, stored locally (public/brand). Never hotlinked, never redrawn. */
 export function LogoMark({ size = 56, className = "" }: { size?: number; className?: string }) {
@@ -53,9 +54,10 @@ export const v3Secondary =
 
 /** "Step N of 3" with a three-segment bar and a deterministic encouragement. Never a question count. */
 export function ProgressHeader({ stage, committedAnswers = 0 }: { stage: V3Stage; committedAnswers?: number }) {
-  const progress = v3Progress(stage, committedAnswers);
+  const { ui } = useExperience();
+  const progress = v3Progress(stage, committedAnswers, ui.progress);
   return (
-    <div className="space-y-2" aria-label={V3_COPY.progress.label} data-testid="progress">
+    <div className="space-y-2" aria-label={ui.progress.label} data-testid="progress">
       <p className="text-sm font-semibold text-colman-blue-dark">
         <span data-testid="progress-stage">{progress.stageLabelHe}</span>
         <span aria-hidden="true"> · </span>

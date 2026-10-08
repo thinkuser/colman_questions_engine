@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { V4_COPY } from "@/data";
+import { V4_COPY, V4_LEAD_COPY, V4_UI_COPY, v4Text } from "@/data";
 import {
   initialJourneyState,
   journeyReducer,
@@ -193,6 +193,9 @@ export function V4Provider({ children }: { children: ReactNode }) {
       landingNext: (inProgress) => (inProgress ? v4Target(entryMode, journey, introSeen) : "start"),
       projectsCopy: V4_COPY.projects,
       hasEntryChoice: true,
+      ui: V4_UI_COPY,
+      t: v4Text,
+      leadCopy: V4_LEAD_COPY,
       ensureEntryMode,
       selectEntryMode: setMode,
     }),

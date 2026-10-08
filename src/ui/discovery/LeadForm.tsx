@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useRef, useState, type ChangeEvent, type FormEvent, type RefObject } from "react";
-import { V2_LEAD_COPY } from "@/data";
+import { V2_LEAD_COPY, type LeadCopy } from "@/data";
 import {
   buildLeadRequest,
   validateLeadForm,
@@ -40,6 +40,7 @@ export function LeadForm({
   submit = defaultSubmitLead,
   flowVersion = "v2",
   placeholders,
+  copy = V2_LEAD_COPY,
   selectedWorldIds,
   entryMode,
 }: {
@@ -53,6 +54,8 @@ export function LeadForm({
   flowVersion?: LeadFlowVersion;
   /** Optional example placeholders (V3). When given, the separate phone hint is not rendered. */
   placeholders?: { firstName: string; lastName: string; phone: string };
+  /** Optional copy (V4's gender-inclusive wording). Defaults to the V2 copy; fields, consent and payload are the same. */
+  copy?: LeadCopy;
   /** World-led discovery (V3): sent as `selected_world_ids` (and `selected_project_ids` stays empty). */
   selectedWorldIds?: readonly string[];
   /** V4 only: the discovery method used (sent as `entry_mode`). */
@@ -70,7 +73,6 @@ export function LeadForm({
   const phoneRef = useRef<HTMLInputElement>(null);
   const consentRef = useRef<HTMLInputElement>(null);
   const successRef = useRef<HTMLDivElement>(null);
-  const copy = V2_LEAD_COPY;
   const id = (name: string) => `${uid}-${name}`;
 
   const showErrors = (fields: LeadField[]) => {

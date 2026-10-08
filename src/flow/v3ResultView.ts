@@ -23,6 +23,9 @@ import { buildV2ResultView, type ResultAnalytics, type V2ResultView } from "./v2
  *  - the program section reuses the verified work-imagination statements, never invented academic facts;
  *  - a near tie gets a curated "what is the difference" block for the pairs that most often tie.
  * No scores, percentages or runtime generation. No scoring, routing or content mapping is touched.
+ *
+ * Every candidate-facing string passes through `options.text`, the experience's presentation seam (V3: identity;
+ * V4: its gender-inclusive wording, DEC-036). `base` (lead context, analytics) is never re-worded.
  */
 
 export type V3ResultKind = "recommended" | "near_tie" | "insufficient_positive_evidence";
@@ -92,7 +95,10 @@ function whyCount(signals: number): number {
   return Math.min(MAX_WHY, Math.max(MIN_WHY, signals));
 }
 
-export function v3Program(programId: ProgramId, signals: number): V3Program {
+type Text = (he: string) => string;
+const asIs: Text = (he) => he;
+
+export function v3Program(programId: ProgramId, signals: number, text: Text = asIs): V3Program {
   const program = getCatalogProgram(programId);
   if (!program) throw new Error(`Unknown program "${programId}" in V3 result`);
   const meaning = PROGRAM_MEANING[programId];
@@ -107,14 +113,14 @@ export function v3Program(programId: ProgramId, signals: number): V3Program {
       nameEn: program.nameEn,
       qualifierHe: program.qualifierHe,
     }),
-    summaryHe: meaning.summaryHe,
-    whyHe: meaning.whyHe.slice(0, whyCount(signals)),
-    findHe: program.workStatementsHe.slice(0, MAX_FIND),
+    summaryHe: text(meaning.summaryHe),
+    whyHe: meaning.whyHe.slice(0, whyCount(signals)).map(text),
+    findHe: program.workStatementsHe.slice(0, MAX_FIND).map(text),
     programUrl: officialUrl(programId),
   };
 }
 
-function pairView(first: V3Program, second: V3Program): V3PairView {
+function pairView(first: V3Program, second: V3Program, text: Text): V3PairView {
   const curated = findPairContent(first.programId, second.programId);
   if (!curated) {
     // Graceful fallback: each program's own verified work statements, no invented distinctions.
@@ -132,9 +138,9 @@ function pairView(first: V3Program, second: V3Program): V3PairView {
   return {
     curated: true,
     programs: [a, b],
-    bullets: [[...curated.bullets[0]], [...curated.bullets[1]]],
+    bullets: [curated.bullets[0].map(text), curated.bullets[1].map(text)],
     guidance: curated.guidance.map((entry) => ({
-      ifHe: entry.ifHe,
+      ifHe: text(entry.ifHe),
       programId: entry.programId,
       programNameHe: byId.get(entry.programId)?.displayNameHe ?? entry.programId,
     })),
@@ -146,7 +152,7 @@ function pairView(first: V3Program, second: V3Program): V3PairView {
  * V2 copy, else (generated focus) the program's work statement. Strongest answers first. Shown only in the collapsed
  * detail; the visible "why" is the curated meaning copy, never an echo of the choices.
  */
-function chosenFor(step: Extract<V2Step, { status: "complete" }>, programId: ProgramId): string[] {
+function chosenFor(step: Extract<V2Step, { status: "complete" }>, programId: ProgramId, text: Text): string[] {
   const texts = step.state.evidence
     .filter((answer) => answer.programIds.includes(programId))
     .sort((a, b) => b.weight - a.weight)
@@ -158,13 +164,16 @@ function chosenFor(step: Extract<V2Step, { status: "complete" }>, programId: Pro
       const copy = getWorldQuestionCopy(answer.questionId) ?? getV2QuestionCopy(answer.questionId);
       return copy?.options.find((option) => option.id === answer.answerId)?.label ?? null;
     })
-    .filter((text): text is string => text !== null);
+    .filter((label): label is string => label !== null)
+    .map(text);
   return [...new Set(texts)].slice(0, MAX_WHY);
 }
 
 export interface V3ResultOptions {
   /** World-led discovery shows no company disclaimer (there are no companies); brand-led keeps V2's. */
   strategyId?: DiscoveryStrategyId;
+  /** Presentation seam for the candidate-facing strings (default: as is). */
+  text?: Text;
 }
 
 export function buildV3ResultView(
@@ -175,18 +184,19 @@ export function buildV3ResultView(
 ): V3ResultView {
   const base = buildV2ResultView(step, selectedIds, answers);
   const allProgramsUrl = getSource("colman_ba_programs_index")?.url ?? null;
-  const disclaimerHe = (options.strategyId ?? "worlds") === "worlds" ? null : base.disclaimerHe;
+  const text = options.text ?? asIs;
+  const disclaimerHe = (options.strategyId ?? "worlds") === "worlds" ? null : text(base.disclaimerHe);
   const common = { allProgramsUrl, disclaimerHe, base, analytics: base.analytics };
 
   if (base.type === "generic") {
     const programs = base.directions.map((direction) =>
-      v3Program(direction.programId, step.state.support[direction.programId] ?? 0),
+      v3Program(direction.programId, step.state.support[direction.programId] ?? 0, text),
     );
     const notes: V3Note[] = base.realityChecks.map((reality) => ({
       programId: reality.programId,
       level: reality.level,
-      headingHe: reality.headingHe,
-      textHe: reality.noteHe ? `${reality.answerHe} ${reality.noteHe}` : reality.answerHe,
+      headingHe: text(reality.headingHe),
+      textHe: reality.noteHe ? `${text(reality.answerHe)} ${text(reality.noteHe)}` : text(reality.answerHe),
       important: reality.level === "negative",
     }));
     return {
@@ -194,9 +204,9 @@ export function buildV3ResultView(
       kind: base.kind,
       source: "generic",
       programs,
-      pair: base.kind === "near_tie" && programs[0] && programs[1] ? pairView(programs[0], programs[1]) : null,
+      pair: base.kind === "near_tie" && programs[0] && programs[1] ? pairView(programs[0], programs[1], text) : null,
       notes,
-      chosenHe: base.directions[0] ? chosenFor(step, base.directions[0].programId) : [],
+      chosenHe: base.directions[0] ? chosenFor(step, base.directions[0].programId, text) : [],
       limitedFacts: base.limitedFacts,
     };
   }
@@ -206,8 +216,8 @@ export function buildV3ResultView(
   const notes: V3Note[] = v1.realityChecks.map((reality) => ({
     programId: reality.program.id,
     level: "negative" as const,
-    headingHe: V3_COPY.result.importantNoteTitle,
-    textHe: reality.bodyHe,
+    headingHe: text(V3_COPY.result.importantNoteTitle),
+    textHe: text(reality.bodyHe),
     important: true,
   }));
   // A V1 card for a module question that a world scenario answered (Tech: WT1 carried in as Q1) shows the candidate's
@@ -221,7 +231,7 @@ export function buildV3ResultView(
   };
   const chosenHe = v1.evidence
     .filter((card) => card.kind !== "mixed")
-    .map((card) => carriedFrom(card.questionId, card.answerId) ?? card.text)
+    .map((card) => text(carriedFrom(card.questionId, card.answerId) ?? card.text))
     .slice(0, 4);
 
   if (v1.kind === "no_strong_fit") {
@@ -237,21 +247,21 @@ export function buildV3ResultView(
     };
   }
   if (v1.kind === "near_tie") {
-    const [first, second] = catalogOrder([v1.top.id, v1.second.id]).map((id) => v3Program(id, MAX_WHY));
+    const [first, second] = catalogOrder([v1.top.id, v1.second.id]).map((id) => v3Program(id, MAX_WHY, text));
     if (!first || !second) throw new Error("A near tie needs two programs");
     return {
       ...common,
       kind: "near_tie",
       source: "precision",
       programs: [first, second],
-      pair: pairView(first, second),
+      pair: pairView(first, second, text),
       notes,
       chosenHe,
       limitedFacts: false,
     };
   }
-  const primary = v3Program(v1.top.id, Math.max(v1.evidence.length, MIN_WHY));
-  const secondary = v3Program(v1.second.id, MIN_WHY);
+  const primary = v3Program(v1.top.id, Math.max(v1.evidence.length, MIN_WHY), text);
+  const secondary = v3Program(v1.second.id, MIN_WHY, text);
   return {
     ...common,
     kind: "recommended",

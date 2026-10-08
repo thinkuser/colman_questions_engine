@@ -270,6 +270,17 @@ Full description and pressure-test traces: `docs/V2_SCORING.md`. Code: `src/engi
 - **Open, proposed, pending product review:** a generic **"no strong fit" threshold**. V1's normalized-fit thresholds are not transplanted into V2 points, and the accepted V2 docs define none. Until decided, the generic engine reports only `recommended`, `near_tie` or `insufficient_positive_evidence`.
 - **Accepted product decisions (THI-14 review):** a cross-cluster Spotify journey may exceed 5–7 questions (generic questions before handoff plus V1's remaining ones); THI-16 QA must measure it. V1 `Q1` stays the Spotify question (no duplicate Discover Weekly question).
 
+## DEC-036 — V4 candidate-facing Hebrew is gender-inclusive
+Status: accepted for review — V4 gender-inclusive copy PR.
+
+- **Rule: V4 candidate-facing Hebrew should be gender-inclusive. Prefer natural gender-neutral phrasing; use paired masculine/feminine forms only when neutrality would sound unnatural.**
+- Applies to **V4 only**. V1, V2 and V3 keep their approved copy (masculine-plural address such as "אתם" / "בחרו"); this decision does not redefine them.
+- Toolbox, in order of preference: impersonal phrasing ("אפשר לבחור", "ממשיכים", "להכיר את המסלול"), infinitives and nouns; forms that are spelled the same for every gender in unvocalized Hebrew (לך, אותך, שלך, אליך, דעתך; past "בחרת", "עצרת"; "היית רוצה", "היית עונה"); first person on the candidate's own buttons ("אשמח שיחזרו אליי"). Paired forms ("מאשר/ת") only where none of these reads naturally. Avoid repetitive "אתם/אתן".
+- Impersonal present plurals ("בוחרים", "מקבלים קובץ") are the neutral generic and are allowed. Third-person generic characters inside scenarios ("אדם עובר שינוי... מה הוא מרגיש", "יוצר טוען... שלו") are not candidate address and are kept.
+- **Implementation is a presentation layer, not a fork** (`src/data/v4InclusiveCopy.ts`): `V4_UI_COPY` (same shape as `V3_COPY`), `V4_LEAD_COPY` (same shape as `V2_LEAD_COPY`; the legal consent text is unchanged) and `v4Text`, an exact-string override map for shared content. The experience context carries `ui`, `t` and `leadCopy`; V3 supplies `V3_COPY`, identity and `V2_LEAD_COPY`, so V2/V3 render exactly as before.
+- Wording only: no question id, answer id, program mapping, weight, support, routing, question order, Tech carry or scoring changes; content files are untouched.
+- Guarded by tests: every override key must be live shared content (no stale keys), and a masculine-only scan runs over V4's own copy, all shared content as V4 renders it, thousands of engine-walked V4 journeys and the rendered V4 pages in the browser.
+
 ## DEC-035 — Three preserved experiments: V2 brand-only, V3 world-only, V4 dual entry
 Status: accepted for review — V4 PR.
 

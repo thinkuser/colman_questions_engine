@@ -2,7 +2,6 @@
 
 import { useEffect, useId } from "react";
 import { useRouter } from "next/navigation";
-import { V3_COPY } from "@/data";
 import { useV3 } from "@/ui/state/V3Provider";
 import { LogoMark, v3Primary } from "./shared";
 
@@ -12,8 +11,8 @@ import { LogoMark, v3Primary } from "./shared";
  * so this never touches a V2 journey.
  */
 export function LandingStep() {
-  const copy = V3_COPY.landing;
-  const { state, dispatch, hydrated, arrivedAtLanding, analytics, pathFor, landingNext } = useV3();
+  const { state, dispatch, hydrated, arrivedAtLanding, analytics, pathFor, landingNext, ui, t } = useV3();
+  const copy = ui.landing;
   const router = useRouter();
   const viewToken = useId();
   // The landing page is where an intentional "restart" ends up: from here the guards apply again.
@@ -41,7 +40,7 @@ export function LandingStep() {
         <p className="text-lg leading-snug text-slate-700">{copy.support}</p>
       </header>
 
-      <ul className="colman-wash space-y-3 rounded-2xl border border-colman-border p-5" aria-label="מה מחכה לכם">
+      <ul className="colman-wash space-y-3 rounded-2xl border border-colman-border p-5" aria-label={t("מה מחכה לכם")}>
         {copy.expectations.map((line) => (
           <li key={line} className="flex items-start gap-3 text-base leading-snug font-medium text-colman-blue-dark">
             <svg

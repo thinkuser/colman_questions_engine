@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { V2_PERSONAS } from "../tests/flow/v2Personas";
 import { V3_PERSONAS } from "../tests/flow/v3Personas";
 import { expectLayoutOk } from "./layoutHelpers";
-import { fillLead, leadSubmit, mockLeadApi } from "./leadHelpers";
+import { fillLead, mockLeadApi } from "./leadHelpers";
 import {
   chooseMethod,
   openV4,
@@ -11,6 +11,7 @@ import {
   reachV4WorldResult,
   selectEntries,
   startV4,
+  v4LeadSubmit,
 } from "./v4Helpers";
 
 /**
@@ -113,10 +114,10 @@ test.describe("V4 layout", () => {
       page,
       V3_PERSONAS.find((p) => p.id === "law")!,
     );
-    await leadSubmit(page).click();
+    await v4LeadSubmit(page).click();
     await expectLayoutOk(page, "v4 lead validation");
     await fillLead(page);
-    await leadSubmit(page).click();
+    await v4LeadSubmit(page).click();
     await expect(page.getByTestId("lead-success")).toBeVisible();
     await expectLayoutOk(page, "v4 lead success");
   });
