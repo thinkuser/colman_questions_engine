@@ -1,0 +1,349 @@
+{
+  "version": "v5",
+  "status_note": "V5 balanced project-led discovery (DEC-037). Ten projects covering all 14 programs with a DIRECT opener answer. A project is routing only (pool + opening scenario, 0 points); its opener is scored evidence (+3, the existing scenario rule). Downstream questions are borrowed by id from existing authored content (V2 clusters, the People/HR world's WO2-WO5); nothing is duplicated. Candidate-facing Hebrew is authored gender-inclusive (DEC-036). No program, admission, career or licensure claims.",
+  "opening": {
+    "prompt_he": "איזה מהפרויקטים האלה הכי מסקרן?",
+    "helper_he": "אפשר לבחור עד שניים — לפי המשימה שנשמעת הכי מעניינת, לא לפי השם שמופיע עליה."
+  },
+  "projects": [
+    {
+      "id": "spotify_discovery",
+      "order": 1,
+      "enabled": true,
+      "title_he": "Spotify",
+      "card_he": "לשפר את הדרך שבה מגלים מוזיקה חדשה שמתאימה בדיוק לטעם האישי.",
+      "core_program_ids": ["computer_science", "data_science", "management_information_systems"],
+      "adjacent_program_ids": ["business_administration"],
+      "precision_module": "v1_tech",
+      "borrow_cluster_ids": ["business"],
+      "scenario": {
+        "id": "V5-SPOTIFY",
+        "prompt_he": "Discover Weekly לא פוגע מספיק טוב. איזה חלק הכי מסקרן?",
+        "reuses": {
+          "module": "v1_tech",
+          "question_id": "Q1"
+        },
+        "options": [
+          {
+            "id": "A",
+            "label_he": "לבנות ולשפר את המערכת",
+            "program_ids": ["computer_science"]
+          },
+          {
+            "id": "B",
+            "label_he": "לפתוח את הנתונים ולגלות דפוסים",
+            "program_ids": ["data_science"]
+          },
+          {
+            "id": "C",
+            "label_he": "להבין את הצורך ולחבר בין העסק למערכת",
+            "program_ids": ["management_information_systems"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "wolt_city_expansion",
+      "order": 2,
+      "enabled": true,
+      "title_he": "Wolt",
+      "card_he": "להחליט אם ואיך להיכנס לעיר חדשה ולהפוך את המהלך להצלחה.",
+      "core_program_ids": ["business_administration", "economics_and_management"],
+      "adjacent_program_ids": ["economics_and_psychology", "accounting"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["business", "people"],
+      "scenario": {
+        "id": "V5-WOLT",
+        "prompt_he": "Wolt שוקלת להיכנס לעיר חדשה. מה הכי מעניין לבדוק?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "איך להפוך את ההזדמנות למהלך עסקי",
+            "program_ids": ["business_administration"]
+          },
+          {
+            "id": "B",
+            "label_he": "ביקוש, מחירים ותחרות",
+            "program_ids": ["economics_and_management"]
+          },
+          {
+            "id": "C",
+            "label_he": "איך אנשים יגיבו למחיר ולתמריצים",
+            "program_ids": ["economics_and_psychology"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "tiktok_behavior",
+      "order": 3,
+      "enabled": true,
+      "title_he": "TikTok",
+      "card_he": "להבין למה אנשים ממשיכים לגלול ומה משפיע על הבחירות שלהם.",
+      "core_program_ids": ["psychology", "behavioral_science", "economics_and_psychology"],
+      "adjacent_program_ids": [],
+      "precision_module": null,
+      "borrow_cluster_ids": ["people"],
+      "scenario": {
+        "id": "V5-TIKTOK",
+        "prompt_he": "השימוש באפליקציה עולה מאוד. מה הכי מסקרן להבין?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "מה קורה אצל האדם: מוטיבציה, רגש והרגלים",
+            "program_ids": ["psychology"]
+          },
+          {
+            "id": "B",
+            "label_he": "איך הקבוצה, הנורמות והסביבה משפיעות",
+            "program_ids": ["behavioral_science"]
+          },
+          {
+            "id": "C",
+            "label_he": "איך עיצוב הבחירה והתמריצים משפיעים על החלטות",
+            "program_ids": ["economics_and_psychology"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "duolingo_persistence",
+      "order": 4,
+      "enabled": true,
+      "title_he": "Duolingo",
+      "card_he": "לגרום ליותר אנשים להמשיך ללמוד גם כשהמוטיבציה מתחילה לרדת.",
+      "core_program_ids": ["education", "psychology", "behavioral_science"],
+      "adjacent_program_ids": [],
+      "precision_module": null,
+      "borrow_cluster_ids": ["people"],
+      "scenario": {
+        "id": "V5-DUOLINGO",
+        "prompt_he": "הרבה משתמשים מתחילים ללמוד ואז מפסיקים. במה הכי מעניין להתמקד?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "לבנות דרך למידה שמתאימה טוב יותר",
+            "program_ids": ["education"]
+          },
+          {
+            "id": "B",
+            "label_he": "להבין את המוטיבציה והחסמים האישיים",
+            "program_ids": ["psychology"]
+          },
+          {
+            "id": "C",
+            "label_he": "להבין איך הסביבה והקבוצה משפיעות על התמדה",
+            "program_ids": ["behavioral_science"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "people_retention",
+      "order": 5,
+      "enabled": true,
+      "title_he": "People / HR",
+      "card_he": "להבין למה עובדים טובים עוזבים ואיך ליצור מקום שרוצים להישאר בו.",
+      "core_program_ids": ["behavioral_science", "economics_and_psychology"],
+      "adjacent_program_ids": ["business_administration", "management_information_systems"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["world_people_organizations"],
+      "scenario": {
+        "id": "V5-HR",
+        "prompt_he": "ארגון גדל מהר, אבל עובדים טובים עוזבים. איזה חלק הכי מסקרן?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "תרבות, יחסים ותחושת שייכות",
+            "program_ids": ["behavioral_science"]
+          },
+          {
+            "id": "B",
+            "label_he": "שכר, תמריצים ואופן הצגת הבחירה",
+            "program_ids": ["economics_and_psychology"]
+          },
+          {
+            "id": "C",
+            "label_he": "מהלך של גיוס, פיתוח ושימור",
+            "program_ids": ["business_administration"]
+          },
+          {
+            "id": "D",
+            "label_he": "מערכות ותהליכים שמנהלים את חוויית העובד",
+            "program_ids": ["management_information_systems"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "people_change",
+      "order": 6,
+      "enabled": true,
+      "title_he": "מרכז ליווי והתפתחות",
+      "card_he": "להבין מה עובר על אדם בתקופת שינוי ומה יכול לעזור להתקדם.",
+      "core_program_ids": ["psychology", "behavioral_science"],
+      "adjacent_program_ids": ["education"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["people"],
+      "scenario": {
+        "id": "V5-CHANGE",
+        "prompt_he": "אדם מתמודד עם שינוי משמעותי בחיים. מה הכי מסקרן להבין?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "מחשבות, רגשות ומוטיבציה",
+            "program_ids": ["psychology"]
+          },
+          {
+            "id": "B",
+            "label_he": "השפעת המשפחה, הקבוצה והסביבה",
+            "program_ids": ["behavioral_science"]
+          },
+          {
+            "id": "C",
+            "label_he": "למידה, התפתחות ורכישת כלים",
+            "program_ids": ["education"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "ai_legal_case",
+      "order": 7,
+      "enabled": true,
+      "title_he": "מקרה משפטי סביב AI",
+      "card_he": "מוצר חדש עומד לעלות לאוויר, אבל יש ויכוח אם הוא פוגע בפרטיות ובזכויות.",
+      "core_program_ids": ["law"],
+      "adjacent_program_ids": ["business_administration", "communication"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["law", "communication"],
+      "scenario": {
+        "id": "V5-LAW",
+        "prompt_he": "לפני ההשקה מתעוררת מחלוקת. איפה הכי מעניין להיכנס לתמונה?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "להבין את החוק ולבנות עמדה משפטית",
+            "program_ids": ["law"]
+          },
+          {
+            "id": "B",
+            "label_he": "לשנות את המוצר או המהלך העסקי",
+            "program_ids": ["business_administration"]
+          },
+          {
+            "id": "C",
+            "label_he": "להסביר לציבור ולנהל את השיח",
+            "program_ids": ["communication"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "accounting_gap",
+      "order": 8,
+      "enabled": true,
+      "title_he": "משרד רואי חשבון",
+      "card_he": "חברה מציגה תוצאות טובות, אבל משהו במספרים פשוט לא מסתדר.",
+      "core_program_ids": ["accounting"],
+      "adjacent_program_ids": ["economics_and_management", "business_administration"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["business"],
+      "scenario": {
+        "id": "V5-ACCOUNTING",
+        "prompt_he": "הדוחות נראים טוב, אבל יש תחושה שמשהו לא נכון. מה הכי מעניין לבדוק?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "לרדת לפרטים ולמצוא את הפער",
+            "program_ids": ["accounting"]
+          },
+          {
+            "id": "B",
+            "label_he": "להבין אם השוק, המחירים או הביקוש מסבירים אותו",
+            "program_ids": ["economics_and_management"]
+          },
+          {
+            "id": "C",
+            "label_he": "להחליט מה העסק צריך לשנות",
+            "program_ids": ["business_administration"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "nike_launch",
+      "order": 9,
+      "enabled": true,
+      "title_he": "Nike",
+      "card_he": "להשיק מוצר חדש בישראל ולגרום לאנשים להבין, לזכור ולרצות אותו.",
+      "core_program_ids": ["communication", "communication_and_management"],
+      "adjacent_program_ids": ["business_administration"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["communication"],
+      "scenario": {
+        "id": "V5-NIKE",
+        "prompt_he": "מוצר חדש מגיע לשוק. איזה חלק הכי מסקרן?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "לבנות סיפור, תוכן וקמפיין",
+            "program_ids": ["communication"]
+          },
+          {
+            "id": "B",
+            "label_he": "להחליט למי פונים, באילו ערוצים ואיך מודדים",
+            "program_ids": ["communication_and_management"]
+          },
+          {
+            "id": "C",
+            "label_he": "לבנות את המהלך העסקי וההצעה",
+            "program_ids": ["business_administration"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "apple_store_space",
+      "order": 10,
+      "enabled": true,
+      "title_he": "Apple Store",
+      "card_he": "להפוך חלל ריק למקום שאנשים רוצים להיכנס אליו, להשתמש בו ולזכור אותו.",
+      "core_program_ids": ["interior_design"],
+      "adjacent_program_ids": ["communication", "business_administration"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["interior_design"],
+      "scenario": {
+        "id": "V5-APPLE",
+        "prompt_he": "נפתח חלל חדש. מה הכי מעניין ליצור בו?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "לתכנן חלל, תנועה, חומרים ותאורה",
+            "program_ids": ["interior_design"]
+          },
+          {
+            "id": "B",
+            "label_he": "לגרום למקום לספר סיפור ולתקשר זהות",
+            "program_ids": ["communication"]
+          },
+          {
+            "id": "C",
+            "label_he": "להחליט מה המקום צריך להשיג עבור העסק",
+            "program_ids": ["business_administration"]
+          }
+        ]
+      },
+      "follow_ups": []
+    }
+  ]
+}

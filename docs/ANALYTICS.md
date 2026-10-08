@@ -159,6 +159,33 @@ New parameter names: `error_type` and `flow_version`, `project_id`, `project_ids
 
 Analysis hints: group V2 runs by `comparison_id` and `flow_version`; demand by `project_ids`; neutral rate by question with `is_neutral`; how often generated focus appears with `is_generated_focus`; the journey length distribution with `total_answer_count` on `studymatch_result_view`; handoff rate with `precision_module_handoff`.
 
+## V5 balanced project-led discovery events (DEC-037)
+V5 (`/v5`) uses the same events and parameters as V4, with its own trackers (`colman-studymatch:analytics-v5:<mode>`). **Every V5 event carries `flow_version: "v5"`; every journey event also carries `entry_mode`.** V2/V3/V4 analytics are unchanged.
+
+| Event | V5 behaviour |
+|---|---|
+| `studymatch_landing_view`, `studymatch_start`, `discovery_method_view`, `discovery_method_selected` | As V4, with `flow_version: v5` |
+| `career_project_discovery_view` / `_selected` / `_deselected` / `_selection_completed` | Project mode, with the **V5 project ids** (`project_id`, `selection_position`, canonical `project_ids`), `project_count_available: 10` |
+| `career_world_*` | World mode (as V3/V4) |
+| `question_view`, `question_continue`, `question_answer`, `studymatch_result_view`, `result_program_click`, `result_contact_click`, `result_all_programs_click`, `result_detail_expand`, lead events | As V4, + `entry_mode` |
+
+**Analysis dimensions (all with `flow_version = v5`):**
+| Dimension | Source |
+|---|---|
+| Entry mode | `entry_mode` on every journey event |
+| Selected projects (set) | `project_ids` (canonical, sorted, pipe-joined) on question / result / lead events |
+| Individual project | `project_id` on `career_project_selected` |
+| Project pair and ORDER | `project_ids` (pair) + `selection_position` on `career_project_selected` (order = which opener came first) |
+| Completion | `comparison_completed` ÷ `comparison_started`; discovery: `career_project_selection_completed` ÷ `career_project_discovery_view` |
+| Questions answered | `total_answer_count` on `studymatch_result_view` |
+| Result kind (recommended / near tie / insufficient / V1 precision) | `result_kind` on `studymatch_result_view` |
+| Recommended program | `recommended_program` (and `alternative_programs`) on `studymatch_result_view` |
+| Lead conversion | `lead_form_success` ÷ `studymatch_result_view`; the lead sheet (`source = colman_studymatch_v5`, `entry_mode`, `selected_project_ids` with V5 ids) |
+
+V4 and V5 share some project ids (`duolingo_persistence`, `apple_store_space`): always segment by `flow_version`.
+
+**Self-selected vs externally assigned entry mode:** a candidate who chooses on `/v5/start` produces `discovery_method_selected`; traffic sent straight to `/v5/worlds` or `/v5/projects` does not (nothing is fabricated), but all downstream events still carry `entry_mode`. Use the externally assigned links for a clean A/B comparison without self-selection bias.
+
 ## V4 dual-entry events (DEC-035)
 V4 (`/v4`) reports with one `JourneyTracker` per entry mode. **Every V4 event carries `flow_version: "v4"`, and every journey event also carries `entry_mode`** (`worlds` | `projects`). V2 and V3 analytics are unchanged.
 

@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { CAREER_PROJECTS, getCatalogProgram, LEAD_CONSENT_VERSION, V2_PROGRAM_IDS, V3_WORLDS } from "@/data";
+import {
+  CAREER_PROJECTS,
+  getCatalogProgram,
+  LEAD_CONSENT_VERSION,
+  V2_PROGRAM_IDS,
+  V3_WORLDS,
+  V5_PROJECTS,
+} from "@/data";
 import type { ProgramId } from "@/engine";
 import { displayName } from "./resultView";
 import type { GenericResultView, V2ResultView } from "./v2ResultView";
@@ -140,8 +147,19 @@ export function leadContextFromResult(view: V2ResultView): LeadResultContext {
 // Request contract (browser -> /api/v2/lead)
 
 const programIdSchema = z.enum(V2_PROGRAM_IDS as [ProgramId, ...ProgramId[]]);
-const projectIdSchema = z.enum(CAREER_PROJECTS.map((project) => project.id) as [string, ...string[]]);
 const worldIdSchema = z.enum(V3_WORLDS.map((world) => world.id) as [string, ...string[]]);
+
+/**
+ * Project ids are validated PER FLOW VERSION: V2/V3/V4 leads may only carry V2's career projects (BRAND_STRATEGY), and
+ * V5 leads only the V5 balanced projects (PROJECT_STRATEGY, DEC-037). So a V5-only id sent as V4 (or a V4-only id sent
+ * as V5) is rejected, even though both lists share some ids.
+ */
+const BRAND_PROJECT_IDS: ReadonlySet<string> = new Set(CAREER_PROJECTS.map((project) => project.id));
+const V5_PROJECT_IDS: ReadonlySet<string> = new Set(V5_PROJECTS.map((project) => project.id));
+const projectIdsFor = (flowVersion: LeadFlowVersion | undefined) =>
+  flowVersion === "v5" ? V5_PROJECT_IDS : BRAND_PROJECT_IDS;
+/** Dual-entry versions: the candidate (or an external A/B link) picks worlds or projects. */
+const isDualEntry = (flowVersion: LeadFlowVersion | undefined) => flowVersion === "v4" || flowVersion === "v5";
 
 export const LeadRequestSchema = z
   .strictObject({
@@ -152,8 +170,8 @@ export const LeadRequestSchema = z
     /** Honeypot: a visually hidden field real people never fill in. Must be empty. */
     website: z.string().max(200).optional(),
     /** Which UI version produced the lead. Optional: a request without it is a V2 lead. */
-    flow_version: z.enum(["v2", "v3", "v4"]).optional(),
-    /** V4 only (required there): which discovery method the candidate used. Never sent by V2 or V3. */
+    flow_version: z.enum(["v2", "v3", "v4", "v5"]).optional(),
+    /** V4/V5 only (required there): which discovery method the candidate used. Never sent by V2 or V3. */
     entry_mode: z.enum(["worlds", "projects"]).optional(),
     comparison_id: z.string().min(1).max(100).nullable(),
     result_kind: z.enum(LEAD_RESULT_KINDS),
@@ -161,8 +179,11 @@ export const LeadRequestSchema = z
     alternative_programs: z
       .array(z.strictObject({ id: programIdSchema, role: z.enum(["alternative", "peer", "weak_direction"]) }))
       .max(3),
-    /** V2 brand-led discovery: the selected career projects. Empty for a world-led (V3) lead. */
-    selected_project_ids: z.array(projectIdSchema).max(2),
+    /**
+     * The selected projects: V2's career projects for V2/V4, the V5 balanced projects for V5 (checked per flow below).
+     * Empty for a world-led lead.
+     */
+    selected_project_ids: z.array(z.string().min(1).max(100)).max(2),
     /** V3 world-led discovery (additive, optional): the selected working worlds. Never put in selected_project_ids. */
     selected_world_ids: z.array(worldIdSchema).max(2).optional(),
   })
@@ -175,19 +196,22 @@ export const LeadRequestSchema = z
     const worlds = value.selected_world_ids ?? [];
     if (new Set(worlds).size !== worlds.length) issue("duplicate world");
     const projects = value.selected_project_ids;
-    if (value.flow_version === "v4") {
-      // V4 (dual entry): the entry mode is required and decides which single list is populated.
+    const validProjects = projectIdsFor(value.flow_version);
+    for (const id of projects) if (!validProjects.has(id)) issue(`unknown project "${id}" for this flow version`);
+    if (isDualEntry(value.flow_version)) {
+      // V4/V5 (dual entry): the entry mode is required and decides which single list is populated.
+      const version = value.flow_version!.toUpperCase();
       if (value.entry_mode === "worlds") {
-        if (worlds.length < 1) issue("a V4 worlds lead needs selected worlds");
-        if (projects.length > 0) issue("a V4 worlds lead carries no project ids");
+        if (worlds.length < 1) issue(`a ${version} worlds lead needs selected worlds`);
+        if (projects.length > 0) issue(`a ${version} worlds lead carries no project ids`);
       } else if (value.entry_mode === "projects") {
-        if (projects.length < 1) issue("a V4 projects lead needs selected projects");
-        if (worlds.length > 0) issue("a V4 projects lead carries no world ids");
+        if (projects.length < 1) issue(`a ${version} projects lead needs selected projects`);
+        if (worlds.length > 0) issue(`a ${version} projects lead carries no world ids`);
       } else {
-        issue("a V4 lead needs an entry mode");
+        issue(`a ${version} lead needs an entry mode`);
       }
     } else {
-      if (value.entry_mode !== undefined) issue("entry_mode is a V4 field");
+      if (value.entry_mode !== undefined) issue("entry_mode is a V4/V5 field");
       if (worlds.length > 0) {
         // A world-led lead: worlds only, and only from the V3 experience.
         if (projects.length > 0) issue("a lead has either projects or worlds, not both");
@@ -216,12 +240,12 @@ export const LeadRequestSchema = z
 
 export type LeadRequest = z.infer<typeof LeadRequestSchema>;
 
-export type LeadFlowVersion = "v2" | "v3" | "v4";
+export type LeadFlowVersion = "v2" | "v3" | "v4" | "v5";
 export type LeadEntryMode = "worlds" | "projects";
 
 export interface LeadSubmitInput extends LeadFormValues {
   flowVersion?: LeadFlowVersion;
-  /** V4 only: the discovery method used. */
+  /** V4/V5 only: the discovery method used. */
   entryMode?: LeadEntryMode;
   website: string;
   comparisonId: string | null;
@@ -249,8 +273,8 @@ export function buildLeadRequest(input: LeadSubmitInput): Record<string, unknown
 }
 
 function selectionFields(input: LeadSubmitInput): Record<string, unknown> {
-  if (input.flowVersion === "v4") {
-    // V4 always sends both lists (exactly one populated) plus the entry mode.
+  if (isDualEntry(input.flowVersion)) {
+    // V4/V5 always send both lists (exactly one populated) plus the entry mode.
     return input.entryMode === "worlds"
       ? { entry_mode: "worlds", selected_project_ids: [], selected_world_ids: [...(input.selectedWorldIds ?? [])] }
       : { entry_mode: "projects", selected_project_ids: [...input.selectedProjectIds], selected_world_ids: [] };
@@ -282,9 +306,9 @@ export interface LeadWebhookPayload {
   primary_program: LeadProgramRef | null;
   alternative_programs: Array<LeadProgramRef & { role: LeadProgramRole }>;
   selected_project_ids: string[];
-  /** Present for world-led (V3) leads, and always present (possibly empty) for V4 leads. */
+  /** Present for world-led (V3) leads, and always present (possibly empty) for V4/V5 leads. */
   selected_world_ids?: string[];
-  /** V4 only. */
+  /** V4/V5 only. */
   entry_mode?: LeadEntryMode;
   submitted_at: string;
 }
@@ -317,7 +341,7 @@ export function buildLeadWebhookPayload(
     primary_program: request.primary_program_id ? programRef(request.primary_program_id) : null,
     alternative_programs: request.alternative_programs.map((entry) => ({ ...programRef(entry.id), role: entry.role })),
     selected_project_ids: [...request.selected_project_ids],
-    ...(request.flow_version === "v4"
+    ...(isDualEntry(request.flow_version)
       ? { selected_world_ids: [...(request.selected_world_ids ?? [])], entry_mode: request.entry_mode }
       : request.selected_world_ids && request.selected_world_ids.length > 0
         ? { selected_world_ids: [...request.selected_world_ids] }

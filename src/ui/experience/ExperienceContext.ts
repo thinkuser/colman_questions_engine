@@ -8,8 +8,9 @@ import type { useV3Analytics } from "@/ui/analytics/v3Analytics";
 
 /**
  * The contract between the redesigned StudyMatch screens (landing, discovery, transition, questions, result) and the
- * experience that hosts them. V3 (world-led, fixed strategy) and V4 (dual entry: the candidate chooses worlds or
- * projects) each supply their own value; the screens are shared and never know which version they run in.
+ * experience that hosts them. V3 (world-led, fixed strategy), V4 (dual entry: worlds or V2's brand projects) and V5
+ * (dual entry: worlds or the V5 balanced projects, DEC-037) each supply their own value; the screens are shared and
+ * never know which version they run in.
  *
  * Only experience-specific facts live here: routes, the "where does this journey belong" rule, analytics bindings,
  * the lead flow version and entry mode, and the copy (screen copy, lead copy and the text seam for shared content).
@@ -18,7 +19,7 @@ import type { useV3Analytics } from "@/ui/analytics/v3Analytics";
 
 export type ExperienceRoute = "landing" | "start" | "discover" | "ready" | "questions" | "result";
 export type EntryMode = "worlds" | "projects";
-export type ExperienceFlowVersion = "v3" | "v4";
+export type ExperienceFlowVersion = "v3" | "v4" | "v5";
 
 export type ExperienceAnalytics = ReturnType<typeof useV3Analytics> & {
   /** V4 only: the entry-method screen was shown / a method was chosen. */
@@ -67,8 +68,13 @@ export interface ExperienceValue {
    * switch when nothing has been chosen yet. Returns false while a redirect to the stored mode's page is pending.
    */
   ensureEntryMode: (mode: EntryMode) => boolean;
-  /** V4: choose (or change) the discovery method. Changing it starts a fresh journey. */
+  /** V4/V5: choose (or change) the discovery method. Changing it starts a fresh journey. */
   selectEntryMode: (mode: EntryMode) => void;
+  /**
+   * The discovery page for a method, known before the chosen mode reaches the state (the method screen navigates right
+   * after choosing). Absent: V4's pages. V5 supplies its own.
+   */
+  discoverPathFor?: (mode: EntryMode) => string;
 }
 
 export const ExperienceContext = createContext<ExperienceValue | null>(null);

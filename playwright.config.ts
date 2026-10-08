@@ -29,7 +29,7 @@ export default defineConfig({
   projects: [
     {
       name: "functional",
-      testMatch: /(personas|navigation|analytics|links-a11y|discovery|discovery-lead|v3|v2-baseline|v4)\.spec\.ts/,
+      testMatch: /(personas|navigation|analytics|links-a11y|discovery|discovery-lead|v3|v2-baseline|v4|v5)\.spec\.ts/,
     },
     { name: "layout-320", testMatch: /layout\.spec\.ts/, use: { viewport: { width: 320, height: 640 } } },
     { name: "layout-390", testMatch: /layout\.spec\.ts/, use: { viewport: { width: 390, height: 844 } } },

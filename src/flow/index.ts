@@ -16,3 +16,4 @@ export * from "./v3ResultView";
 export * from "./journey";
 export * from "./v3QuestionView";
 export * from "./v4Persistence";
+export * from "./v5Persistence";

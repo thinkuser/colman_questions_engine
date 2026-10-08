@@ -47,7 +47,7 @@ export function ResultStep() {
         leadForm={
           <LeadForm
             flowVersion={flowVersion}
-            entryMode={flowVersion === "v4" ? (entryMode ?? undefined) : undefined}
+            entryMode={flowVersion !== "v3" ? (entryMode ?? undefined) : undefined}
             copy={leadCopy}
             placeholders={ui.lead.placeholders}
             context={leadContextFromResult(view.base)}
