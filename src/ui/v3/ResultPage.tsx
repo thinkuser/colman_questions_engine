@@ -438,7 +438,7 @@ export function ResultPage({
           <span className="sr-only"> (נפתח בלשונית חדשה)</span>
         </a>
       )}
-      <p className="text-sm leading-snug text-slate-500">{view.disclaimerHe}</p>
+      {view.disclaimerHe && <p className="text-sm leading-snug text-slate-500">{view.disclaimerHe}</p>}
 
       {/* Sticky contact (mobile): steps aside while the form is visible */}
       <div className="md:hidden">

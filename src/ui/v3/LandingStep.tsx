@@ -15,7 +15,7 @@ import { LogoMark, v3Primary } from "./shared";
  */
 export function LandingStep() {
   const copy = V3_COPY.landing;
-  const { state, dispatch, hydrated, introSeen, arrivedAtLanding } = useV3();
+  const { strategy, state, dispatch, hydrated, introSeen, arrivedAtLanding } = useV3();
   const router = useRouter();
   const analytics = useV3Analytics();
   const viewToken = useId();
@@ -27,11 +27,12 @@ export function LandingStep() {
     if (hydrated) analytics.landingViewed(viewToken);
   }, [hydrated, analytics, viewToken]);
 
-  const inProgress = hydrated && (state.selectedProjectIds.length > 0 || state.answers.length > 0);
+  const inProgress = hydrated && (state.selectedIds.length > 0 || state.answers.length > 0);
 
   function handleStart() {
     analytics.started();
-    router.push(V3_PATHS[v3Target(state, introSeen)]);
+    const target = v3Target(strategy, state, introSeen);
+    router.push(V3_PATHS[target === "landing" ? "discover" : target]);
   }
 
   return (

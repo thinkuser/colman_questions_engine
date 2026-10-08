@@ -1,16 +1,17 @@
 "use client";
 
 import { useMemo } from "react";
-import { DiscoveryTracker, type DataLayerHost, type StorageLike } from "@/analytics";
+import { JourneyTracker, type DataLayerHost, type StorageLike } from "@/analytics";
+import { V3_STRATEGY } from "@/ui/v3/config";
 
 /**
- * V3 analytics binding. The same tracker class as V2 (so the replay-derived events and the PII boundary are shared),
- * but reporting `flow_version: "v3"` with its own sessionStorage context key, so the two versions can be compared
- * later and never share a journey id.
+ * V3 analytics binding: a strategy-driven `JourneyTracker` reporting `flow_version: "v3"` with its own sessionStorage
+ * context key, so V2 and V3 can be compared later and never share a journey id. World-led discovery emits
+ * `career_world_*` events (never `career_project_*`). V2 keeps its own, unchanged `DiscoveryTracker`.
  */
 export const V3_ANALYTICS_STORAGE_KEY = "colman-studymatch:analytics-v3";
 
-let tracker: DiscoveryTracker | null = null;
+let tracker: JourneyTracker | null = null;
 
 function sessionStorageOrNull(): StorageLike | null {
   try {
@@ -20,13 +21,14 @@ function sessionStorageOrNull(): StorageLike | null {
   }
 }
 
-export function getV3Tracker(): DiscoveryTracker | null {
+export function getV3Tracker(): JourneyTracker | null {
   if (typeof window === "undefined") return null;
-  tracker ??= new DiscoveryTracker({
+  tracker ??= new JourneyTracker({
     host: window as unknown as DataLayerHost,
-    storage: sessionStorageOrNull(),
+    strategy: V3_STRATEGY,
     flowVersion: "v3",
     storageKey: V3_ANALYTICS_STORAGE_KEY,
+    storage: sessionStorageOrNull(),
     debug: process.env.NODE_ENV === "development" ? (payload) => console.debug("[analytics:v3]", payload) : undefined,
   });
   return tracker;

@@ -1,5 +1,16 @@
-import { findPairContent, getCatalogProgram, getSource, PROGRAM_MEANING, V2_PROGRAM_IDS, V3_COPY } from "@/data";
+import {
+  findPairContent,
+  getCatalogProgram,
+  getSource,
+  getV2QuestionCopy,
+  getWorldQuestionCopy,
+  PROGRAM_MEANING,
+  V2_PROGRAM_IDS,
+  V3_COPY,
+  V3_WORLD_CLUSTERS,
+} from "@/data";
 import type { ProgramId, RealityLevel, RecordedAnswer, V2Step } from "@/engine";
+import type { DiscoveryStrategyId } from "./journey";
 import { displayName } from "./resultView";
 import { buildV2ResultView, type ResultAnalytics, type V2ResultView } from "./v2ResultView";
 
@@ -55,7 +66,8 @@ export interface V3ResultView {
   /** The candidate's own choices behind the result: shown only inside a collapsed detail. */
   chosenHe: string[];
   allProgramsUrl: string | null;
-  disclaimerHe: string;
+  /** The company disclaimer (brand-led only); null for world-led discovery. */
+  disclaimerHe: string | null;
   /** True when a shown program has no curated facts, so the COLMAN section points to the official site for details. */
   limitedFacts: boolean;
   /** The V2-compatible result: the single source for lead context and analytics metadata. */
@@ -129,17 +141,47 @@ function pairView(first: V3Program, second: V3Program): V3PairView {
   };
 }
 
+/**
+ * What the candidate chose that pointed to `programId`, as candidate-facing text: a world question's own copy, else the
+ * V2 copy, else (generated focus) the program's work statement. Strongest answers first. Shown only in the collapsed
+ * detail; the visible "why" is the curated meaning copy, never an echo of the choices.
+ */
+function chosenFor(step: Extract<V2Step, { status: "complete" }>, programId: ProgramId): string[] {
+  const texts = step.state.evidence
+    .filter((answer) => answer.programIds.includes(programId))
+    .sort((a, b) => b.weight - a.weight)
+    .map((answer) => {
+      if (answer.source.type === "generic_focus") {
+        const index = Number(answer.questionId.split(":").at(-1));
+        return Number.isInteger(index) ? (getCatalogProgram(programId)?.workStatementsHe[index] ?? null) : null;
+      }
+      const copy = getWorldQuestionCopy(answer.questionId) ?? getV2QuestionCopy(answer.questionId);
+      return copy?.options.find((option) => option.id === answer.answerId)?.label ?? null;
+    })
+    .filter((text): text is string => text !== null);
+  return [...new Set(texts)].slice(0, MAX_WHY);
+}
+
+export interface V3ResultOptions {
+  /** World-led discovery shows no company disclaimer (there are no companies); brand-led keeps V2's. */
+  strategyId?: DiscoveryStrategyId;
+}
+
 export function buildV3ResultView(
   step: Extract<V2Step, { status: "complete" }>,
-  selectedProjectIds: readonly string[],
+  selectedIds: readonly string[],
   answers: readonly RecordedAnswer[],
+  options: V3ResultOptions = {},
 ): V3ResultView {
-  const base = buildV2ResultView(step, selectedProjectIds, answers);
+  const base = buildV2ResultView(step, selectedIds, answers);
   const allProgramsUrl = getSource("colman_ba_programs_index")?.url ?? null;
-  const common = { allProgramsUrl, disclaimerHe: base.disclaimerHe, base, analytics: base.analytics };
+  const disclaimerHe = (options.strategyId ?? "worlds") === "worlds" ? null : base.disclaimerHe;
+  const common = { allProgramsUrl, disclaimerHe, base, analytics: base.analytics };
 
   if (base.type === "generic") {
-    const programs = base.directions.map((direction) => v3Program(direction.programId, direction.chosenHe.length));
+    const programs = base.directions.map((direction) =>
+      v3Program(direction.programId, step.state.support[direction.programId] ?? 0),
+    );
     const notes: V3Note[] = base.realityChecks.map((reality) => ({
       programId: reality.programId,
       level: reality.level,
@@ -154,7 +196,7 @@ export function buildV3ResultView(
       programs,
       pair: base.kind === "near_tie" && programs[0] && programs[1] ? pairView(programs[0], programs[1]) : null,
       notes,
-      chosenHe: base.directions[0]?.chosenHe ?? [],
+      chosenHe: base.directions[0] ? chosenFor(step, base.directions[0].programId) : [],
       limitedFacts: base.limitedFacts,
     };
   }
@@ -168,9 +210,18 @@ export function buildV3ResultView(
     textHe: reality.bodyHe,
     important: true,
   }));
+  // A V1 card for a module question that a world scenario answered (Tech: WT1 carried in as Q1) shows the candidate's
+  // own world answer, not the V1 copy of a question they never saw.
+  const carriedFrom = (questionId: string, answerId: string): string | null => {
+    const source = V3_WORLD_CLUSTERS.flatMap((cluster) => cluster.questions).find(
+      (question) => question.reuses?.questionId === questionId && step.state.askedQuestionIds.includes(question.id),
+    );
+    if (!source) return null;
+    return getWorldQuestionCopy(source.id)?.options.find((option) => option.id === answerId)?.label ?? null;
+  };
   const chosenHe = v1.evidence
     .filter((card) => card.kind !== "mixed")
-    .map((card) => card.text)
+    .map((card) => carriedFrom(card.questionId, card.answerId) ?? card.text)
     .slice(0, 4);
 
   if (v1.kind === "no_strong_fit") {

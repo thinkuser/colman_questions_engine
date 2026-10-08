@@ -1,6 +1,13 @@
 # StudyMatch V3 Experience (UX redesign)
 
-V3 is a **presentation and interaction redesign** of the StudyMatch journey, built next to the frozen V2 baseline so the two can be compared side by side and V3 rolled back instantly. **Same engine, same scoring, same routing, same question and program data, same lead backend.** Only the UI, the persisted-state key and the analytics version differ.
+V3 is the redesigned StudyMatch experience, built next to the frozen V2 baseline so the two can be compared side by side and V3 rolled back instantly. Since DEC-034 the two versions also test **two different discovery strategies**:
+
+| | Discovery strategy | Experience |
+|---|---|---|
+| **V2** (frozen) | **brand-led**: "which project (Spotify, Wolt, TikTok...) would you join?" | V2 UI |
+| **V3** | **world-led**: "which working world (product team, school, HR department...) intrigues you?" | redesigned UX |
+
+**Same engine, same scoring, same routing rules, same lead backend.** The discovery strategy and the experience are deliberately separate modules: the V3 UX can run brand-led by switching one constant (`src/ui/v3/config.ts`) if the brand-led hypothesis performs better.
 
 | Version | Route | Status |
 |---|---|---|
@@ -11,21 +18,53 @@ V3 is a **presentation and interaction redesign** of the StudyMatch journey, bui
 Rollback is not shipping or linking `/v3` (nothing links to it yet); V2 never changed. The launch switch (which version `/` serves) stays a separate, deliberate decision (DEC-031).
 
 ## What is shared and what is separate
-- **Shared, unchanged:** `src/engine/**`, the discovery content (`src/data/content/**`), the journey reducer (`src/flow/discoveryFlow.ts`), `nextDiscoveryStep`, `buildV2ResultView` (V3's result is built *from* it, so the outcome is by construction the same), the lead form component and `/api/v2/lead`.
-- **Separate (V3 only):** routes `src/app/v3/**`, UI `src/ui/v3/**`, provider `src/ui/state/V3Provider.tsx`, storage `src/flow/v3Persistence.ts`, copy `src/data/v3Copy.ts`, result view `src/flow/v3ResultView.ts`, progress `src/flow/v3Progress.ts`, analytics binding `src/ui/analytics/v3Analytics.ts`.
-- **Touched additively:** `DiscoveryTracker` (optional `flowVersion` / `storageKey`, new V3 methods; defaults are V2's), `LeadForm` (optional `flowVersion` default `"v2"`, optional `placeholders`), the lead request schema (optional `flow_version`), the analytics vocabulary.
+- **Shared, unchanged:** `src/engine/**` (no engine change at all), V2's content (`career_projects.json`, `clusters.json`), V2's reducer/persistence/tracker (`discoveryFlow.ts`, `discoveryPersistence.ts`, `discoveryTracker.ts` are byte-identical to the baseline), `nextDiscoveryStep`, `buildV2ResultView`, the lead form component and `/api/v2/lead`.
+- **Separate (V3 only):** world data `src/data/content/discovery/v3_worlds.json` + loader `src/data/v3Worlds.ts`, the strategy seam and generic journey `src/flow/journey.ts`, `src/flow/v3QuestionView.ts`, `src/flow/v3Persistence.ts`, `src/flow/v3ResultView.ts`, `src/flow/v3Progress.ts`, `src/analytics/journeyTracker.ts`, routes `src/app/v3/**`, UI `src/ui/v3/**`, `src/ui/state/V3Provider.tsx`, `src/ui/analytics/v3Analytics.ts`, copy `src/data/v3Copy.ts`.
+- **Touched additively:** `LeadForm` (optional `flowVersion` default `"v2"`, `placeholders`, `selectedWorldIds`), the lead request schema (optional `flow_version`, optional `selected_world_ids`), the analytics vocabulary.
 
 ## Journey
-`landing → projects → transition → questions (select, then Continue) → result`
+`landing → worlds → transition → questions (select, then Continue) → result`
 
 1. **Landing (`/v3`)** — official COLMAN logo, "איזה תחום לימודים יכול להתאים לכם?", the three expectation lines ("כ־3–5 דקות", "לא צריך לדעת מראש מה ללמוד", "בסוף תקבלו כיוון ומסלול שכדאי להכיר"), CTA "בואו נמצא את הכיוון שלכם" and "מספר השאלות משתנה מעט לפי התשובות שלכם." A candidate with a V3 journey in progress sees "להמשיך מאיפה שעצרתם" and "להתחיל מחדש".
-2. **Projects (`/v3/projects`)** — "באיזה פרויקט הייתם הכי רוצים להשתתף?" / "בחרו עד שניים שהכי מסקרנים אתכם. אין תשובה נכונה." Text-only cards (company, title, description, state): **no icons, no logos**. The company label has one size/weight/position on every card (colour is decorative); the synthetic project is labelled exactly `AI`. A third attempt is not silently greyed out: the card stays usable, nothing is added (maximum stays 2) and "אפשר לבחור עד שני פרויקטים. בטלו בחירה אחת כדי לבחור אחרת." is announced (`role=status`, `aria-live=polite`). A safe-area-aware sticky bar shows "נבחרו N מתוך 2" and "בואו נמשיך" (enabled for 1 or 2); a spacer keeps it from covering content. The brand disclaimer stays below the cards.
+2. **Worlds (`/v3/worlds`)** — "איזה מעולמות העשייה האלה הכי מסקרן אתכם?" / "בחרו עד שניים. לא צריך לדעת איזה תואר מוביל לשם." Nine world cards (title, workplace/context line, one imagination line, selection state): **no companies, logos, brand colours or icons**, one typography for every card. A third attempt is not silently greyed out: nothing is added (maximum stays 2) and "אפשר לבחור עד שני עולמות. בטלו בחירה אחת כדי לבחור עולם אחר." is announced (`role=status`, `aria-live=polite`). A safe-area-aware sticky bar shows "נבחרו N מתוך 2" and "בואו נמשיך" (enabled for 1 or 2); a spacer keeps it from covering the last card. No company disclaimer (there are no companies). See "World-led discovery" below.
 3. **Transition (`/v3/ready`)** — "מעולה, עכשיו נחדד את הכיוון" + how the questions work, CTA "לשאלה הראשונה". The "seen" flag is in memory only.
 4. **Questions (`/v3/questions`)** — tap an option to **select** it (changeable), then press **המשך** (sticky bar) to **commit**. Nothing advances on tap. The answer, its analytics event and persistence happen only on Continue, so changing your mind is never double counted. Applies to authored, generated-focus, scenario and Tech precision questions (one panel, driven by the engine's question view). `/v2` keeps its tap-to-advance behaviour.
 5. **Result (`/v3/result`)** — see below.
 
 ## Progress transparency
-No fake question count. "שלב N מתוך 3" (1 projects, 2 "מדייקים את הכיוון", 3 the result) with a three-segment bar, and during questions a deterministic line from the number of **committed** answers: 0-1 "כמה שאלות קצרות", 2-3 "אנחנו כבר מתחילים לראות כיוון", 4+ "הכיוון כבר מתחיל להתחדד". The tone is deliberately **non-temporal**: the engine does not know how many questions remain (a Tech cross-cluster journey can run to 11 answers), so V3 never says "almost done", "one more question" or "a little left".
+No fake question count. "שלב N מתוך 3" (1 "בוחרים מה מסקרן אתכם", 2 "מדייקים את הכיוון", 3 the result) with a three-segment bar, and during questions a deterministic line from the number of **committed** answers: 0-1 "כמה שאלות קצרות", 2-3 "אנחנו כבר מתחילים לראות כיוון", 4+ "הכיוון כבר מתחיל להתחדד". The tone is deliberately **non-temporal**: the engine does not know how many questions remain (a Tech cross-cluster journey can run to 11 answers), so V3 never says "almost done", "one more question" or "a little left".
+
+## World-led discovery (DEC-034)
+The opening world choice is **routing only**, exactly like a V2 project: 0 fit points and 0 support. It builds the candidate pool (core + adjacent programs) and opens the world's own first scenario. Fit evidence starts with that scenario (+3, the existing scenario weight). Nothing in the engine changed: `src/data/v3Worlds.ts` adapts each world into the engine's existing shapes (a routing entry and a cluster), and `WORLD_STRATEGY` calls the unchanged `nextV2Step`.
+
+- **Each world's cluster** = its opening scenario, then (People/HR only) its own follow-ups, then the EXISTING V2 authored focus/tiebreaker questions borrowed by id from `borrow_cluster_ids`. A question borrowed by two worlds is asked at most once (the engine dedupes by id). Reality checks are the existing V2 checks, found across all clusters by explicit applicability. Generated focus questions and the evidence-aware leading set are unchanged.
+- **Two worlds:** world A's scenario, then world B's, then evidence-aware focus. The order is the candidate's **selection order** (persisted), never id or display order; it decides only which scenario comes first and gives no points (same answers in either order give the same scores, tested).
+- **Tech:** `technology_data` opens with WT1 (CS / DS / MIS). Its options are V1 Q1's option ids with the same separator, so WT1 is declared `reuses: v1_tech/Q1` (the mechanism V2's approved T1 uses): when the evidence settles inside Tech, the unchanged V1 module takes over, receives WT1 as Q1 and continues at Q2. V1's Q1 copy names a brand ("חברה כמו ספוטיפיי"), so this also keeps brands out of V3. V1 code, thresholds and scoring are untouched; a test checks the V3 Tech path gives the same V1 outcome as the V2 Spotify path for the same answers.
+
+| World | Context | Core / adjacent | Opening scenario (answers → program) |
+|---|---|---|---|
+| טכנולוגיה ודאטה | צוות מוצר דיגיטלי | CS, DS, MIS / BA | WT1: A→CS, B→DS, C→MIS (reuses V1 Q1) |
+| עסקים ושווקים | חברה בצמיחה | BA, Econ&Mgmt / Econ&Psych, Accounting | WB1: A→BA, B→Econ&Mgmt, C→Econ&Psych |
+| תקשורת והשפעה | סטודיו תוכן וקמפיינים | Comm, Comm&Mgmt / BA | WC1: A→Comm, B→Comm&Mgmt, C→BA |
+| אנשים ופסיכולוגיה | קליניקה / מרכז שעובד עם אנשים | Psych, BehavSci / Education | WP1: A→Psych, B→BehavSci, C→Education |
+| אנשים בארגונים | מחלקת People / HR | BehavSci, Econ&Psych / BA, MIS | WO1: A→BehavSci, B→Econ&Psych, C→BA, D→MIS (+ follow-ups WO2-WO5) |
+| חינוך ודור העתיד | בית ספר / מסגרת חינוכית | Education / Psych, BehavSci | WE1: A→Education, B→Psych, C→BehavSci |
+| משפט וצדק | משרד עורכי דין / מערכת המשפט | Law / BA, Comm | WL1: A→Law, B→BA, C→Comm |
+| כסף וחשבונאות | משרד רואי חשבון / מחלקת כספים | Accounting / Econ&Mgmt, BA | WF1: A→Accounting, B→Econ&Mgmt, C→BA |
+| עיצוב וחללים | סטודיו לעיצוב | Interior Design / Comm, BA | WD1: A→Interior Design, B→Comm, C→BA |
+
+Openers have no neutral option. The People & Psychology wording stays about understanding and development (no treatment, diagnosis or therapist claims; tested).
+
+**People/HR follow-ups (new content, review needed).** The exhaustive traversal found that an MIS lead in the HR world ran out of separating questions (the only existing MIS question, law's L2, is about AI copyright). Rather than borrow an off-topic question, the HR world has four short HR-context follow-ups (WO2-WO5: MIS / Behavioral Science / Econ+Psych / BA + a neutral option). The Law world also borrows the existing communication follow-ups (C2-C5) for a Communication lead.
+
+**Source validation.** The five official Academy pages (Behavioral Science, Education, Accounting, Law, Economics + Psychology) were read on 2026-10-08 and support the framing (BS: society, culture, an HR/organisational-development track; Education: formal and informal education, a teaching-certificate route; Accounting: the CPA path and CPA-firm internships; Law: the bar exam and internships at courts, prosecution and law firms; Econ+Psych: behavioural economics and decision-making, graduates in HR, strategy and marketing). Paraphrased provenance lives in `v3_worlds.json` (`provenance`); no marketing text is copied and no licence, curriculum, admission or salary claim is made.
+
+### Coverage and traversal QA
+`tests/flow/v3WorldTraversal.test.ts` walks every answer path of all 45 opening selections (9 single worlds + 36 pairs, and each pair in reverse order) with a state-memoised walk; `tests/flow/v3Worlds.test.ts` audits coverage. Report: `CALIBRATION_REPORT=1 pnpm vitest run tests/flow/v3WorldTraversal.test.ts tests/flow/v3Worlds.test.ts`. Equal-weight enumeration is a content-coverage and routing check, **not** a calibration; nothing was tuned from it.
+
+- 131,034 complete paths, **0 content gaps** (also 0 with every pair reversed): 8,425 recommended, 24,524 near tie, 25 insufficient positive evidence, 98,060 Tech precision.
+- Max scored generic answers **5** (ceiling holds); max total answers **11** (Tech + another world, the same worst case as V2's Spotify cross-cluster path): `WT1=A, WB1=A, focus BA|CS ×3 (neither, neither, B), Q2, Q3, CSDS-1..3, TB-CSDS`.
+- Every one of the 14 programs has a natural path: at least one world opening answer points straight to it (no program depends on a generic fallback).
 
 ## Result
 Top of the page answers *what is my result / why / what next*:
@@ -47,10 +86,10 @@ Top of the page answers *what is my result / why / what next*:
 `public/brand/colman-logo.webp` is the College's header logo as served by `colman.ac.il` (`/content/images/logo.png`, 107x107, a WebP despite the extension). Stored locally, never hotlinked, never redrawn; shown on the landing and in the COLMAN section only. Replace the file if the College supplies a higher-resolution asset (reference by the same path).
 
 ## State, persistence and isolation
-- Key `colman-studymatch:v3:journey`, version 1, `{version, flow:"v3", phase, selectedProjectIds, answers}`. Everything derived is recomputed by replay through the unchanged reducer.
+- Key `colman-studymatch:v3:journey`, **version 2**: `{version: 2, flow: "v3", strategy: "worlds", phase, selectedIds, answers}`; `selectedIds` keeps the candidate's selection order. Everything derived is recomputed by replay. A version-1 payload (the earlier brand-led V3, `selectedProjectIds`) or another strategy's payload is rejected: the key is cleared and the candidate starts again at the landing (deep links without a journey also go to the landing).
 - V2 uses `colman-studymatch:v2:journey` with `flow:"v2"`. Each version rejects the other's payload as invalid and clears only its own key. Restart/Back/refresh in V3 never touch V2 state (browser-tested both ways).
 - Analytics sessions are separate too: `colman-studymatch:analytics-v3` vs `colman-studymatch:analytics-v2`.
-- Refresh keeps the question or the result; Back removes one committed answer (from the first question it returns to the projects with the selection kept); restart goes to the landing.
+- Refresh keeps the question or the result; Back removes one committed answer (from the first question it returns to the worlds with the selection kept); restart goes to the landing.
 
 ## Analytics (additive; V2 events unchanged)
 Every V3 event carries `flow_version: "v3"` (V2 events keep `"v2"`), so the versions can be compared by one dimension. New events: `studymatch_landing_view`, `studymatch_start`, `question_continue`, `result_program_click` (`program_id`, `link_role`, `cta_position`), `result_contact_click` (`cta_position`: hero / colman_section / sticky), `result_all_programs_click`, `result_detail_expand` (`detail_section`). Existing events (`question_view`, `question_answer`, `studymatch_result_view`, `lead_form_*`, ...) are reused: `question_answer` fires only on commit. No PII, no answer text. Details in `docs/ANALYTICS.md`.

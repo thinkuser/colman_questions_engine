@@ -1,0 +1,486 @@
+{
+  "version": "v3",
+  "status_note": "V3 WORLD-LED discovery (DEC-034). The candidate picks 1-2 working worlds (not companies). A world is ROUTING ONLY, exactly like a V2 career project: it builds the candidate pool (core + adjacent programs) and opens its own first scenario; the selection itself scores nothing. Every later question is an EXISTING authored V2 focus/tiebreaker question (borrowed by id from the clusters listed in borrow_cluster_ids) or an engine-generated focus question, and reality checks are the existing V2 checks. V2 (brand-led, career_projects.json) is untouched.",
+  "opening": {
+    "prompt_he": "איזה מעולמות העשייה האלה הכי מסקרן אתכם?",
+    "helper_he": "בחרו עד שניים. לא צריך לדעת איזה תואר מוביל לשם."
+  },
+  "provenance": [
+    {
+      "program_id": "behavioral_science",
+      "url": "https://www.academy.org.il/ba/behavioral-science/",
+      "retrieved_at": "2026-10-08",
+      "validates": "Framed as understanding the person AND the society and culture people live in, with a management and HR track (organisational development, HR roles) and group facilitation. Supports the groups/organisations positioning and the People/HR world."
+    },
+    {
+      "program_id": "education",
+      "url": "https://www.academy.org.il/ba/education/",
+      "retrieved_at": "2026-10-08",
+      "validates": "Formal and informal education (schools, community and youth frameworks, education departments) with a route to a teaching certificate. Supports the school / future-generations world without promising a licence."
+    },
+    {
+      "program_id": "accounting",
+      "url": "https://www.academy.org.il/ba/accounting/",
+      "retrieved_at": "2026-10-08",
+      "validates": "Accounting studies oriented to the CPA path, with internships at CPA firms. Supports the CPA-firm / finance-department context; the card does not promise certification."
+    },
+    {
+      "program_id": "law",
+      "url": "https://www.academy.org.il/ba/law/",
+      "retrieved_at": "2026-10-08",
+      "validates": "Law studies leading towards the bar exam and internships at the prosecution, courts, the justice ministry and law firms. Supports the law-firm / legal-system context; the card does not promise admission to the bar."
+    },
+    {
+      "program_id": "economics_and_psychology",
+      "url": "https://www.academy.org.il/ba/economics_psychology_studies/",
+      "retrieved_at": "2026-10-08",
+      "validates": "Behavioural economics and decision-making: how people make economic decisions and how emotions and cognitive biases affect them; graduates go into HR, strategy, organisational consulting and marketing. Supports its place in the business and People/HR worlds."
+    }
+  ],
+  "worlds": [
+    {
+      "id": "technology_data",
+      "order": 1,
+      "enabled": true,
+      "title_he": "טכנולוגיה ודאטה",
+      "context_he": "צוות מוצר דיגיטלי",
+      "line_he": "לבנות מוצר, להבין את הנתונים ולגרום לטכנולוגיה לפתור בעיה אמיתית.",
+      "core_program_ids": ["computer_science", "data_science", "management_information_systems"],
+      "adjacent_program_ids": ["business_administration"],
+      "precision_module": "v1_tech",
+      "borrow_cluster_ids": ["business"],
+      "scenario": {
+        "id": "WT1",
+        "prompt_he": "מוצר דיגיטלי חשוב לא עובד מספיק טוב. איפה הייתם הכי רוצים להיכנס?",
+        "reuses": {
+          "module": "v1_tech",
+          "question_id": "Q1"
+        },
+        "options": [
+          {
+            "id": "A",
+            "label_he": "לבנות או לתקן את הפיצ'ר והמערכת",
+            "program_ids": ["computer_science"]
+          },
+          {
+            "id": "B",
+            "label_he": "לפתוח את הנתונים ולגלות מה גורם לבעיה",
+            "program_ids": ["data_science"]
+          },
+          {
+            "id": "C",
+            "label_he": "להבין את הצורך העסקי ולשנות את המערכת או התהליך",
+            "program_ids": ["management_information_systems"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "business_markets",
+      "order": 2,
+      "enabled": true,
+      "title_he": "עסקים ושווקים",
+      "context_he": "חברה בצמיחה",
+      "line_he": "להחליט לאן העסק הולך, באיזה שוק לפעול ואיך הופכים הזדמנות למהלך אמיתי.",
+      "core_program_ids": ["business_administration", "economics_and_management"],
+      "adjacent_program_ids": ["economics_and_psychology", "accounting"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["business", "people"],
+      "scenario": {
+        "id": "WB1",
+        "prompt_he": "חברה שוקלת להיכנס לשוק חדש. מה הכי מעניין אתכם?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "להחליט מה המהלך העסקי ואיך מוציאים אותו לפועל",
+            "program_ids": ["business_administration"]
+          },
+          {
+            "id": "B",
+            "label_he": "לבדוק ביקוש, מחירים ותחרות",
+            "program_ids": ["economics_and_management"]
+          },
+          {
+            "id": "C",
+            "label_he": "להבין איך מחיר, סיכון ואופן הצגת הבחירה ישפיעו על אנשים",
+            "program_ids": ["economics_and_psychology"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "communication_influence",
+      "order": 3,
+      "enabled": true,
+      "title_he": "תקשורת והשפעה",
+      "context_he": "סטודיו תוכן וקמפיינים",
+      "line_he": "לקחת רעיון ולהפוך אותו למסר שאנשים רואים, זוכרים ופועלים לפיו.",
+      "core_program_ids": ["communication", "communication_and_management"],
+      "adjacent_program_ids": ["business_administration"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["communication"],
+      "scenario": {
+        "id": "WC1",
+        "prompt_he": "יש מוצר טוב, אבל אנשים פשוט לא מבינים למה הוא מעניין. איפה הייתם רוצים להיכנס?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "ליצור סיפור, תוכן וקמפיין שיגרמו לאנשים להרגיש משהו",
+            "program_ids": ["communication"]
+          },
+          {
+            "id": "B",
+            "label_he": "להחליט למי מדברים, באילו ערוצים ואיך מודדים אם זה עובד",
+            "program_ids": ["communication_and_management"]
+          },
+          {
+            "id": "C",
+            "label_he": "להחליט איך המוצר וההצעה צריכים להשתנות עסקית",
+            "program_ids": ["business_administration"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "people_psychology",
+      "order": 4,
+      "enabled": true,
+      "title_he": "אנשים ופסיכולוגיה",
+      "context_he": "קליניקה / מרכז שעובד עם אנשים",
+      "line_he": "להבין מה עובר על אנשים, מה משפיע עליהם ואיך שינוי קורה.",
+      "core_program_ids": ["psychology", "behavioral_science"],
+      "adjacent_program_ids": ["education"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["people"],
+      "scenario": {
+        "id": "WP1",
+        "prompt_he": "אדם עובר שינוי משמעותי בחיים ומתקשה להתמודד. מה הכי מסקרן אתכם להבין?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "מה הוא מרגיש, חושב ומה מניע אותו",
+            "program_ids": ["psychology"]
+          },
+          {
+            "id": "B",
+            "label_he": "איך המשפחה, הקבוצה והסביבה החברתית משפיעות עליו",
+            "program_ids": ["behavioral_science"]
+          },
+          {
+            "id": "C",
+            "label_he": "איך אפשר לעזור לו ללמוד, להתפתח ולרכוש כלים חדשים",
+            "program_ids": ["education"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "people_organizations",
+      "order": 5,
+      "enabled": true,
+      "title_he": "אנשים בארגונים",
+      "context_he": "מחלקת People / HR",
+      "line_he": "להבין מה גורם לאנשים להצטרף, להישאר, להתפתח ולעבוד טוב יחד.",
+      "core_program_ids": ["behavioral_science", "economics_and_psychology"],
+      "adjacent_program_ids": ["business_administration", "management_information_systems"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["people", "business"],
+      "scenario": {
+        "id": "WO1",
+        "prompt_he": "ארגון גדל מהר, אבל עובדים טובים עוזבים. במה הייתם רוצים להתמקד?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "להבין תרבות, יחסים ותחושת שייכות בארגון",
+            "program_ids": ["behavioral_science"]
+          },
+          {
+            "id": "B",
+            "label_he": "להבין איך שכר, תמריצים ואופן הצגת הבחירה משפיעים על עובדים",
+            "program_ids": ["economics_and_psychology"]
+          },
+          {
+            "id": "C",
+            "label_he": "לבנות מהלך ארגוני של גיוס, פיתוח ושימור",
+            "program_ids": ["business_administration"]
+          },
+          {
+            "id": "D",
+            "label_he": "לשפר את המערכות והתהליכים שמנהלים את העובדים",
+            "program_ids": ["management_information_systems"]
+          }
+        ]
+      },
+      "follow_ups": [
+        {
+          "id": "WO2",
+          "kind": "focus",
+          "prompt_he": "הוחלט לבנות תוכנית לשימור עובדים. איזה חלק הייתם רוצים לקחת?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לבנות מערכת שמראה בזמן אמת איפה יש סיכון לעזיבה",
+              "program_ids": ["management_information_systems"]
+            },
+            {
+              "id": "B",
+              "label_he": "לשוחח עם צוותים ולהבין מה קורה ביחסים ובתרבות שלהם",
+              "program_ids": ["behavioral_science"]
+            },
+            {
+              "id": "C",
+              "label_he": "לתכנן תמריצים והטבות כך שאנשים ירצו להישאר",
+              "program_ids": ["economics_and_psychology"]
+            },
+            {
+              "id": "D",
+              "label_he": "לקבוע את התקציב והיעדים של התוכנית מול ההנהלה",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
+            }
+          ]
+        },
+        {
+          "id": "WO3",
+          "kind": "focus",
+          "prompt_he": "עובדים חדשים מתקשים להשתלב בחודשים הראשונים. מה הייתם רוצים לעשות?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לבנות תהליך קליטה דיגיטלי שמלווה כל עובד צעד אחר צעד",
+              "program_ids": ["management_information_systems"]
+            },
+            {
+              "id": "B",
+              "label_he": "להבין איך הצוות והאווירה משפיעים על ההשתלבות",
+              "program_ids": ["behavioral_science"]
+            },
+            {
+              "id": "C",
+              "label_he": "לבדוק איך הציפיות והתגמול שהוצגו בגיוס משפיעים על התחושה",
+              "program_ids": ["economics_and_psychology"]
+            },
+            {
+              "id": "D",
+              "label_he": "להחליט איך הארגון צריך לשנות את מבנה הקליטה",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
+            }
+          ]
+        },
+        {
+          "id": "WO4",
+          "kind": "focus",
+          "prompt_he": "ההנהלה שוקלת לעבור לעבודה היברידית. במה הייתם רוצים לעסוק?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "לבחור ולהטמיע את הכלים והמערכות שיאפשרו את זה",
+              "program_ids": ["management_information_systems"]
+            },
+            {
+              "id": "B",
+              "label_he": "להבין איך המעבר ישפיע על הקשרים ועל התרבות בצוותים",
+              "program_ids": ["behavioral_science"]
+            },
+            {
+              "id": "C",
+              "label_he": "להבין איך עובדים ישקלו את היתרונות והמחירים של כל אפשרות",
+              "program_ids": ["economics_and_psychology"]
+            },
+            {
+              "id": "D",
+              "label_he": "לבנות את ההחלטה העסקית: עלויות, יעדים ותוכנית",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
+            }
+          ]
+        },
+        {
+          "id": "WO5",
+          "kind": "focus",
+          "prompt_he": "מנהלים מרגישים שאין להם תמונה ברורה על מה שקורה בצוותים שלהם. מה הייתם רוצים לבנות?",
+          "options": [
+            {
+              "id": "A",
+              "label_he": "מערכת שמרכזת את המידע על הצוותים במקום אחד",
+              "program_ids": ["management_information_systems"]
+            },
+            {
+              "id": "B",
+              "label_he": "תהליך של שיחות והקשבה שיחשוף מה קורה בין אנשים",
+              "program_ids": ["behavioral_science"]
+            },
+            {
+              "id": "C",
+              "label_he": "מנגנון משוב ותגמול שיעודד מנהלים ועובדים לשתף",
+              "program_ids": ["economics_and_psychology"]
+            },
+            {
+              "id": "D",
+              "label_he": "שינוי במבנה הניהול ובתחומי האחריות",
+              "program_ids": ["business_administration"]
+            },
+            {
+              "id": "neither",
+              "label_he": "אף אחת מהאפשרויות לא ממש מושכת אותי",
+              "program_ids": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "education_future",
+      "order": 6,
+      "enabled": true,
+      "title_he": "חינוך ודור העתיד",
+      "context_he": "בית ספר / מסגרת חינוכית",
+      "line_he": "לעזור לגדל את דור העתיד ולמצוא דרכים שבהן ילדים ואנשים לומדים ומתפתחים.",
+      "core_program_ids": ["education"],
+      "adjacent_program_ids": ["psychology", "behavioral_science"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["people"],
+      "scenario": {
+        "id": "WE1",
+        "prompt_he": "בית ספר רוצה לעזור ליותר תלמידים ללמוד, להתמיד ולהרגיש שהם מצליחים. איפה הייתם רוצים להיות?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "לבנות דרך למידה שמתאימה לתלמידים שונים",
+            "program_ids": ["education"]
+          },
+          {
+            "id": "B",
+            "label_he": "להבין מה משפיע על המוטיבציה והרגש של התלמיד",
+            "program_ids": ["psychology"]
+          },
+          {
+            "id": "C",
+            "label_he": "להבין איך הכיתה, הקבוצה והסביבה משפיעות על ההתנהגות",
+            "program_ids": ["behavioral_science"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "law_justice",
+      "order": 7,
+      "enabled": true,
+      "title_he": "משפט וצדק",
+      "context_he": "משרד עורכי דין / מערכת המשפט",
+      "line_he": "לקחת מקרה מורכב, להבין מה החוק אומר ולבנות עמדה שאפשר להגן עליה.",
+      "core_program_ids": ["law"],
+      "adjacent_program_ids": ["business_administration", "communication"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["law", "communication"],
+      "scenario": {
+        "id": "WL1",
+        "prompt_he": "יש מחלוקת גדולה בין חברה ללקוחות שלה. איפה הייתם רוצים להיכנס?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "להבין מה החוק אומר ולבנות את הטיעון המשפטי",
+            "program_ids": ["law"]
+          },
+          {
+            "id": "B",
+            "label_he": "למצוא פתרון עסקי שימנע את המשבר",
+            "program_ids": ["business_administration"]
+          },
+          {
+            "id": "C",
+            "label_he": "להסביר לציבור מה קורה ולבנות מחדש אמון",
+            "program_ids": ["communication"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "finance_accounting",
+      "order": 8,
+      "enabled": true,
+      "title_he": "כסף וחשבונאות",
+      "context_he": "משרד רואי חשבון / מחלקת כספים",
+      "line_he": "להבין מה המספרים באמת אומרים ולגלות כשמשהו לא מסתדר.",
+      "core_program_ids": ["accounting"],
+      "adjacent_program_ids": ["economics_and_management", "business_administration"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["business"],
+      "scenario": {
+        "id": "WF1",
+        "prompt_he": "חברה נראית מצליחה, אבל משהו במספרים לא מסתדר. מה הייתם רוצים לבדוק?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "להיכנס לדוחות ולמצוא בדיוק את הפער",
+            "program_ids": ["accounting"]
+          },
+          {
+            "id": "B",
+            "label_he": "להבין אם שינוי בשוק, במחירים או בביקוש מסביר את זה",
+            "program_ids": ["economics_and_management"]
+          },
+          {
+            "id": "C",
+            "label_he": "להחליט מה העסק צריך לשנות בעקבות זה",
+            "program_ids": ["business_administration"]
+          }
+        ]
+      },
+      "follow_ups": []
+    },
+    {
+      "id": "design_spaces",
+      "order": 9,
+      "enabled": true,
+      "title_he": "עיצוב וחללים",
+      "context_he": "סטודיו לעיצוב",
+      "line_he": "לקחת חלל ולגרום לו להיות יפה, שימושי ומשמעותי עבור האנשים שנמצאים בו.",
+      "core_program_ids": ["interior_design"],
+      "adjacent_program_ids": ["communication", "business_administration"],
+      "precision_module": null,
+      "borrow_cluster_ids": ["interior_design"],
+      "scenario": {
+        "id": "WD1",
+        "prompt_he": "מקום חדש צריך להיות גם יפה, גם נעים וגם לעבוד טוב לאנשים שמשתמשים בו. מה הכי מושך אתכם?",
+        "options": [
+          {
+            "id": "A",
+            "label_he": "לתכנן את החלל, התנועה, החומרים והתאורה",
+            "program_ids": ["interior_design"]
+          },
+          {
+            "id": "B",
+            "label_he": "לחשוב איך המקום מספר סיפור ומתקשר זהות",
+            "program_ids": ["communication"]
+          },
+          {
+            "id": "C",
+            "label_he": "להחליט מה המקום צריך לעשות עבור העסק והלקוחות",
+            "program_ids": ["business_administration"]
+          }
+        ]
+      },
+      "follow_ups": []
+    }
+  ]
+}

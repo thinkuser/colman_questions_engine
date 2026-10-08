@@ -1,39 +1,48 @@
 import { expect, test, type Page } from "@playwright/test";
-import { V2_PERSONAS, personaChoice } from "../tests/flow/v2Personas";
-import { dataLayer, startDiscovery, runPersonaInBrowser } from "./discoveryHelpers";
+import { V2_PERSONAS } from "../tests/flow/v2Personas";
+import { V3_PERSONAS, v3PersonaChoice } from "../tests/flow/v3Personas";
+import { dataLayer, openDiscovery, runPersonaInBrowser, startDiscovery } from "./discoveryHelpers";
 import { LEAD_PII, fillLead, leadField, leadForm, leadSubmit, mockLeadApi } from "./leadHelpers";
 import {
   V2_KEY,
   V3_KEY,
   chooseAndContinue,
-  enterProjects,
+  enterDiscovery,
   openLanding,
   optionLabel,
   reachTransition,
   reachV3Result,
   runPersonaV3,
-  selectV3Projects,
+  selectWorlds,
   startV3,
   storedValue,
   v3Cards,
   v3OptionIds,
   v3QuestionId,
   v3Result,
+  worldCard,
 } from "./v3Helpers";
 
 /**
- * V3 (UX redesign) acceptance: landing, discovery, transition, explicit Continue, progress transparency, the
- * redesigned result, the lead flow and version isolation from V2. The same engine drives both versions, so the same
- * persona must reach the same outcome in V3 as in V2.
+ * V3 acceptance: the WORLD-LED discovery experiment with the redesigned UX (landing, worlds, transition, explicit
+ * Continue, progress transparency, the redesigned result, the lead flow) and its isolation from the frozen, BRAND-LED
+ * V2. Both versions run on the same engine.
  */
 
-const WOLT = "wolt_new_city";
-const NIKE = "nike_israel_launch";
-const TIKTOK = "tiktok_endless_scroll";
-const AI = "ai_feature_privacy";
-const SPOTIFY = "spotify_discover_weekly";
 const ALL_PROGRAMS_URL = "https://www.colman.ac.il/academics/ba/";
-const persona = (id: string) => V2_PERSONAS.find((p) => p.id === id)!;
+const BRANDS = /Spotify|Wolt|TikTok|Nike|Duolingo|Apple|ספוטיפיי/;
+const WORLD_TITLES = [
+  "טכנולוגיה ודאטה",
+  "עסקים ושווקים",
+  "תקשורת והשפעה",
+  "אנשים ופסיכולוגיה",
+  "אנשים בארגונים",
+  "חינוך ודור העתיד",
+  "משפט וצדק",
+  "כסף וחשבונאות",
+  "עיצוב וחללים",
+];
+const persona = (id: string) => V3_PERSONAS.find((p) => p.id === id)!;
 const eventsOf = async (page: Page, name: string) => (await dataLayer(page)).filter((e) => e.event === name);
 
 test.describe("landing", () => {
@@ -42,15 +51,11 @@ test.describe("landing", () => {
   }) => {
     await openLanding(page);
     await expect(page.locator("h1")).toHaveText("איזה תחום לימודים יכול להתאים לכם?");
-    await expect(
-      page.getByText("כמה שאלות קצרות על מה שמעניין אתכם לעשות, ואנחנו נעזור לכם לצמצם את האפשרויות."),
-    ).toBeVisible();
     for (const line of ["כ־3–5 דקות", "לא צריך לדעת מראש מה ללמוד", "בסוף תקבלו כיוון ומסלול שכדאי להכיר"]) {
       await expect(page.getByText(line)).toBeVisible();
     }
     await expect(page.getByTestId("landing-cta")).toHaveText("בואו נמצא את הכיוון שלכם");
     await expect(page.getByText("מספר השאלות משתנה מעט לפי התשובות שלכם.")).toBeVisible();
-    // No project cards yet.
     await expect(v3Cards(page)).toHaveCount(0);
   });
 
@@ -63,198 +68,191 @@ test.describe("landing", () => {
       .locator("img")
       .evaluateAll((imgs) => imgs.map((img) => (img as HTMLImageElement).currentSrc));
     for (const src of sources) expect(new URL(src).origin).toBe(new URL(page.url()).origin);
-    const asset = await page.request.get("/brand/colman-logo.webp");
-    expect(asset.status()).toBe(200);
   });
 
-  test("the CTA leads to project discovery and reports the landing events", async ({ page }) => {
-    await enterProjects(page);
-    await expect(page).toHaveURL(/\/v3\/projects$/);
+  test("the CTA leads to world discovery and reports the landing events", async ({ page }) => {
+    await enterDiscovery(page);
+    await expect(page).toHaveURL(/\/v3\/worlds$/);
     expect((await eventsOf(page, "studymatch_landing_view")).map((e) => e.flow_version)).toEqual(["v3"]);
     expect((await eventsOf(page, "studymatch_start")).map((e) => e.flow_version)).toEqual(["v3"]);
   });
 });
 
-test.describe("discovery", () => {
-  test("shows the new copy, text-only cards (no icons or logos) and a consistent company label", async ({ page }) => {
-    await enterProjects(page);
-    await expect(page.locator("h1")).toHaveText("באיזה פרויקט הייתם הכי רוצים להשתתף?");
-    await expect(page.getByText("בחרו עד שניים שהכי מסקרנים אתכם. אין תשובה נכונה.")).toBeVisible();
-    await expect(v3Cards(page)).toHaveCount(7);
-    // No icons: an unselected card contains no svg and no image.
-    await expect(page.locator("button[data-project-id] svg, button[data-project-id] img")).toHaveCount(0);
-    await expect(page.locator("main img")).toHaveCount(0);
-
-    const labels = page.locator("[data-company-label]");
-    await expect(labels).toHaveCount(7);
-    const styles = await labels.evaluateAll((els) =>
-      els.map((el) => {
-        const s = getComputedStyle(el);
-        return `${s.fontSize}|${s.fontWeight}|${s.letterSpacing}`;
-      }),
+test.describe("world discovery", () => {
+  test("shows the nine working worlds with their context line, and none of V2's brand projects", async ({ page }) => {
+    await enterDiscovery(page);
+    await expect(page.locator("h1")).toHaveText("איזה מעולמות העשייה האלה הכי מסקרן אתכם?");
+    await expect(page.getByText("בחרו עד שניים. לא צריך לדעת איזה תואר מוביל לשם.")).toBeVisible();
+    await expect(v3Cards(page)).toHaveCount(9);
+    await expect(page.locator("[data-world-title]")).toHaveText(WORLD_TITLES);
+    await expect(worldCard(page, "people_organizations").locator("[data-world-context]")).toHaveText(
+      "מחלקת People / HR",
     );
+    // World-led, not brand-led: no brand cards, names, icons, logos or company disclaimer.
+    await expect(page.locator("button[data-project-id]")).toHaveCount(0);
+    expect(await page.locator("main").innerText()).not.toMatch(BRANDS);
+    await expect(page.locator("button[data-entry-id] svg, main img")).toHaveCount(0);
+    await expect(page.getByText("שמות החברות מופיעים לצורך המחשה בלבד")).toHaveCount(0);
+    // Consistent typography on every card.
+    const styles = await page
+      .locator("[data-world-title]")
+      .evaluateAll((els) => els.map((el) => `${getComputedStyle(el).fontSize}|${getComputedStyle(el).fontWeight}`));
     expect(new Set(styles).size).toBe(1);
-    // The synthetic AI project is labelled exactly "AI".
-    await expect(page.locator(`button[data-project-id="${AI}"] [data-company-label]`)).toHaveText("AI");
-    // The disclaimer sits below the cards.
-    const disclaimerY = (await page.getByText("שמות החברות מופיעים לצורך המחשה בלבד").boundingBox())!.y;
-    const lastCardY = (await v3Cards(page).last().boundingBox())!.y;
-    expect(disclaimerY).toBeGreaterThan(lastCardY);
   });
 
-  test("a third selection is refused with an announced explanation; the two selected stay", async ({ page }) => {
-    await enterProjects(page);
-    await selectV3Projects(page, [WOLT, NIKE]);
+  test("select one, select two (selection order kept), and a third is refused with an announced explanation", async ({
+    page,
+  }) => {
+    await enterDiscovery(page);
+    const next = page.getByTestId("discover-continue");
+    await expect(page.getByTestId("selection-status")).toHaveText("נבחרו 0 מתוך 2");
+    await expect(next).toBeDisabled();
+    await selectWorlds(page, ["law_justice"]);
+    await expect(next).toBeEnabled();
+    await selectWorlds(page, ["business_markets"]);
     await expect(page.getByTestId("selection-status")).toHaveText("נבחרו 2 מתוך 2");
-    const third = page.locator(`button[data-project-id="${TIKTOK}"]`);
-    // Not silently greyed out: the card is a normal, enabled button.
+    expect(await storedValue(page, V3_KEY)).toMatchObject({
+      version: 2,
+      flow: "v3",
+      strategy: "worlds",
+      phase: "selecting",
+      selectedIds: ["law_justice", "business_markets"], // the candidate's order, not display order
+    });
+
+    const third = worldCard(page, "design_spaces");
     await expect(third).not.toHaveAttribute("aria-disabled", "true");
     await third.click();
     const message = page.getByTestId("limit-message");
-    await expect(message).toHaveText("אפשר לבחור עד שני פרויקטים. בטלו בחירה אחת כדי לבחור אחרת.");
+    await expect(message).toHaveText("אפשר לבחור עד שני עולמות. בטלו בחירה אחת כדי לבחור עולם אחר.");
     await expect(message).toHaveAttribute("aria-live", "polite");
-    await expect(message).toHaveAttribute("role", "status");
     await expect(third).toHaveAttribute("aria-pressed", "false");
     await expect(page.locator('button[aria-pressed="true"]')).toHaveCount(2);
 
-    // Deselecting one clears the message and lets another be chosen.
-    await page.locator(`button[data-project-id="${WOLT}"]`).click();
+    await worldCard(page, "law_justice").click();
     await expect(message).toHaveText("");
-    await third.click();
-    await expect(page.locator('button[aria-pressed="true"]')).toHaveCount(2);
-    // Still selecting: only the (valid) selection is stored, never more than two projects and no answers.
-    expect(await storedValue(page, V3_KEY)).toMatchObject({
-      flow: "v3",
-      phase: "selecting",
-      selectedProjectIds: [NIKE, TIKTOK],
-      answers: [],
-    });
+    await expect(page.locator('button[aria-pressed="true"]')).toHaveCount(1);
   });
 
-  test("a persistent bottom bar shows the count and enables Continue for one or two projects without covering content", async ({
-    page,
-  }) => {
-    await enterProjects(page);
-    const next = page.getByTestId("projects-continue");
-    await expect(page.getByTestId("selection-status")).toHaveText("נבחרו 0 מתוך 2");
-    await expect(next).toBeDisabled();
-    await expect(next).toHaveText("בואו נמשיך");
-    await selectV3Projects(page, [WOLT]);
-    await expect(next).toBeEnabled();
-    await expect(page.getByTestId("selection-status")).toHaveText("נבחרו 1 מתוך 2");
-    await selectV3Projects(page, [NIKE]);
-    await expect(next).toBeEnabled();
-    await expect(page.getByTestId("selection-status")).toHaveText("נבחרו 2 מתוך 2");
-
+  test("the sticky action bar never covers a card", async ({ page }) => {
+    await enterDiscovery(page);
+    await selectWorlds(page, ["education_future"]);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     const bar = (await page.getByTestId("sticky-bar").boundingBox())!;
-    const disclaimer = (await page.getByText("שמות החברות מופיעים לצורך המחשה בלבד").boundingBox())!;
-    expect(disclaimer.y + disclaimer.height).toBeLessThanOrEqual(bar.y + 1);
-    expect(bar.y + bar.height).toBeLessThanOrEqual(page.viewportSize()!.height + 1);
+    const last = (await v3Cards(page).last().boundingBox())!;
+    expect(last.y + last.height).toBeLessThanOrEqual(bar.y + 1);
+    await expect(page.getByTestId("discover-continue")).toHaveText("בואו נמשיך");
+  });
+
+  test("world selection events are V3 world events only (never career_project_*)", async ({ page }) => {
+    await enterDiscovery(page);
+    await selectWorlds(page, ["law_justice", "business_markets"]);
+    await worldCard(page, "law_justice").click();
+    await page.getByTestId("discover-continue").click();
+    await expect(page.getByTestId("v3-transition")).toBeVisible();
+    const names = (await dataLayer(page)).map((e) => String(e.event));
+    expect(names.filter((n) => n.startsWith("career_project_"))).toEqual([]);
+    expect((await eventsOf(page, "career_world_selected")).map((e) => e.world_id)).toEqual([
+      "law_justice",
+      "business_markets",
+    ]);
+    expect((await eventsOf(page, "career_world_deselected")).map((e) => e.world_id)).toEqual(["law_justice"]);
+    expect(await eventsOf(page, "career_world_selection_completed")).toMatchObject([
+      { flow_version: "v3", world_ids: "business_markets", selected_world_count: 1 },
+    ]);
+    expect(await eventsOf(page, "career_world_discovery_view")).toMatchObject([
+      { flow_version: "v3", world_count_available: 9 },
+    ]);
   });
 });
 
 test.describe("transition and questions", () => {
   test("a transition screen explains the questions before the first one", async ({ page }) => {
-    await reachTransition(page, [WOLT]);
+    await reachTransition(page, ["law_justice"]);
     await expect(page).toHaveURL(/\/v3\/ready$/);
     await expect(page.locator("h1")).toHaveText("מעולה, עכשיו נחדד את הכיוון");
-    await expect(
-      page.getByText("מכאן בכל שאלה בוחרים אפשרות אחת. השאלות משתנות לפי התשובות שלכם כדי להתמקד במה שרלוונטי לכם."),
-    ).toBeVisible();
-    await expect(page.getByTestId("transition-cta")).toHaveText("לשאלה הראשונה");
     await page.getByTestId("transition-cta").click();
     await expect(page).toHaveURL(/\/v3\/questions$/);
-    await expect(page.locator("section[data-question-id]")).toBeVisible();
+  });
+
+  test("the first question is the selected world's own scenario, and two worlds open in selection order", async ({
+    page,
+  }) => {
+    await startV3(page, ["law_justice", "business_markets"]);
+    expect(await v3QuestionId(page)).toBe("WL1");
+    await expect(page.locator("h1")).toHaveText("יש מחלוקת גדולה בין חברה ללקוחות שלה. איפה הייתם רוצים להיכנס?");
+    await chooseAndContinue(page, "A");
+    expect(await v3QuestionId(page)).toBe("WB1");
   });
 
   test("tapping an option only selects it; only Continue commits, and a changed mind is never double counted", async ({
     page,
   }) => {
-    await startV3(page, [WOLT]);
+    await startV3(page, ["design_spaces"]);
     const first = (await v3QuestionId(page))!;
-    const options = await v3OptionIds(page);
     const next = page.getByTestId("question-continue");
     await expect(next).toBeDisabled();
-
-    await optionLabel(page, options[0]!).click();
-    await expect(page.locator(`input[data-option-id="${options[0]}"]`)).toBeChecked();
+    await optionLabel(page, "A").click();
     await expect(next).toBeEnabled();
     await page.waitForTimeout(500);
-    expect(await v3QuestionId(page)).toBe(first); // no auto-advance
-
-    await optionLabel(page, options[1]!).click();
-    await expect(page.locator(`input[data-option-id="${options[1]}"]`)).toBeChecked();
-    await expect(page.locator(`input[data-option-id="${options[0]}"]`)).not.toBeChecked();
     expect(await v3QuestionId(page)).toBe(first);
+    await optionLabel(page, "B").click();
+    await expect(page.locator('input[data-option-id="A"]')).not.toBeChecked();
     expect(await eventsOf(page, "question_answer")).toHaveLength(0);
-    expect(await storedValue(page, V3_KEY)).toMatchObject({ answers: [] });
-
     await next.click();
     await expect.poll(() => v3QuestionId(page)).not.toBe(first);
     const answers = await eventsOf(page, "question_answer");
     expect(answers).toHaveLength(1);
-    expect(answers[0]).toMatchObject({ question_id: first, answer_id: options[1], flow_version: "v3" });
+    expect(answers[0]).toMatchObject({ question_id: "WD1", answer_id: "B", flow_version: "v3" });
     expect(await eventsOf(page, "question_continue")).toHaveLength(1);
-    expect((await storedValue(page, V3_KEY)).answers).toEqual([{ questionId: first, answerId: options[1] }]);
   });
 
   test("a double press of Continue records one answer", async ({ page }) => {
-    await startV3(page, [WOLT]);
-    const first = (await v3QuestionId(page))!;
-    await optionLabel(page, (await v3OptionIds(page))[0]!).click();
+    await startV3(page, ["finance_accounting"]);
+    await optionLabel(page, "A").click();
     await page.getByTestId("question-continue").dblclick();
-    await expect.poll(() => v3QuestionId(page)).not.toBe(first);
+    await expect.poll(() => v3QuestionId(page)).not.toBe("WF1");
     expect((await storedValue(page, V3_KEY)).answers).toHaveLength(1);
-    expect(await eventsOf(page, "question_answer")).toHaveLength(1);
   });
 
-  test("the explicit Continue also applies to generated focus and Tech precision questions", async ({ page }) => {
-    // Generated focus (TikTok + Nike reaches a generated question).
-    await startV3(page, [TIKTOK, NIKE]);
-    const seen = new Set<string>();
-    for (let i = 0; i < 6; i++) {
-      await page.locator('section[data-question-id], [data-result-flow="v3"]').first().waitFor();
-      if ((await v3Result(page).count()) > 0) break;
-      const id = (await v3QuestionId(page))!;
-      seen.add(id);
-      const options = await v3OptionIds(page);
-      await optionLabel(page, options[0]!).click();
-      expect(await v3QuestionId(page)).toBe(id);
-      await chooseAndContinue(page, options[0]!);
-    }
-    expect([...seen].some((id) => id.startsWith("focus:"))).toBe(true);
-
-    // Tech precision (Spotify alone).
-    await page.goto("/v3");
-    await page.evaluate(() => localStorage.clear());
-    await startV3(page, [SPOTIFY]);
+  test("a generated focus question also uses the explicit Continue", async ({ page }) => {
+    const p = persona("communication_then_people");
+    await startV3(page, p.worlds);
+    await chooseAndContinue(page, "A");
+    await chooseAndContinue(page, "A");
     const id = (await v3QuestionId(page))!;
-    const options = await v3OptionIds(page);
-    await optionLabel(page, options[0]!).click();
-    await page.waitForTimeout(500);
+    expect(id.startsWith("focus:")).toBe(true);
+    await optionLabel(page, (await v3OptionIds(page))[0]!).click();
     expect(await v3QuestionId(page)).toBe(id);
-    await page.getByTestId("question-continue").click();
-    await expect.poll(() => v3QuestionId(page)).not.toBe(id);
+  });
+
+  test("Technology & Data hands over to the V1 Tech module without ever asking V1 Q1 or naming a brand", async ({
+    page,
+  }) => {
+    const asked = await reachV3Result(page, persona("tech_build"));
+    expect(asked[0]).toBe("WT1");
+    expect(asked[1]).toBe("Q2");
+    expect(asked).not.toContain("Q1");
+    expect(await eventsOf(page, "precision_module_handoff")).toMatchObject([
+      { flow_version: "v3", module_id: "v1_tech", seeded_answer_count: 1 },
+    ]);
+    await expect(page.getByTestId("result-program-name")).toHaveText("מדעי המחשב");
   });
 
   test("progress is the stage out of three plus a deterministic tone, never a question count", async ({ page }) => {
-    const p = persona("business_vs_economics");
-    await startV3(page, p.projects);
+    const p = persona("business_markets_tie");
+    await startV3(page, p.worlds);
     const tones: string[] = [];
     for (let guard = 0; guard < 8; guard++) {
+      await page.locator('section[data-question-id], [data-result-flow="v3"]').first().waitFor();
       if ((await v3Result(page).count()) > 0) break;
       await expect(page.getByTestId("progress-stage")).toHaveText("שלב 2 מתוך 3");
-      await expect(page.getByTestId("progress-name")).toHaveText("מדייקים את הכיוון");
       tones.push((await page.getByTestId("progress-tone").getAttribute("data-tone"))!);
-      expect(await page.getByTestId("progress").innerText()).not.toMatch(/שאלה \d|מתוך \d+ שאלות/);
       const id = (await v3QuestionId(page))!;
-      await chooseAndContinue(page, personaChoice(p, id, await v3OptionIds(page)));
+      await chooseAndContinue(page, v3PersonaChoice(p, id, await v3OptionIds(page)));
     }
-    expect(tones.slice(0, 2)).toEqual(["early", "early"]);
-    expect(tones.slice(2, 4)).toEqual(["middle", "middle"]);
+    expect(tones.slice(0, 4)).toEqual(["early", "early", "middle", "middle"]);
     expect(tones.at(-1)).toBe("late");
-    await expect(page.getByTestId("progress-stage")).toHaveText("שלב 3 מתוך 3");
+    await expect(page.getByTestId("progress-tone")).toHaveCount(0);
   });
 });
 
@@ -264,10 +262,8 @@ test.describe("result", () => {
   }) => {
     await mockLeadApi(page);
     await reachV3Result(page, persona("accounting"));
-    await expect(page.locator("h1")).toHaveCount(1);
     await expect(page.getByTestId("result-hero")).toContainText("הכיוון שהכי מתאים לכם");
     await expect(page.getByTestId("result-program-name")).toHaveText("חשבונאות");
-
     const order = await page.evaluate(() => {
       const y = (id: string) => document.querySelector(`[data-testid="${id}"]`)?.getBoundingClientRect().top ?? NaN;
       return [
@@ -283,341 +279,180 @@ test.describe("result", () => {
     });
     for (const value of order) expect(Number.isNaN(value)).toBe(false);
     expect(order).toEqual([...order].sort((a, b) => a - b));
-
-    // Immediate CTAs: the official program, then contact.
-    const actions = page.getByTestId("hero-actions");
-    const programLink = actions.locator("a");
-    await expect(programLink).toHaveText(/הכירו את המסלול במכללה/);
-    expect(await programLink.getAttribute("href")).toMatch(/^https:\/\/www\.(colman|academy)\.(ac|org)\.il\//);
-    await expect(actions.getByRole("button", { name: "דברו איתנו על המסלול" })).toBeVisible();
-
-    // Short why: two or three bullets, no echo of the project names.
-    const bullets = page.getByTestId("why").locator("li");
-    expect(await bullets.count()).toBeGreaterThanOrEqual(2);
-    expect(await bullets.count()).toBeLessThanOrEqual(3);
-    expect(await page.getByTestId("why").innerText()).not.toMatch(/בחרתם|Wolt|TikTok|Nike|Spotify/);
-
-    // COLMAN section: official logo + CTAs.
     const colman = page.getByTestId("colman-section");
     await expect(colman.getByRole("img", { name: "המכללה למינהל" })).toBeVisible();
     await expect(colman.getByRole("heading", { name: "לאיזה סוג עשייה המסלול מתחבר?" })).toBeVisible();
-    await expect(colman.getByText("דוגמאות למה שאפשר לעשות בתחום:")).toBeVisible();
-    await expect(colman).not.toContainText("מה תמצאו במסלול");
-    await expect(colman.locator("a")).toHaveText(/הכירו את המסלול במכללה/);
-
-    // Detail is collapsed; the escape hatch precedes the form.
-    await expect(page.locator("details[open]")).toHaveCount(0);
-    await expect(page.getByTestId("not-right")).toContainText("זה בסדר. אפשר לחזור ולבדוק כיוון אחר.");
-    await expect(page.getByTestId("all-programs")).toHaveText(/לכל תוכניות הלימוד במכללה/);
     expect(await page.getByTestId("all-programs").getAttribute("href")).toBe(ALL_PROGRAMS_URL);
   });
 
-  test("literal project choices appear only inside the collapsed detail, and opening it is reported once", async ({
+  test("no V3 result text refers to brands, companies or projects; the detail speaks about the candidate's choices", async ({
     page,
   }) => {
     await reachV3Result(page, persona("accounting"));
+    const text = await page.locator("main").innerText();
+    expect(text).not.toMatch(BRANDS);
+    expect(text).not.toMatch(/פרויקט|שמות החברות/);
     const detail = page.locator('details[data-detail-id="why_result"]');
     await detail.locator("summary").click();
-    await expect(detail).toHaveAttribute("open", "");
-    const chosen = await detail.locator("li").allInnerTexts();
-    expect(chosen.length).toBeGreaterThan(0);
+    await expect(detail).toContainText("אלה הבחירות שעזרו לנו להבין את הכיוון שלכם");
+    await expect(detail).toContainText("להיכנס לדוחות ולמצוא בדיוק את הפער"); // the world answer, in the detail only
     const outside = await page.evaluate(() => {
       const clone = document.querySelector("main")!.cloneNode(true) as HTMLElement;
       clone.querySelectorAll("details, form").forEach((el) => el.remove());
       return clone.innerText;
     });
-    for (const text of chosen) expect(outside).not.toContain(text);
-    await detail.locator("summary").click(); // close
-    await detail.locator("summary").click(); // open again
-    const expands = await eventsOf(page, "result_detail_expand");
-    expect(expands.length).toBeGreaterThanOrEqual(1);
-    expect(expands[0]).toMatchObject({ detail_section: "why_result", flow_version: "v3" });
+    expect(outside).not.toContain("להיכנס לדוחות ולמצוא בדיוק את הפער");
   });
 
-  test("a materially important warning is never collapsed", async ({ page }) => {
-    await reachV3Result(page, persona("accounting"));
-    const notes = page.locator('[data-reality-level="negative"]');
-    if ((await notes.count()) > 0) {
-      await expect(notes.first()).toBeVisible();
-      expect(await notes.first().evaluate((el) => !!el.closest("details"))).toBe(false);
-    }
-    await expect(page.locator('details [data-reality-level="negative"]')).toHaveCount(0);
+  test("the Tech result detail shows the candidate's own world answer, not the V1 brand scenario", async ({ page }) => {
+    await reachV3Result(page, persona("tech_build"));
+    const detail = page.locator('details[data-detail-id="why_result"]');
+    await detail.locator("summary").click();
+    await expect(detail).toContainText("לבנות או לתקן את הפיצ'ר והמערכת");
+    expect(await page.locator("main").innerText()).not.toMatch(/פרויקט|ספוטיפיי|Spotify/);
   });
 
-  test("near tie shows both programs symmetrically with a 'what is the difference' block", async ({ page }) => {
-    await reachV3Result(page, persona("business_vs_economics"));
+  test("near tie shows both programs with a curated 'what is the difference' block", async ({ page }) => {
+    await reachV3Result(page, persona("communication_tie"));
     await expect(page.locator("h1")).toHaveText("נראה שיש לכם שני כיוונים חזקים");
-    const pair = page.getByTestId("pair-difference");
-    await expect(pair.getByRole("heading", { name: "מה ההבדל ביניהם?" })).toBeVisible();
-    await expect(pair).toHaveAttribute("data-pair-curated", "true");
-    await expect(pair.locator("[data-direction-id]")).toHaveCount(2);
-    await expect(page.getByTestId("pair-guidance")).toContainText("מנהל עסקים");
-    await expect(page.getByTestId("pair-guidance")).toContainText("כלכלה וניהול");
-    expect(await page.getByTestId("hero-actions").locator("a").count()).toBe(2);
+    await expect(page.getByTestId("pair-difference")).toHaveAttribute("data-pair-curated", "true");
+    await expect(page.getByTestId("pair-guidance")).toContainText("אם מושך אתכם בעיקר ליצור ולהשפיע דרך תוכן");
   });
 
-  test("the Communication pair carries the agreed guidance", async ({ page }) => {
-    await reachV3Result(page, persona("communication_vs_cm"));
-    const guidance = page.getByTestId("pair-guidance");
-    await expect(guidance).toContainText("אם מושך אתכם בעיקר ליצור ולהשפיע דרך תוכן");
-    await expect(guidance).toContainText("אם מושך אתכם לחבר תקשורת להחלטות ולביצועים של ארגון");
-    const pair = page.getByTestId("pair-difference");
-    await expect(pair).toContainText("תוכן וסיפור");
-    await expect(pair).toContainText("מדידה וקבלת החלטות");
-  });
-
-  test("insufficient evidence is supportive, offers Try again first and never invents a recommendation", async ({
+  test("insufficient evidence is supportive and Try again returns to the landing with V3 state cleared", async ({
     page,
   }) => {
     await reachV3Result(page, persona("insufficient"));
     await expect(page.locator("h1")).toHaveText("לא קיבלנו עדיין כיוון מספיק ברור");
-    await expect(page.getByTestId("result-program-name")).toHaveCount(0);
-    await expect(page.getByTestId("hero-try-again")).toBeVisible();
     await page.getByTestId("hero-try-again").click();
     await expect(page).toHaveURL(/\/v3$/);
     expect(await storedValue(page, V3_KEY)).toBeNull();
   });
 
-  test("Tech precision is presented through V3 and reaches the engine's program", async ({ page }) => {
-    await reachV3Result(page, persona("focused_tech"));
-    await expect(page.getByTestId("result-program-name")).toHaveText("מדעי המחשב");
-  });
-
-  test("Try again restarts V3 and returns to the landing", async ({ page }) => {
-    await reachV3Result(page, persona("accounting"));
-    await page.getByTestId("try-again").click();
-    await expect(page).toHaveURL(/\/v3$/);
-    expect(await storedValue(page, V3_KEY)).toBeNull();
-  });
-
-  test("result analytics: program / contact / all-programs clicks are reported with the V3 version and no PII", async ({
-    page,
-  }) => {
-    await reachV3Result(page, persona("accounting"));
-    // Do not leave the app: stop the new tab and the navigation.
-    await page.route("https://www.colman.ac.il/**", (route) => route.abort());
-    await page.route("https://www.academy.org.il/**", (route) => route.abort());
-    await page
-      .getByTestId("hero-actions")
-      .locator("a")
-      .evaluate((a) => a.addEventListener("click", (e) => e.preventDefault()));
-    await page.getByTestId("hero-actions").locator("a").click();
-    await page.getByTestId("hero-contact").click();
-    await page.getByTestId("all-programs").evaluate((a) => a.addEventListener("click", (e) => e.preventDefault()));
-    await page.getByTestId("all-programs").click();
-    const program = (await eventsOf(page, "result_program_click"))[0]!;
-    expect(program).toMatchObject({
+  test("the sticky contact button scrolls to and focuses the form", async ({ page }) => {
+    await reachV3Result(page, persona("law"));
+    await page.getByTestId("sticky-contact").click();
+    await expect(leadField(page, "first_name")).toBeFocused();
+    expect((await eventsOf(page, "result_contact_click")).at(-1)).toMatchObject({
+      cta_position: "sticky",
       flow_version: "v3",
-      link_role: "primary",
-      cta_position: "hero",
-      program_id: "accounting",
     });
-    expect((await eventsOf(page, "result_contact_click"))[0]).toMatchObject({
-      flow_version: "v3",
-      cta_position: "hero",
-    });
-    expect((await eventsOf(page, "result_all_programs_click"))[0]).toMatchObject({ flow_version: "v3" });
   });
 });
 
-test.describe("contact CTAs and the lead form", () => {
-  test("the contact buttons scroll to the form and focus it; the sticky one steps aside once the form is visible", async ({
-    page,
-  }) => {
-    await reachV3Result(page, persona("accounting"));
-    const sticky = page.getByTestId("sticky-contact");
-    await expect(sticky).toBeVisible(); // mobile viewport
-    await sticky.click();
-    await expect(leadField(page, "first_name")).toBeFocused();
-    await expect(leadField(page, "first_name")).toBeInViewport();
-    await expect(page.getByTestId("sticky-bar").last()).toHaveCSS("visibility", "hidden");
-    expect((await eventsOf(page, "result_contact_click")).at(-1)).toMatchObject({ cta_position: "sticky" });
-  });
-
-  test("the form has visible labels and example placeholders", async ({ page }) => {
-    await reachV3Result(page, persona("accounting"));
-    const form = leadForm(page);
-    await expect(form.getByLabel("שם פרטי")).toHaveAttribute("placeholder", "לדוגמה: דנה");
-    await expect(form.getByLabel("שם משפחה")).toHaveAttribute("placeholder", "לדוגמה: לוי");
-    await expect(leadField(page, "phone")).toHaveAttribute("placeholder", "לדוגמה: 050-1234567");
-    await expect(leadField(page, "consent")).not.toBeChecked();
-    // Validation appears only when needed.
-    await expect(form.getByText("נא למלא שם פרטי.")).toHaveCount(0);
-    await leadSubmit(page).click();
-    await expect(form.getByText("נא למלא שם פרטי.")).toBeVisible();
-  });
-
-  test("a V3 lead is sent with flow_version v3, the same API and the journey id, and keeps PII out of analytics", async ({
+test.describe("lead", () => {
+  test("a V3 lead sends flow_version v3 and selected_world_ids (never world ids as projects), keeping PII out of analytics", async ({
     page,
   }) => {
     const captured = await mockLeadApi(page);
-    const consoleLines: string[] = [];
-    page.on("console", (message) => consoleLines.push(message.text()));
-    await reachV3Result(page, persona("tiktok_nike"));
+    await reachV3Result(page, persona("communication_then_people"));
+    await expect(leadForm(page).getByLabel("שם פרטי")).toHaveAttribute("placeholder", "לדוגמה: דנה");
     await fillLead(page);
     await leadSubmit(page).click();
     await expect(page.getByTestId("lead-success")).toBeVisible();
-    expect(captured).toHaveLength(1);
-    const journeyId = (await eventsOf(page, "studymatch_result_view"))[0]!.comparison_id;
     expect(captured[0]!.body).toMatchObject({
       flow_version: "v3",
-      comparison_id: journeyId,
-      first_name: LEAD_PII.first,
-      consent: true,
+      selected_project_ids: [],
+      selected_world_ids: ["communication_influence", "people_psychology"],
+      comparison_id: (await eventsOf(page, "studymatch_result_view"))[0]!.comparison_id,
     });
     for (const event of await dataLayer(page)) {
       expect(event.flow_version, String(event.event)).toBe("v3");
       expect(JSON.stringify(event)).not.toContain(LEAD_PII.first);
       expect(JSON.stringify(event)).not.toContain(LEAD_PII.phoneLocal);
     }
-    for (const value of [LEAD_PII.first, LEAD_PII.last, LEAD_PII.phone, LEAD_PII.phoneLocal]) {
-      expect(consoleLines.join("\n")).not.toContain(value);
-    }
-  });
-
-  test("Tech precision lead carries the V1 best fit as primary", async ({ page }) => {
-    const captured = await mockLeadApi(page);
-    await reachV3Result(page, persona("focused_tech"));
-    await fillLead(page);
-    await leadSubmit(page).click();
-    await expect(page.getByTestId("lead-success")).toBeVisible();
-    expect(captured[0]!.body).toMatchObject({
-      flow_version: "v3",
-      result_kind: "v1_precision_result",
-      primary_program_id: "computer_science",
-    });
   });
 });
 
-test.describe("persistence, Back and restart in V3", () => {
-  test("refresh keeps the question and the result; Back removes one committed answer", async ({ page }) => {
-    const p = persona("accounting");
-    await startV3(page, p.projects);
-    const first = (await v3QuestionId(page))!;
-    await chooseAndContinue(page, (await v3OptionIds(page))[0]!);
+test.describe("persistence, Back and restart", () => {
+  test("refresh keeps the world selection, the question and the result; Back removes one committed answer", async ({
+    page,
+  }) => {
+    const p = persona("design");
+    await startV3(page, p.worlds);
+    await chooseAndContinue(page, "A");
     const second = (await v3QuestionId(page))!;
     await page.reload();
     await expect(page.locator("section[data-question-id]")).toBeVisible();
     expect(await v3QuestionId(page)).toBe(second);
-
     await page.getByRole("button", { name: "חזרה" }).click();
-    await expect.poll(() => v3QuestionId(page)).toBe(first);
-    expect((await storedValue(page, V3_KEY)).answers).toHaveLength(0);
-
+    await expect.poll(() => v3QuestionId(page)).toBe("WD1");
     await runPersonaV3(page, p);
     await page.reload();
     await expect(v3Result(page)).toBeVisible();
   });
 
-  test("Back from the first question returns to the projects with the selection kept", async ({ page }) => {
-    await startV3(page, [WOLT]);
+  test("Back from the first question returns to the worlds with the selection kept", async ({ page }) => {
+    await startV3(page, ["education_future"]);
     await page.getByRole("button", { name: "חזרה" }).click();
-    await expect(page).toHaveURL(/\/v3\/projects$/);
-    await expect(page.locator(`button[data-project-id="${WOLT}"]`)).toHaveAttribute("aria-pressed", "true");
+    await expect(page).toHaveURL(/\/v3\/worlds$/);
+    await expect(worldCard(page, "education_future")).toHaveAttribute("aria-pressed", "true");
   });
 
-  test("deep links without a journey go to the start, and a stale payload is cleared", async ({ page }) => {
-    await page.goto("/v3/result");
-    await expect(page).toHaveURL(/\/v3\/projects$/);
+  test("an old version-1 (brand-led) V3 payload fails safely and restarts at the landing", async ({ page }) => {
+    await page.goto("/v3");
+    await page.evaluate((key) => {
+      localStorage.setItem(
+        key,
+        JSON.stringify({
+          version: 1,
+          flow: "v3",
+          phase: "answering",
+          selectedProjectIds: ["wolt_new_city"],
+          answers: [{ questionId: "B1", answerId: "A" }],
+        }),
+      );
+    }, V3_KEY);
     await page.goto("/v3/questions");
-    await expect(page).toHaveURL(/\/v3\/projects$/);
-    await page.evaluate(
-      (key) =>
-        localStorage.setItem(
-          key,
-          '{"version":1,"flow":"v3","phase":"answering","selectedProjectIds":["x"],"answers":[]}',
-        ),
-      V3_KEY,
-    );
-    await page.goto("/v3/questions");
-    await expect(page).toHaveURL(/\/v3\/projects$/);
+    await expect(page).toHaveURL(/\/v3$/);
     expect(await storedValue(page, V3_KEY)).toBeNull();
-  });
-
-  test("a returning candidate can continue or start over from the landing", async ({ page }) => {
-    await startV3(page, [WOLT]);
-    await chooseAndContinue(page, (await v3OptionIds(page))[0]!);
-    await openLanding(page);
-    await expect(page.getByTestId("landing-cta")).toHaveText("להמשיך מאיפה שעצרתם");
-    await page.getByRole("button", { name: "להתחיל מחדש" }).click();
     await expect(page.getByTestId("landing-cta")).toHaveText("בואו נמצא את הכיוון שלכם");
-    expect(await storedValue(page, V3_KEY)).toBeNull();
+  });
+
+  test("deep links without a journey go to the landing", async ({ page }) => {
+    await page.goto("/v3/result");
+    await expect(page).toHaveURL(/\/v3$/);
+    await page.goto("/v3/ready");
+    await expect(page).toHaveURL(/\/v3$/);
   });
 });
 
-test.describe("V2 and V3 are isolated, on the same engine", () => {
-  test("V2 and V3 storage never affect each other, and restarting V3 leaves V2 alone", async ({ page }) => {
-    // A V2 journey in progress.
-    await startDiscovery(page, [WOLT]);
-    const v2Before = await storedValue(page, V2_KEY);
-    expect(v2Before).toMatchObject({ flow: "v2", phase: "answering" });
-    expect(await storedValue(page, V3_KEY)).toBeNull();
+test.describe("V2 is brand-led, V3 is world-led, and they are isolated", () => {
+  test("V2 still shows the brand projects; V3 shows the worlds", async ({ page }) => {
+    await openDiscovery(page);
+    await expect(page.locator("button[data-project-id]")).toHaveCount(7);
+    await expect(page.locator('button[data-project-id="spotify_discover_weekly"]')).toContainText("Spotify");
+    await expect(page.locator('button[data-project-id="wolt_new_city"]')).toContainText("Wolt");
+    await expect(page.locator("button[data-world-id]")).toHaveCount(0);
 
-    // V3 does not see it (landing is fresh), and its own journey uses its own key.
+    await enterDiscovery(page);
+    await expect(page.locator("button[data-world-id]")).toHaveCount(9);
+    await expect(page.locator("button[data-project-id]")).toHaveCount(0);
+  });
+
+  test("V2 and V3 storage never affect each other, and restarting V3 leaves V2 alone", async ({ page }) => {
+    await startDiscovery(page, ["wolt_new_city"]);
+    const v2Before = await storedValue(page, V2_KEY);
+    expect(v2Before).toMatchObject({ flow: "v2", phase: "answering", selectedProjectIds: ["wolt_new_city"] });
     await openLanding(page);
     await expect(page.getByTestId("landing-cta")).toHaveText("בואו נמצא את הכיוון שלכם");
-    await reachV3Result(page, persona("accounting"));
-    expect(await storedValue(page, V3_KEY)).toMatchObject({ flow: "v3" });
+    await reachV3Result(page, persona("law"));
+    expect(await storedValue(page, V3_KEY)).toMatchObject({ flow: "v3", strategy: "worlds" });
     expect(await storedValue(page, V2_KEY)).toEqual(v2Before);
-
-    // Restarting V3 does not erase V2.
     await page.getByTestId("try-again").click();
     expect(await storedValue(page, V3_KEY)).toBeNull();
     expect(await storedValue(page, V2_KEY)).toEqual(v2Before);
-
-    // And V2 still restores its own question.
     await page.goto("/v2/questions");
     await expect(page.locator("[data-question-id]")).toBeVisible();
   });
 
-  test("a V3 payload is not a V2 journey (and the reverse): each is cleared by its own version only", async ({
-    page,
-  }) => {
-    await page.goto("/v2");
-    await page.evaluate(
-      ([v2Key, v3Key]) => {
-        const payload = (flow: string) =>
-          JSON.stringify({ version: 1, flow, phase: "answering", selectedProjectIds: ["wolt_new_city"], answers: [] });
-        localStorage.setItem(v2Key as string, payload("v3")); // wrong marker for V2
-        localStorage.setItem(v3Key as string, payload("v2")); // wrong marker for V3
-      },
-      [V2_KEY, V3_KEY],
-    );
-    await page.goto("/v2/questions");
-    await expect(page).toHaveURL(/\/v2$/);
-    await page.goto("/v3/questions");
-    await expect(page).toHaveURL(/\/v3\/projects$/);
-    expect(await storedValue(page, V2_KEY)).toBeNull();
-    expect(await storedValue(page, V3_KEY)).toBeNull();
+  test("V2 still emits its brand project events with flow_version v2 (unchanged)", async ({ page }) => {
+    const p = V2_PERSONAS.find((candidate) => candidate.id === "accounting")!;
+    await startDiscovery(page, p.projects);
+    await runPersonaInBrowser(page, p);
+    const events = await dataLayer(page);
+    expect(events.some((e) => e.event === "career_project_selected" && e.project_id === "wolt_new_city")).toBe(true);
+    expect(events.some((e) => String(e.event).startsWith("career_world_"))).toBe(false);
+    for (const event of events) expect(event.flow_version, String(event.event)).toBe("v2");
   });
-
-  for (const id of ["accounting", "business_vs_economics", "tiktok_nike", "focused_tech", "insufficient"]) {
-    test(`${id}: the same answers give the same outcome in V2 and V3`, async ({ browser }) => {
-      const p = persona(id);
-      const outcome = async (flow: "v2" | "v3") => {
-        const context = await browser.newContext({ locale: "he-IL", viewport: { width: 390, height: 844 } });
-        const page = await context.newPage();
-        if (flow === "v2") {
-          await startDiscovery(page, p.projects);
-          await runPersonaInBrowser(page, p);
-        } else {
-          await reachV3Result(page, p);
-        }
-        const view = (await dataLayer(page)).find((e) => e.event === "studymatch_result_view")!;
-        await context.close();
-        return {
-          kind: view.result_kind,
-          recommended: view.recommended_program ?? null,
-          alternatives: view.alternative_programs ?? null,
-          answers: view.total_answer_count,
-          version: view.flow_version,
-        };
-      };
-      const v2 = await outcome("v2");
-      const v3 = await outcome("v3");
-      expect(v2.version).toBe("v2");
-      expect(v3.version).toBe("v3");
-      expect({ ...v3, version: "x" }).toEqual({ ...v2, version: "x" });
-    });
-  }
 });

@@ -31,7 +31,12 @@ export const V3_COPY = {
     limit: "אפשר לבחור עד שני פרויקטים. בטלו בחירה אחת כדי לבחור אחרת.",
     next: "בואו נמשיך",
   },
-  /** Company label overrides for the synthetic (non-company) project. */
+  /** World-led discovery (DEC-034). Headline and helper come from the world data file. */
+  worlds: {
+    entriesLabel: "עולמות עשייה לבחירה",
+    limit: "אפשר לבחור עד שני עולמות. בטלו בחירה אחת כדי לבחור עולם אחר.",
+  },
+  /** Company label overrides for the synthetic (non-company) project (brand-led variant only). */
   companyLabels: { ai_feature_privacy: "AI" } as Readonly<Record<string, string>>,
   transition: {
     headline: "מעולה, עכשיו נחדד את הכיוון",
@@ -49,7 +54,9 @@ export const V3_COPY = {
   progress: {
     label: "שלבי המסע",
     stage: (n: number) => `שלב ${n} מתוך 3`,
-    stageNames: { 1: "בוחרים פרויקטים", 2: "מדייקים את הכיוון", 3: "הכיוון שלכם" } as Readonly<Record<number, string>>,
+    stageNames: { 1: "בוחרים מה מסקרן אתכם", 2: "מדייקים את הכיוון", 3: "הכיוון שלכם" } as Readonly<
+      Record<number, string>
+    >,
     early: "כמה שאלות קצרות",
     middle: "אנחנו כבר מתחילים לראות כיוון",
     late: "הכיוון כבר מתחיל להתחדד",
@@ -77,7 +84,7 @@ export const V3_COPY = {
     tryAgain: "לנסות שוב",
     allPrograms: "לכל תוכניות הלימוד במכללה",
     detailChosenTitle: "למה קיבלתי את התוצאה הזו?",
-    detailChosenLead: "אלה הבחירות שהובילו לכיוון הזה:",
+    detailChosenLead: "אלה הבחירות שעזרו לנו להבין את הכיוון שלכם:",
     detailMoreTitle: "מה עוד כדאי לדעת?",
     importantNoteTitle: "נקודה שכדאי לקחת בחשבון",
     contactStickyHint: "השאירו פרטים ונחזור אליכם",

@@ -13,3 +13,5 @@ export * from "./lead";
 export * from "./v3Persistence";
 export * from "./v3Progress";
 export * from "./v3ResultView";
+export * from "./journey";
+export * from "./v3QuestionView";

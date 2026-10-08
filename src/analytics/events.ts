@@ -47,6 +47,11 @@ export const ANALYTICS_EVENTS = [
   "result_contact_click",
   "result_all_programs_click",
   "result_detail_expand",
+  // V3 world-led discovery (DEC-034). V2 keeps the career_project_* events; V3 never emits them.
+  "career_world_discovery_view",
+  "career_world_selected",
+  "career_world_deselected",
+  "career_world_selection_completed",
 ] as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[number];
@@ -100,6 +105,10 @@ export const ANALYTICS_PARAMS = [
   "error_type",
   "cta_position",
   "detail_section",
+  "world_id",
+  "world_ids",
+  "selected_world_count",
+  "world_count_available",
 ] as const;
 
 export type AnalyticsParamName = (typeof ANALYTICS_PARAMS)[number];

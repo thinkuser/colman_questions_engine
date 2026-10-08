@@ -1,43 +1,50 @@
 import { expect, test, type Page } from "@playwright/test";
 import { V2_PERSONAS } from "../tests/flow/v2Personas";
+import { V3_PERSONAS } from "../tests/flow/v3Personas";
 import { openDiscovery, runPersonaInBrowser, startDiscovery } from "./discoveryHelpers";
 import { expectLayoutOk } from "./layoutHelpers";
 import { fillLead, leadField, leadForm, leadSubmit, mockLeadApi } from "./leadHelpers";
-import { enterProjects, openLanding, reachV3Result, selectV3Projects } from "./v3Helpers";
+import { enterDiscovery, openLanding, reachV3Result, selectWorlds, v3Cards, worldCard } from "./v3Helpers";
 
 /**
- * V3 layout acceptance at 320 / 390 / 1280 px, plus V2-vs-V3 comparison screenshots (test-results/compare-*.png,
- * git-ignored) so product can put the two versions side by side. Runs in the `layout-*` projects.
+ * V3 (world-led) layout acceptance at 320 / 390 / 1280 px, plus V2 (brand-led) vs V3 comparison screenshots in the
+ * git-ignored `test-results/compare-*.png`. Runs in the `layout-*` projects.
  */
 
-const persona = (id: string) => V2_PERSONAS.find((p) => p.id === id)!;
+const persona = (id: string) => V3_PERSONAS.find((p) => p.id === id)!;
 const shot = (page: Page, name: string) =>
   page.screenshot({ path: `test-results/compare-${name}-${page.viewportSize()!.width}.png`, fullPage: true });
 
 test.describe("V3 layout", () => {
-  test("landing, discovery (none / one / two / limit message), transition and question fit", async ({ page }) => {
+  test("landing, worlds (none / one / two / limit message), transition and question fit", async ({ page }) => {
     await openLanding(page);
     await expectLayoutOk(page, "v3 landing");
     await shot(page, "v3-landing");
 
-    await enterProjects(page);
-    await expectLayoutOk(page, "v3 discovery: none");
-    await shot(page, "v3-discovery");
-    await selectV3Projects(page, ["wolt_new_city"]);
-    await expectLayoutOk(page, "v3 discovery: one");
-    await selectV3Projects(page, ["tiktok_endless_scroll"]);
-    await page.locator('button[data-project-id="nike_israel_launch"]').click();
-    await expect(page.getByTestId("limit-message")).toBeVisible();
-    await expectLayoutOk(page, "v3 discovery: two + limit message");
-    await shot(page, "v3-discovery-two-limit");
+    await enterDiscovery(page);
+    await expect(v3Cards(page)).toHaveCount(9);
+    await expectLayoutOk(page, "v3 worlds: none");
+    await shot(page, "v3-worlds");
+    await selectWorlds(page, ["technology_data"]);
+    await expectLayoutOk(page, "v3 worlds: one");
+    await selectWorlds(page, ["people_organizations"]);
+    await worldCard(page, "design_spaces").click();
+    await expect(page.getByTestId("limit-message")).not.toHaveText("");
+    await expectLayoutOk(page, "v3 worlds: two + limit message");
+    await shot(page, "v3-worlds-two-limit");
 
-    await page.getByTestId("projects-continue").click();
+    // The sticky bar never covers the last card.
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const bar = (await page.getByTestId("sticky-bar").boundingBox())!;
+    const last = (await v3Cards(page).last().boundingBox())!;
+    expect(last.y + last.height).toBeLessThanOrEqual(bar.y + 1);
+
+    await page.getByTestId("discover-continue").click();
     await expect(page.getByTestId("v3-transition")).toBeVisible();
     await expectLayoutOk(page, "v3 transition");
     await shot(page, "v3-transition");
     await page.getByTestId("transition-cta").click();
     await expect(page.locator("section[data-question-id]")).toBeVisible();
-    await expectLayoutOk(page, "v3 question");
     await page.locator("label:has(input[data-option-id])").first().click();
     await expectLayoutOk(page, "v3 question with a selection");
     await shot(page, "v3-question");
@@ -45,10 +52,11 @@ test.describe("V3 layout", () => {
 
   for (const [id, label] of [
     ["accounting", "recommendation"],
-    ["business_vs_economics", "near-tie"],
-    ["communication_vs_cm", "near-tie-communication"],
+    ["business_markets_tie", "near-tie"],
+    ["communication_tie", "near-tie-communication"],
     ["insufficient", "insufficient"],
-    ["focused_tech", "tech-precision"],
+    ["tech_build", "tech-precision"],
+    ["hr_systems", "hr-world"],
   ] as const) {
     test(`result: ${label}`, async ({ page }) => {
       await reachV3Result(page, persona(id));
@@ -63,9 +71,9 @@ test.describe("V3 layout", () => {
     });
   }
 
-  test("lead form: validation, error, success and a short viewport", async ({ page }) => {
+  test("lead form: validation, error, success and a short (keyboard-open) viewport", async ({ page }) => {
     const captured = await mockLeadApi(page, [500, 200]);
-    await reachV3Result(page, persona("business_vs_economics"));
+    await reachV3Result(page, persona("communication_tie"));
     await leadForm(page).scrollIntoViewIfNeeded();
     await leadSubmit(page).click();
     await expect(leadForm(page).getByText("נא למלא שם פרטי.")).toBeVisible();
@@ -78,14 +86,12 @@ test.describe("V3 layout", () => {
     await leadSubmit(page).click();
     await expect(page.getByTestId("lead-success")).toBeVisible();
     await expectLayoutOk(page, "v3 lead success");
-    await shot(page, "v3-lead-success");
     expect(captured).toHaveLength(2);
-  });
 
-  test("the sticky bars do not cover form fields on a short (keyboard-open) viewport", async ({ page }) => {
-    await reachV3Result(page, persona("accounting"));
     const width = page.viewportSize()!.width;
     await page.setViewportSize({ width, height: 340 });
+    await page.reload();
+    await leadForm(page).scrollIntoViewIfNeeded();
     for (const name of ["first_name", "last_name", "phone", "consent"] as const) {
       await leadField(page, name).focus();
       await leadField(page, name).scrollIntoViewIfNeeded();
@@ -93,17 +99,17 @@ test.describe("V3 layout", () => {
       expect(box.y).toBeGreaterThanOrEqual(0);
       expect(box.y + box.height).toBeLessThanOrEqual(341);
     }
-    await expect(leadSubmit(page)).toBeVisible();
   });
 });
 
-test.describe("V2 baseline screenshots (for the side-by-side comparison)", () => {
+test.describe("V2 baseline screenshots (brand-led, for the side-by-side comparison)", () => {
   test("current V2 discovery, question and result", async ({ page }) => {
+    const v2 = V2_PERSONAS.find((p) => p.id === "accounting")!;
     await openDiscovery(page);
     await shot(page, "v2-discovery");
-    await startDiscovery(page, persona("accounting").projects);
+    await startDiscovery(page, v2.projects);
     await shot(page, "v2-question");
-    await runPersonaInBrowser(page, persona("accounting"));
+    await runPersonaInBrowser(page, v2);
     await shot(page, "v2-result");
     await expect(page.locator('[data-result-flow="v2"]')).toBeVisible();
   });

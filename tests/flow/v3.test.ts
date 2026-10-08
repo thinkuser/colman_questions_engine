@@ -16,6 +16,10 @@ import {
   progressTone,
   restoreV3Journey,
   serializeV3Journey,
+  V3_STORAGE_VERSION,
+  WORLD_STRATEGY,
+  BRAND_STRATEGY,
+  initialJourneyState,
   v3Progress,
   v3Program,
   restoreDiscovery,
@@ -23,6 +27,8 @@ import {
   type DiscoveryState,
 } from "@/flow";
 import { runPersona } from "./v2PersonaRun";
+import { runV3Persona } from "./v3PersonaRun";
+import { V3_PERSONAS } from "./v3Personas";
 import { V2_PERSONAS } from "./v2Personas";
 
 const persona = (id: string) => V2_PERSONAS.find((candidate) => candidate.id === id)!;
@@ -34,39 +40,78 @@ function completed(personaId: string) {
   return { state, step };
 }
 
-describe("V3 persistence is isolated from V2", () => {
-  const { state } = runPersona(persona("accounting"));
+describe("V3 persistence (version 2, world-led) is isolated from V2", () => {
+  const { state } = runV3Persona(V3_PERSONAS.find((p) => p.id === "communication_then_people")!);
 
-  it("uses its own key and flow marker", () => {
+  it("uses its own key, version 2, the flow marker and the strategy", () => {
     expect(V3_STORAGE_KEY).toBe("colman-studymatch:v3:journey");
     expect(V3_STORAGE_KEY).not.toBe(DISCOVERY_STORAGE_KEY);
-    const stored = JSON.parse(serializeV3Journey(state)!);
-    expect(stored).toMatchObject({ version: 1, flow: "v3" });
-    expect(Object.keys(stored).sort()).toEqual(["answers", "flow", "phase", "selectedProjectIds", "version"]);
+    expect(V3_STORAGE_VERSION).toBe(2);
+    const stored = JSON.parse(serializeV3Journey(WORLD_STRATEGY, state)!);
+    expect(stored).toMatchObject({
+      version: 2,
+      flow: "v3",
+      strategy: "worlds",
+      selectedIds: ["communication_influence", "people_psychology"],
+    });
+    expect(Object.keys(stored).sort()).toEqual(["answers", "flow", "phase", "selectedIds", "strategy", "version"]);
+    expect(stored).not.toHaveProperty("selectedProjectIds");
   });
 
-  it("round-trips by replay", () => {
-    const restored = restoreV3Journey(serializeV3Journey(state));
+  it("round-trips by replay, keeping the selection order", () => {
+    const restored = restoreV3Journey(WORLD_STRATEGY, serializeV3Journey(WORLD_STRATEGY, state));
     expect(restored).toEqual(state);
+    expect(restored?.selectedIds).toEqual(["communication_influence", "people_psychology"]);
   });
 
-  it("never reads a V2 payload as V3 (or the reverse)", () => {
-    const v2 = serializeDiscovery(state)!;
-    const v3 = serializeV3Journey(state)!;
-    expect(restoreV3Journey(v2)).toBeNull();
+  it("fails safely on an old version-1 (brand-led) V3 payload: it restores to nothing", () => {
+    const old = JSON.stringify({
+      version: 1,
+      flow: "v3",
+      phase: "answering",
+      selectedProjectIds: ["wolt_new_city"],
+      answers: [{ questionId: "B1", answerId: "A" }],
+    });
+    expect(restoreV3Journey(WORLD_STRATEGY, old)).toBeNull();
+  });
+
+  it("never reads a V2 payload as V3 (or the reverse), nor another strategy's payload", () => {
+    const v2 = serializeDiscovery({
+      phase: "selecting",
+      selectedProjectIds: ["wolt_new_city"],
+      answers: [],
+    })!;
+    const v3 = serializeV3Journey(WORLD_STRATEGY, state)!;
+    expect(restoreV3Journey(WORLD_STRATEGY, v2)).toBeNull();
     expect(restoreDiscovery(v3)).toBeNull();
+    expect(restoreV3Journey(BRAND_STRATEGY, v3)).toBeNull();
   });
 
   it("rejects stale or inconsistent state without throwing", () => {
     for (const raw of [
       "{",
       "[]",
-      JSON.stringify({ version: 1, flow: "v3", phase: "answering", selectedProjectIds: ["nope"], answers: [] }),
+      JSON.stringify({
+        version: 2,
+        flow: "v3",
+        strategy: "worlds",
+        phase: "answering",
+        selectedIds: ["nope"],
+        answers: [],
+      }),
+      JSON.stringify({
+        version: 2,
+        flow: "v3",
+        strategy: "worlds",
+        phase: "answering",
+        selectedIds: ["law_justice"],
+        answers: [{ questionId: "WB1", answerId: "A" }],
+      }),
     ]) {
-      expect(restoreV3Journey(raw)).toBeNull();
+      expect(restoreV3Journey(WORLD_STRATEGY, raw)).toBeNull();
     }
-    expect(restoreV3Journey(null)).toBeNull();
-    expect(serializeV3Journey(initialDiscoveryState)).toBeNull();
+    expect(restoreV3Journey(WORLD_STRATEGY, null)).toBeNull();
+    expect(serializeV3Journey(WORLD_STRATEGY, initialJourneyState)).toBeNull();
   });
 });
 

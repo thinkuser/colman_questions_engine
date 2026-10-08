@@ -159,6 +159,17 @@ New parameter names: `error_type` and `flow_version`, `project_id`, `project_ids
 
 Analysis hints: group V2 runs by `comparison_id` and `flow_version`; demand by `project_ids`; neutral rate by question with `is_neutral`; how often generated focus appears with `is_generated_focus`; the journey length distribution with `total_answer_count` on `studymatch_result_view`; handoff rate with `precision_module_handoff`.
 
+## V3 world discovery events (DEC-034)
+V2 is **brand-led** and keeps `career_project_*` (unchanged; its tracker is byte-identical to the baseline). V3 is **world-led** and is reported by its own strategy-driven `JourneyTracker` (`src/analytics/journeyTracker.ts`); it never emits `career_project_*`.
+
+| Event | Fired when | Notable parameters |
+|---|---|---|
+| `career_world_discovery_view` | The world screen is shown (once per mounted view) | `flow_version`, `world_count_available` |
+| `career_world_selected` / `career_world_deselected` | A world card is selected / deselected (a refused third is silent) | `world_id`, `selected_world_count`, `selection_position` (on select) |
+| `career_world_selection_completed` | "בואו נמשיך" with a valid selection | `world_ids` (canonical), `selected_world_count`, `selection_count`, `comparison_id` |
+
+In V3, every question and result event carries `selected_world_count` and `world_ids` instead of the project parameters. New parameter names: `world_id`, `world_ids`, `selected_world_count`, `world_count_available`. No PII.
+
 ## V3 events (UX redesign)
 V3 (`/v3`) reuses the V2 tracker and the same whitelist; it reports `flow_version: "v3"` on **every** event (V2 stays `"v2"`) and keeps its own sessionStorage context (`colman-studymatch:analytics-v3`), so the two versions can be compared by `flow_version` and never share a journey id. No V2 event or parameter is renamed or changed.
 

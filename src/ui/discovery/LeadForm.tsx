@@ -39,6 +39,7 @@ export function LeadForm({
   submit = defaultSubmitLead,
   flowVersion = "v2",
   placeholders,
+  selectedWorldIds,
 }: {
   context: LeadResultContext;
   selectedProjectIds: readonly string[];
@@ -50,6 +51,8 @@ export function LeadForm({
   flowVersion?: LeadFlowVersion;
   /** Optional example placeholders (V3). When given, the separate phone hint is not rendered. */
   placeholders?: { firstName: string; lastName: string; phone: string };
+  /** World-led discovery (V3): sent as `selected_world_ids` (and `selected_project_ids` stays empty). */
+  selectedWorldIds?: readonly string[];
 }) {
   const uid = useId();
   const [values, setValues] = useState({ firstName: "", lastName: "", phone: "", consent: false });
@@ -106,6 +109,7 @@ export function LeadForm({
         comparisonId: comparisonId(),
         context,
         selectedProjectIds,
+        selectedWorldIds,
       }),
     ).catch((): LeadSubmitResult => ({ ok: false, kind: "network" }));
     inFlight.current = false;

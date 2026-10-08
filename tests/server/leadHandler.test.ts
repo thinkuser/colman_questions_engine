@@ -238,3 +238,43 @@ describe("lead API: flow version", () => {
     expect(await keys({ flow_version: "v3" })).toEqual(await keys({ flow_version: "v2" }));
   });
 });
+
+describe("lead API: world-led (V3) leads", () => {
+  const worldBody = (overrides: Record<string, unknown> = {}) => ({
+    ...body("business_vs_economics"),
+    flow_version: "v3",
+    selected_project_ids: [],
+    selected_world_ids: ["business_markets", "law_justice"],
+    ...overrides,
+  });
+
+  it("forwards selected_world_ids and an empty selected_project_ids, flow_version v3", async () => {
+    const { fetchMock, deps } = setup();
+    const response = await handleLeadRequest(post(worldBody()), deps);
+    expect(response.status).toBe(200);
+    const payload = sentPayload(fetchMock);
+    expect(payload.flow_version).toBe("v3");
+    expect(payload.selected_world_ids).toEqual(["business_markets", "law_justice"]);
+    expect(payload.selected_project_ids).toEqual([]);
+  });
+
+  it("rejects unknown worlds, world ids in the project field and world selections outside V3", async () => {
+    for (const bad of [
+      worldBody({ selected_world_ids: ["not_a_world"] }),
+      worldBody({ selected_project_ids: ["business_markets"], selected_world_ids: [] }),
+      worldBody({ flow_version: "v2" }),
+      worldBody({ selected_project_ids: ["wolt_new_city"] }),
+    ]) {
+      const { fetchMock, deps } = setup();
+      const response = await handleLeadRequest(post(bad), deps);
+      expect(response.status).toBe(400);
+      expect(fetchMock).not.toHaveBeenCalled();
+    }
+  });
+
+  it("leaves a V2 lead exactly as before: no selected_world_ids in the webhook payload", async () => {
+    const { fetchMock, deps } = setup();
+    await handleLeadRequest(post(body("accounting", { flow_version: "v2" })), deps);
+    expect(sentPayload(fetchMock)).not.toHaveProperty("selected_world_ids");
+  });
+});

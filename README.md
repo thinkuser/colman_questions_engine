@@ -20,7 +20,7 @@ Help a prospective student compare 2–3 academic programs and understand:
 V2 lets a candidate pick one or two career projects (Spotify, Wolt, TikTok, Duolingo, Nike, an AI product, an Apple Store) and routes them to one of 14 programs; the Tech room keeps the V1 precision flow. It runs at `/v2`; the V1 comparison at `/` is unchanged. Every V2 result ends with a lead form that posts to a same-origin API and is forwarded to the server-only `LEAD_WEBHOOK_URL` (see `.env.example`). See `docs/V2_EXPERIENCE.md`.
 
 ## V3 (UX redesign)
-`/v3` is a redesigned presentation of the same V2 engine (landing page, explicit Continue, a simplified result, a COLMAN-branded section). It runs next to the frozen V2 baseline at `/v2` (tag `studymatch-v2-ui-baseline`) with its own storage and analytics version. See `docs/V3_EXPERIENCE.md`.
+`/v3` is the redesigned experience (landing page, explicit Continue, a simplified result, a COLMAN-branded section) and tests WORLD-LED discovery (working worlds instead of V2's brand projects) on the same engine. It runs next to the frozen V2 baseline at `/v2` (tag `studymatch-v2-ui-baseline`) with its own storage and analytics version. See `docs/V3_EXPERIENCE.md`.
 
 ## Product architecture
 `Program data → Question bank → Adaptive selector → Candidate vector → Deterministic fit engine → Explanation/result experience → Analytics/lead handoff`

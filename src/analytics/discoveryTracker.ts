@@ -44,10 +44,6 @@ export interface DiscoveryTrackerOptions {
   storage?: StorageLike | null;
   uuid?: () => string;
   debug?: (payload: DataLayerEvent) => void;
-  /** Which UI version is reporting (default "v2"). V3 passes "v3" so the two can be compared later. */
-  flowVersion?: string;
-  /** sessionStorage key of this tracker's session context (default: the V2 key). */
-  storageKey?: string;
 }
 
 interface QueuedAction {
@@ -68,8 +64,6 @@ export class DiscoveryTracker {
   private readonly storage: StorageLike | null;
   private readonly uuid: () => string;
   private readonly debug?: (payload: DataLayerEvent) => void;
-  private readonly flowVersion: string;
-  private readonly storageKey: string;
 
   private state: DiscoveryState = initialDiscoveryState;
   private journeyId: string | null = null;
@@ -85,8 +79,6 @@ export class DiscoveryTracker {
     this.storage = options.storage ?? null;
     this.uuid = options.uuid ?? defaultUuid;
     this.debug = options.debug;
-    this.flowVersion = options.flowVersion ?? FLOW_VERSION;
-    this.storageKey = options.storageKey ?? DISCOVERY_ANALYTICS_STORAGE_KEY;
   }
 
   /** Initialise from the restored product state and the URL. Emits nothing (a refresh is not a candidate action). */
@@ -131,7 +123,7 @@ export class DiscoveryTracker {
     if (!this.once(`discovery:${token}`)) return;
     this.safely(() =>
       this.emit("career_project_discovery_view", {
-        flow_version: this.flowVersion,
+        flow_version: FLOW_VERSION,
         project_count_available: CAREER_PROJECTS.filter((project) => project.enabled).length,
         ...this.utmParams(),
       }),
@@ -201,51 +193,6 @@ export class DiscoveryTracker {
   /** A failed attempt: invalid fields ("validation") or the lead did not reach the destination ("server" | "network"). */
   leadFormFailed(errorType: LeadErrorType): void {
     this.resultEvent("lead_form_error", { error_type: errorType });
-  }
-
-  // --- V3 additive events (flow_version identifies the version; never PII or answer text) -----------------------
-
-  /** The V3 landing page was shown (once per mounted view). */
-  landingViewed(token: string): void {
-    if (!this.once(`landing:${token}`)) return;
-    this.safely(() => this.emit("studymatch_landing_view", { flow_version: this.flowVersion, ...this.utmParams() }));
-  }
-
-  /** The candidate pressed the landing CTA. */
-  started(): void {
-    this.safely(() => this.emit("studymatch_start", { flow_version: this.flowVersion, ...this.utmParams() }));
-  }
-
-  /** The candidate pressed Continue on the question that is currently displayed (before the answer is committed). */
-  questionContinued(): void {
-    this.safely(() => {
-      const step = discoveryStep(this.state);
-      if (step?.status !== "ask") return;
-      const view = buildV2QuestionView(step);
-      this.emit("question_continue", {
-        ...this.context(),
-        ...this.questionParams(view, this.state.answers.length + 1),
-      });
-    });
-  }
-
-  /** An official program page was opened from the V3 result. `position`: hero / colman_section / near_tie. */
-  resultProgramClick(programId: string, role: "primary" | "alternative" | "peer", position: string): void {
-    this.resultEvent("result_program_click", { program_id: programId, link_role: role, cta_position: position });
-  }
-
-  /** The candidate asked to be contacted (scroll to the lead form). `position`: hero / colman_section / sticky. */
-  resultContactClick(position: string): void {
-    this.resultEvent("result_contact_click", { cta_position: position });
-  }
-
-  resultAllProgramsClick(): void {
-    this.resultEvent("result_all_programs_click");
-  }
-
-  /** A collapsed result section was opened (not fired on close). */
-  resultDetailExpanded(section: string): void {
-    this.resultEvent("result_detail_expand", { detail_section: section });
   }
 
   secondaryProgramViewed(): void {
@@ -320,7 +267,7 @@ export class DiscoveryTracker {
     for (const id of next.selectedProjectIds) {
       if (before.has(id)) continue;
       this.emit("career_project_selected", {
-        flow_version: this.flowVersion,
+        flow_version: FLOW_VERSION,
         project_id: id,
         selection_count: next.selectedProjectIds.length,
         selection_position: next.selectedProjectIds.indexOf(id) + 1,
@@ -330,7 +277,7 @@ export class DiscoveryTracker {
     for (const id of prev.selectedProjectIds) {
       if (after.has(id)) continue;
       this.emit("career_project_deselected", {
-        flow_version: this.flowVersion,
+        flow_version: FLOW_VERSION,
         project_id: id,
         selection_count: next.selectedProjectIds.length,
         ...this.utmParams(),
@@ -433,7 +380,7 @@ export class DiscoveryTracker {
     const state = options.state ?? this.state;
     const id = options.journeyId === undefined ? this.journeyId : options.journeyId;
     return {
-      flow_version: this.flowVersion,
+      flow_version: FLOW_VERSION,
       ...(id ? { comparison_id: id } : {}),
       selected_project_count: state.selectedProjectIds.length,
       ...(state.selectedProjectIds.length > 0 ? { project_ids: canonical(state.selectedProjectIds) } : {}),
@@ -473,7 +420,7 @@ export class DiscoveryTracker {
       last_question_view: null,
     } as const;
     try {
-      const raw = this.storage?.getItem(this.storageKey);
+      const raw = this.storage?.getItem(DISCOVERY_ANALYTICS_STORAGE_KEY);
       if (!raw) return { ...empty, utm: {} };
       const parsed = StoredContextSchema.safeParse(JSON.parse(raw));
       return parsed.success ? parsed.data : { ...empty, utm: {} };
@@ -485,7 +432,7 @@ export class DiscoveryTracker {
   private persist(): void {
     try {
       this.storage?.setItem(
-        this.storageKey,
+        DISCOVERY_ANALYTICS_STORAGE_KEY,
         JSON.stringify({
           version: DISCOVERY_ANALYTICS_STORAGE_VERSION,
           comparison_id: this.journeyId,
