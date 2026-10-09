@@ -84,13 +84,17 @@ export function ResultFeedback({
   resultKey: string;
   copy: ResultFeedbackCopy;
   onView: () => void;
-  onSubmit: (answers: ResultFeedbackAnswers) => void;
+  /** Persists the feedback; resolves true only when the server confirmed it (DEC-039). */
+  onSubmit: (answers: ResultFeedbackAnswers) => Promise<boolean>;
   onUiClick?: (params: UiClickParams) => void;
 }) {
   const asksFit = kind !== "insufficient_positive_evidence";
   const [fit, setFit] = useState<FeedbackFit | null>(null);
   const [helpfulness, setHelpfulness] = useState<FeedbackHelpfulness | null>(null);
   const [submitted, setSubmitted] = useState(() => hasSubmittedResultFeedback(storageOrNull(), resultKey));
+  const [saving, setSaving] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const inFlight = useRef(false);
   const ref = useRef<HTMLElement>(null);
 
   // Reported when the block is actually exposed (half visible), like the other result-view events.
@@ -112,12 +116,28 @@ export function ResultFeedback({
 
   const canSubmit = (asksFit && fit !== null) || helpfulness !== null;
 
-  function submit() {
-    if (!canSubmit || submitted) return;
+  async function submit() {
+    if (!canSubmit || submitted || inFlight.current) return;
+    inFlight.current = true;
+    setSaving(true);
+    setFailed(false);
+    // The attempt is always reported (ui_click). The semantic result_feedback_submit and the local "submitted" memory
+    // happen only after the server confirmed persistence; a failure keeps the choices and allows a retry.
     onUiClick?.({ element_id: "feedback_submit", element_type: "button", screen_id: "feedback" });
-    onSubmit({ ...(asksFit && fit ? { fit } : {}), ...(helpfulness ? { helpfulness } : {}) });
-    rememberResultFeedback(storageOrNull(), resultKey);
-    setSubmitted(true);
+    let saved = false;
+    try {
+      saved = await onSubmit({ ...(asksFit && fit ? { fit } : {}), ...(helpfulness ? { helpfulness } : {}) });
+    } catch {
+      saved = false;
+    }
+    inFlight.current = false;
+    setSaving(false);
+    if (saved) {
+      rememberResultFeedback(storageOrNull(), resultKey);
+      setSubmitted(true);
+    } else {
+      setFailed(true);
+    }
   }
 
   return (
@@ -173,12 +193,18 @@ export function ResultFeedback({
           <button
             type="button"
             data-testid="result-feedback-submit"
-            disabled={!canSubmit}
+            disabled={!canSubmit || saving}
+            aria-busy={saving}
             onClick={submit}
             className="min-h-11 rounded-xl border-2 border-colman-blue px-5 font-semibold text-colman-blue transition-colors hover:bg-colman-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-colman-blue disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {copy.submit}
+            {saving ? copy.submitting : copy.submit}
           </button>
+          {failed && (
+            <p role="alert" data-testid="result-feedback-error" className="text-sm font-medium text-red-800">
+              {copy.error}
+            </p>
+          )}
         </>
       )}
     </section>

@@ -156,3 +156,30 @@ const VERBATIM_THIRD_PERSON = [
 export async function v5MasculineOnScreen(page: Page): Promise<string[]> {
   return (await masculineOnScreen(page)).filter((hit) => !VERBATIM_THIRD_PERSON.some((text) => hit.startsWith(text)));
 }
+
+export interface CapturedFeedback {
+  body: Record<string, unknown>;
+}
+
+/**
+ * Intercepts the same-origin feedback API (the browser suite never reaches n8n). `statuses` is consumed one per
+ * request; the last one repeats. 200 answers `{ ok: true, deduped: false }`, anything else `{ ok: false }`.
+ */
+export async function mockFeedbackApi(
+  page: Page,
+  statuses: number[] = [200],
+  delayMs = 0,
+): Promise<CapturedFeedback[]> {
+  const captured: CapturedFeedback[] = [];
+  await page.route("**/api/v5/feedback", async (route) => {
+    captured.push({ body: JSON.parse(route.request().postData() ?? "{}") });
+    const status = statuses[Math.min(captured.length - 1, statuses.length - 1)]!;
+    if (delayMs) await new Promise((resolve) => setTimeout(resolve, delayMs));
+    await route.fulfill({
+      status,
+      contentType: "application/json",
+      body: JSON.stringify(status === 200 ? { ok: true, deduped: false } : { ok: false, error: "delivery_failed" }),
+    });
+  });
+  return captured;
+}

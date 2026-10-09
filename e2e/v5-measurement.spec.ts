@@ -14,6 +14,7 @@ import {
   v5QuestionId,
   v5Result,
   V5_PATHS_TO,
+  mockFeedbackApi,
 } from "./v5Helpers";
 
 /**
@@ -44,6 +45,11 @@ async function visibleTexts(page: Page): Promise<string[]> {
       .filter((text) => text.length >= 4),
   );
 }
+
+// Feedback persistence goes to our own API; the suite answers it (DEC-039). Tests that need to inspect it re-mock.
+test.beforeEach(async ({ page }) => {
+  await mockFeedbackApi(page);
+});
 
 test.describe("V5 dataLayer audit: a complete projects journey", () => {
   test("every control emits ui_click with stable ids, semantic events still fire, and no PII or labels leak", async ({
@@ -274,6 +280,7 @@ test.describe("V5 pilot feedback", () => {
     await expect(block).not.toContainText("עד כמה הכיוון שקיבלת מרגיש מתאים?");
     await block.locator('button[data-feedback-value="no"]').click();
     await page.getByTestId("result-feedback-submit").click();
+    await expect(page.getByTestId("result-feedback-thanks")).toBeVisible();
     const [submit] = await eventsOf(page, "result_feedback_submit");
     expect(submit).toMatchObject({ result_kind: "insufficient_positive_evidence", feedback_helpfulness: "no" });
     expect(submit).not.toHaveProperty("feedback_fit");
@@ -296,6 +303,7 @@ test.describe("V5 pilot feedback", () => {
     await expect(page.getByTestId("result-feedback-thanks")).toHaveCount(0);
     await page.getByTestId("result-feedback").locator('button[data-feedback-value="no"]').click();
     await page.getByTestId("result-feedback-submit").click();
+    await expect(page.getByTestId("result-feedback-thanks")).toBeVisible();
     const submits = await eventsOf(page, "result_feedback_submit");
     // (The helper reloads /v5, so the page dataLayer now holds only the new journey events.)
     expect(submits.at(-1)!.comparison_id).toBeTruthy();

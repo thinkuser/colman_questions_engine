@@ -58,6 +58,9 @@ export const V5_FEEDBACK_COPY = {
     ],
   },
   submit: "שליחת המשוב",
+  submitting: "שומרים…",
+  /** Shown when the feedback could not be saved; the choices are kept and the submit button is available again. */
+  error: "לא הצלחנו לשמור את המשוב כרגע. אפשר לנסות שוב.",
   thanks: "תודה! המשוב עוזר לנו לשפר את StudyMatch.",
 } as const;
 

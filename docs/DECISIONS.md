@@ -270,13 +270,22 @@ Full description and pressure-test traces: `docs/V2_SCORING.md`. Code: `src/engi
 - **Open, proposed, pending product review:** a generic **"no strong fit" threshold**. V1's normalized-fit thresholds are not transplanted into V2 points, and the accepted V2 docs define none. Until decided, the generic engine reports only `recommended`, `near_tie` or `insufficient_positive_evidence`.
 - **Accepted product decisions (THI-14 review):** a cross-cluster Spotify journey may exceed 5–7 questions (generic questions before handoff plus V1's remaining ones); THI-16 QA must measure it. V1 `Q1` stays the Spotify question (no duplicate Discover Weekly question).
 
+## DEC-039 — V5 feedback is dual-written and sits at the end of the result page
+Status: accepted for review — V5 feedback persistence PR. Amends DEC-038.
+
+- **Placement:** the pilot feedback block is the **last normal content block** of the V5 result page (after the lead form, the all-programs link and the disclaimer). The mobile sticky contact bar is an overlay, not content. V3/V4 supply no feedback prop, so they are unaffected.
+- **Dual write.** A) the analytics event `result_feedback_submit` (unchanged name and schema); B) a durable row in the **Feedback** tab of the existing lead spreadsheet via a NEW n8n workflow ("Colman StudyMatch Feedback"). **GA4 / BigQuery remain the KPI source of truth; the Feedback tab is the durable raw response log / QA backup / manual-review mirror.** Values and ids are identical in both. No free text, no PII; the Leads tab and the lead workflow are untouched.
+- **Server-side proxy:** the browser posts to the same-origin `POST /api/v5/feedback`; the server validates (strict schema), hashes and forwards to the server-only `FEEDBACK_WEBHOOK_URL` (8 s timeout). The webhook URL never reaches the browser.
+- **Dedupe key:** the client sends the existing result-state key (journey id + selection + answer-id sequence) only to our own API; the server forwards **only its SHA-256** (`feedback_key_hash`). The raw key / answer sequence reaches neither n8n, the sheet, GA4 nor logs. n8n looks the hash up and answers `deduped: true` instead of appending a second row.
+- **Meaning of `result_feedback_submit` changes slightly:** it now means "structured feedback **successfully persisted**" (fired after a 2xx; a failed save emits no event, shows a retry message and leaves the form usable). The attempt itself stays visible as `ui_click` `feedback_submit`. No event or parameter was added or renamed, so GTM, GA4 and BigQuery logic need no change.
+
 ## DEC-038 — V5 pilot measurement layer
 Status: accepted for review — V5 pilot measurement PR.
 
 - Measurement never changes the product: no scoring, routing, weights, stop conditions, mappings or result selection change; V1–V4 behaviour and analytics are unchanged (every new capability is an optional experience seam that only V5 supplies).
 - **Semantic events stay the KPI source of truth** (names and meanings unchanged). New **`ui_click`** fires on every V5 candidate control *in addition to* its semantic event, with a small closed vocabulary (`element_id`, `element_type`, `screen_id`, `destination_type` + contextual ids); never labels, answer texts or field values.
 - **Outbound attribution:** every V5 http(s) link out of StudyMatch carries the fixed `utm_source=study_match&utm_medium=questionaire&utm_campaign=ai_tools` (`questionaire` is the agreed spelling). Inbound acquisition UTMs (how the candidate arrived) are separate; for V5 the entry query is now kept for the whole visit so self-selected runs keep them.
-- **Pilot feedback:** a structured, optional block on the V5 result (fit + helpfulness; helpfulness only for insufficient evidence), events `result_feedback_view` / `result_feedback_submit` (`feedback_version = v1`), one submission per result state under its own storage key. The analytics event is the single source of truth (no second n8n flow).
+- **Pilot feedback:** a structured, optional block on the V5 result (fit + helpfulness; helpfulness only for insufficient evidence), events `result_feedback_view` / `result_feedback_submit` (`feedback_version = v1`), one submission per result state under its own storage key. ~~The analytics event is the single source of truth (no second n8n flow).~~ **Amended by DEC-039:** feedback is also persisted through n8n.
 - `reality_check_view` is wired on the V5 result (the redesigned result never emitted it; V3/V4 unchanged).
 - A GTM loader exists for `/v5` only and is **off until `NEXT_PUBLIC_GTM_ID` is set**. GTM / GA4 / custom definitions / dashboard are documented, not configured.
 
